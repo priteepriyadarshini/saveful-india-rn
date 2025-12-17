@@ -1,0 +1,17 @@
+{
+  "name": "saveful-india",
+  "slug": "saveful-india",
+  "userInterfaceStyle": "light",
+  "splash": {
+    "image": "./assets/splash.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#FFFAF3"
+  },
+  "assetBundlePatterns": ["**/*"],
+  "ios": {
+    "supportsTablet": true
+  },
+  "web": {
+    "favicon": "./assets/favicon.png"
+  }
+}
