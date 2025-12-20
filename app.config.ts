@@ -4,7 +4,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Saveful',
   slug: 'saveful-app',
-  scheme: 'saveful', // Required for deep linking
+  scheme: 'saveful', 
   version: '1.2.21',
   orientation: 'portrait',
   jsEngine: 'hermes',
@@ -167,6 +167,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-localization',
     'expo-font',
     'expo-secure-store',
+    '@react-native-community/datetimepicker',
+    'expo-web-browser',
     ['onesignal-expo-plugin', 
       { 
         mode: 'development' 

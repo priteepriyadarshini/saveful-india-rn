@@ -14,14 +14,14 @@ import {
   ContentServiceInterface,
 } from "../../services/content/ContentService";
 
-import bundledArticleContents from "C:/Saveful/saveful-india-rn/assets/content/article_contents.json";
-import bundledCategories from "C:/Saveful/saveful-india-rn/assets/content/categories.json";
-import bundledChallenges from "C:/Saveful/saveful-india-rn/assets/content/challenges.json";
-import bundledFrameworks from "C:/Saveful/saveful-india-rn/assets/content/frameworks.json";
-import bundledHackOrTips from "C:/Saveful/saveful-india-rn/assets/content/hacks_or_tips.json";
-import bundledIngredients from "C:/Saveful/saveful-india-rn/assets/content/ingredients.json";
-import bundledSponsorPanels from "C:/Saveful/saveful-india-rn/assets/content/sponsor_panels.json";
-import bundledVideoContents from "C:/Saveful/saveful-india-rn/assets/content/video_contents.json";
+import bundledArticleContents from "../../../assets/content/article_contents.json";
+import bundledCategories from "../../../assets/content/categories.json";
+import bundledChallenges from "../../../assets/content/challenges.json";
+import bundledFrameworks from "../../../assets/content/frameworks.json";
+import bundledHackOrTips from "../../../assets/content/hacks_or_tips.json";
+import bundledIngredients from "../../../assets/content/ingredients.json";
+import bundledSponsorPanels from "../../../assets/content/sponsor_panels.json";
+import bundledVideoContents from "../../../assets/content/video_contents.json";
 
 interface BundledFlattedJson {
   flattedString: string;

@@ -1,4 +1,3 @@
-//import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client';
 import { 
   IArticleContents, 
   ICategories, 
@@ -14,14 +13,14 @@ import {
   ContentServiceInterface,
 } from '../../services/content/ContentService'
 
-import ArticleContentsQuery from 'C:/Saveful/saveful-india-rn/queries/article_contents.js';
-import CategoriesQuery from 'C:/Saveful/saveful-india-rn/queries/categories.js';
-import ChallengesQuery from 'C:/Saveful/saveful-india-rn/queries/challenges.js';
-import FrameworksQuery from 'C:/Saveful/saveful-india-rn/queries/frameworks.js';
-import HackOrTipsQuery from 'C:/Saveful/saveful-india-rn/queries/hacks_or_tips.js';
-import IngredientsQuery from 'C:/Saveful/saveful-india-rn/queries/ingredients.js';
-import SponsorPanelsQuery from 'C:/Saveful/saveful-india-rn/queries/sponsor_panels.js';
-import VideoContentsQuery from 'C:/Saveful/saveful-india-rn/queries/video_contents.js';
+import ArticleContentsQuery from '../../../queries/article_contents.js';
+import CategoriesQuery from '../../../queries/categories.js';
+import ChallengesQuery from '../../../queries/challenges.js';
+import FrameworksQuery from '../../../queries/frameworks.js';
+import HackOrTipsQuery from '../../../queries/hacks_or_tips.js';
+import IngredientsQuery from '../../../queries/ingredients.js';
+import SponsorPanelsQuery from '../../../queries/sponsor_panels.js';
+import VideoContentsQuery from '../../../queries/video_contents.js';
 
 const{
   ApolloClient,
