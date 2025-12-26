@@ -65,8 +65,19 @@ function InitialNavigator() {
     }
   }, [userOnboarding, permissionStatus, registerForNotifications]);
 
+  // Determine initial route based on auth state
+  const getInitialRoute = (): keyof InitialStackParamList => {
+    if (!accessToken) {
+      return 'Intro'; // Not authenticated - show intro/auth
+    }
+    if (!userOnboarding) {
+      return 'Onboarding'; // Authenticated but no onboarding - show onboarding
+    }
+    return 'Root'; // Authenticated and onboarded - show main app
+  };
+
   return (
-    <InitialNavigationStack.Navigator initialRouteName="Root" screenOptions={{ headerShown: false }}>
+    <InitialNavigationStack.Navigator initialRouteName={getInitialRoute()} screenOptions={{ headerShown: false }}>
       <InitialNavigationStack.Screen name="Intro" component={IntroNavigator} /> 
       <InitialNavigationStack.Screen name="Onboarding" component={OnboardingNavigator}/>
       <InitialNavigationStack.Screen name="Root" component={RootNavigator} />

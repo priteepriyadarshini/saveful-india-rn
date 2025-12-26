@@ -149,15 +149,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       local: {
         android: {
           title: 'Local (Android)',
-          apiUrl: process.env.LOCAL_URL ?? 'http://10.0.2.2:4000',
-          webUrl: process.env.WEB_URL ?? 'http://10.0.2.2:3000',
-          socketUrl: process.env.SOCKET_URL ?? 'ws://10.0.2.2:4000/socket/app',
+          apiUrl: process.env.LOCAL_URL ?? 'http://192.168.0.192:3000',
+          webUrl: process.env.WEB_URL ?? 'http://192.168.0.192:3000',
+          socketUrl: process.env.SOCKET_URL ?? 'ws://192.168.0.192:3000/socket/app',
         },
         ios: {
           title: 'Local (iOS)',
-          apiUrl: process.env.LOCAL_URL ?? 'http://localhost:4000',
-          webUrl: process.env.WEB_URL ?? 'http://localhost:3000',
-          socketUrl: process.env.SOCKET_URL ?? 'ws://localhost:4000/socket/app',
+          apiUrl: process.env.LOCAL_URL ?? 'http://192.168.0.192:3000',
+          webUrl: process.env.WEB_URL ?? 'http://192.168.0.192:3000',
+          socketUrl: process.env.SOCKET_URL ?? 'ws://192.168.0.192:3000/socket/app',
         },
       },
     },

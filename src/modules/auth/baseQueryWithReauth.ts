@@ -12,8 +12,9 @@ import EnvironmentManager from '../environment/environmentManager';
 import { RootState } from '../../store/store';
 
 function getBaseURL() {
-  // If you store your base URL somewhere else, you can modify the line below...
-  return EnvironmentManager.shared.apiUrl();
+  const url = EnvironmentManager.shared.apiUrl();
+  console.log('API Base URL:', url);
+  return url;
 }
 
 // create a new mutex so we can prevent multiple requests to the refresh token api
@@ -58,10 +59,10 @@ const baseQueryWithReauth: BaseQueryFn<
         const { refresh_token } = (api.getState() as RootState).session;
         // Setup the query params
         const refreshQuery = {
-          url: '/api/session',
-          method: 'patch',
+          url: '/api/auth/refresh',
+          method: 'POST',
           body: {
-            refresh_token,
+            refreshToken: refresh_token,
           },
         };
         // Try and refresh the token
@@ -71,11 +72,14 @@ const baseQueryWithReauth: BaseQueryFn<
         });
         // console.log('Refresh result', refreshResult);
         if (refreshResult.data) {
-          // Update the store with the new session data - note the AWAIT so it will be completed before we
-          // try the query again
-          await api.dispatch(
-            saveSessionData((refreshResult.data as DataResponse<Session>).data),
-          );
+          // Transform the response to match Session interface
+          const authResponse = refreshResult.data as any;
+          const sessionData = {
+            access_token: authResponse.accessToken,
+            refresh_token: authResponse.refreshToken,
+          };
+          // Update the store with the new session data
+          await api.dispatch(saveSessionData(sessionData));
           // retry the initial query
           result = await baseQuery(args, api, extraOptions);
         } else {

@@ -1,10 +1,15 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# dependencies
 node_modules/
+
 saveful_india_v1/
 saveful_india_v1
 *saveful_india_v1
+
+saveful-india-web/
+saveful-india-web
+*saveful-india-web
+
 # Expo
 .expo/
 dist/

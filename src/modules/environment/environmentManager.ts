@@ -1,9 +1,5 @@
-// Singleton to help manage the environment configuration
-// You should `await EnvironmentManager.shared.initialize();` somewhere soon after launch
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import EventEmitter from 'eventemitter3';
 import Constants from 'expo-constants';
-// Environment types
 import {
   EnvironmentConfiguration,
   EnvironmentType,
@@ -11,6 +7,32 @@ import {
   PlatformEnvironmentConfiguration,
 } from '../../modules/environment/types';
 import { Platform } from 'react-native';
+
+// Simple event emitter that works in Expo Go
+class SimpleEventEmitter {
+  private listeners: Map<string, Set<Function>> = new Map();
+
+  addListener(event: string, listener: Function) {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, new Set());
+    }
+    this.listeners.get(event)?.add(listener);
+  }
+
+  removeListener(event: string, listener: Function) {
+    this.listeners.get(event)?.delete(listener);
+  }
+
+  emit(event: string, ...args: any[]) {
+    this.listeners.get(event)?.forEach(listener => {
+      try {
+        listener(...args);
+      } catch (error) {
+        console.warn('Error in event listener:', error);
+      }
+    });
+  }
+}
 
 export function nameForEnvironmentType(env: EnvironmentType) {
   switch (env) {
@@ -67,7 +89,7 @@ export enum EnvironmentManagerEvents {
   ConfigurationChanged = 'ConfigurationChanged',
 }
 
-class EnvironmentManager extends EventEmitter {
+class EnvironmentManager extends SimpleEventEmitter {
   static shared = new EnvironmentManager();
 
   private environment = EnvironmentType.Production;
@@ -85,10 +107,9 @@ class EnvironmentManager extends EventEmitter {
     if (env) {
       this.environment = env;
     } else {
-      // this.environment = __DEV__
-      // ? EnvironmentType.Local
-      // : EnvironmentType.Production;
-      this.environment = EnvironmentType.Production;
+      this.environment = __DEV__
+        ? EnvironmentType.Local
+        : EnvironmentType.Production;
     }
 
     // Load configuration

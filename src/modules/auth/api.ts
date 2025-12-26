@@ -11,6 +11,38 @@ export interface SessionToken {
   is_current?: boolean;
 }
 
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface SignupData {
+  email: string;
+  password: string;
+  name: string;
+  phoneNumber?: string;
+  stateCode?: string;
+  vegType?: string;
+  dairyFree?: boolean;
+  nutFree?: boolean;
+  glutenFree?: boolean;
+  hasDiabetes?: boolean;
+  otherAllergies?: string;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: string;
+    email: string;
+    role: string;
+    name: string;
+    phoneNumber?: string;
+  };
+}
+
 const currentUserApi = api
   .enhanceEndpoints({
     addTagTypes: ['SessionTokens'],
@@ -18,22 +50,56 @@ const currentUserApi = api
   .injectEndpoints({
     overrideExisting: true,
     endpoints: builder => ({
+      // New login endpoint for NestJS backend
+      login: builder.mutation<AuthResponse, LoginCredentials>({
+        query: credentials => ({
+          url: '/api/auth/login',
+          method: 'POST',
+          body: credentials,
+        }),
+      }),
+
+      // New signup endpoint for NestJS backend
+      signup: builder.mutation<AuthResponse, SignupData>({
+        query: data => ({
+          url: '/api/auth/signup',
+          method: 'POST',
+          body: data,
+        }),
+      }),
+
+      // Refresh token endpoint
+      refreshToken: builder.mutation<AuthResponse, { refreshToken: string }>({
+        query: ({ refreshToken }) => ({
+          url: '/api/auth/refresh',
+          method: 'POST',
+          body: { refreshToken },
+        }),
+      }),
+
       getCurrentUser: builder.query<
         CurrentUser | null,
         { accessToken?: string } | void
       >({
         query: params => ({
-          url: '/api/current_user',
+          url: '/api/auth/me',
           method: 'get',
           headers: params?.accessToken
             ? { authorization: `Bearer ${params?.accessToken}` }
             : undefined,
-          params: {
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          },
         }),
         providesTags: ['CurrentUser'],
-        transformResponse: r => (r as DataResponse<CurrentUser | null>).data,
+        transformResponse: (r: any) => {
+          // Transform backend response to match CurrentUser model
+          if (!r) return null;
+          return {
+            id: r.id,
+            email: r.email,
+            first_name: r.name || '',
+            phone_number: r.phoneNumber || '',
+            ...r,
+          } as CurrentUser;
+        },
       }),
 
       createCurrentUserTOTP: builder.mutation<
@@ -178,6 +244,9 @@ const currentUserApi = api
   });
 
 export const {
+  useLoginMutation,
+  useSignupMutation,
+  useRefreshTokenMutation,
   useGetCurrentUserQuery,
   useLazyGetCurrentUserQuery,
   useCreateCurrentUserTOTPMutation,
