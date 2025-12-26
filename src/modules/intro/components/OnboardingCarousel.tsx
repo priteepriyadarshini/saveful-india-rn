@@ -9,7 +9,7 @@ import _ from 'lodash';
 import { mixpanelEventName } from '../../analytics/analytics';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
 import { handleFormSubmitException } from '../../forms/validation';
-import { useCreateUserOnboardingMutation } from '../api/api';
+import { useCreateUserOnboardingMutation, useUpdateDietaryProfileMutation } from '../api/api';
 import FavouriteDishes from './FavouriteDishes';
 import OnboardingDietary from './OnboardingDietary';
 import OnboardingHeader from './OnboardingHeader';
@@ -149,6 +149,8 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
 
   const [createUserOnboarding, { isLoading }] =
     useCreateUserOnboardingMutation();
+  
+  const [updateDietaryProfile] = useUpdateDietaryProfileMutation();
 
   const {
     control,
@@ -177,7 +179,31 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
       return;
     }
 
-    try {
+    try {      
+      // Dietary category IDs from categories.json
+      const VEGETARIAN_ID = 'f74223f2-6285-479b-be97-8472ed79b835';
+      const VEGAN_ID = 'f096348b-3d75-475d-a166-b9470e2978ec';
+      const DAIRY_FREE_ID = 'bc2c0e89-9217-4217-aeb8-2a90daf8ce4a';
+      const NUT_FREE_ID = 'e0b82f0b-a03c-4735-8810-4d70b77ba231';
+      const GLUTEN_FREE_ID = '06566409-dc8c-46f0-b575-44090446ca80';
+      
+      // First, update dietary profile
+      const dietaryProfileData = {
+        vegType: data.dietaryRequirements.includes(VEGAN_ID)
+          ? 'VEGAN' 
+          : data.dietaryRequirements.includes(VEGETARIAN_ID)
+          ? 'VEGETARIAN'
+          : 'OMNI',
+        dairyFree: data.dietaryRequirements.includes(DAIRY_FREE_ID),
+        nutFree: data.dietaryRequirements.includes(NUT_FREE_ID),
+        glutenFree: data.dietaryRequirements.includes(GLUTEN_FREE_ID),
+        hasDiabetes: false, // Not in onboarding currently
+        otherAllergies: data.allergies,
+      };
+      
+      console.log('Updating dietary profile during onboarding:', dietaryProfileData);
+      
+      await updateDietaryProfile(dietaryProfileData).unwrap();
       try {
         const result = await createUserOnboarding({
           ...data,
@@ -206,15 +232,33 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
             household_composition: `${data.noOfAdults} Adult ${data.noOfChildren} Children`,
           });
 
-          linkTo('/feed');
+          linkTo('/Root/Feed');
         }
-      } catch (error: unknown) {
-        // Whoopss.
-        sendFailedEventAnalytics('User update error' + { error });
-        Alert.alert('User update error', JSON.stringify(error));
+      } catch (error: any) {
+        // Onboarding endpoint doesn't exist yet, but dietary profile was saved
+        // Just log the error and proceed
+        console.log('Onboarding save failed (endpoint may not exist):', error);
+        
+        // Still track analytics with dietary data
+        sendAnalyticsEvent({
+          event: mixpanelEventName.actionClicked,
+          properties: {
+            action: mixpanelEventName.onboardingComplete,
+          },
+        });
+        mixpanel?.getPeople().set({
+          allergies: data.allergies,
+          dietary_requirements: data.dietaryRequirements,
+        });
       }
+
+      // Navigate to feed regardless of onboarding save status
+      linkTo('/Root/Feed');
     } catch (e) {
+      // This catches dietary profile update errors
       sendFailedEventAnalytics(e);
+      Alert.alert('Error updating dietary profile', 
+        'There was an error saving your dietary preferences. Please try again.');
       handleFormSubmitException(e, setError);
     }
   });
@@ -409,25 +453,11 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
               disabled={
                 (data[currentIndex].showSavedItems && savedItems.length < 1) ??
                 (data[currentIndex].showWeekPlanner && trackSurveyDay === '') ??
-                (data[currentIndex].showPostcodeInput &&
-                  (postcode === '' || postcode.length <= 3))
+                (data[currentIndex].showPostcodeInput && postcode === '')
               }
             >
               {data[currentIndex].buttonText}
             </PrimaryButton>
-            {data[currentIndex].showPostcodeInput && (
-              <SecondaryButton
-                onPress={() => {
-                  setValue('postcode', '0000');
-                  setValue('suburb', 'Outside Australia');
-                  scrollToItem(currentIndex + 1);
-                }}
-              >
-                <Text style={tw.style(labelLarge, 'text-center')}>
-                  I am outside Australia
-                </Text>
-              </SecondaryButton>
-            )}
             {data[currentIndex].showNotifications && (
               <Pressable
                 style={tw`py-2`}

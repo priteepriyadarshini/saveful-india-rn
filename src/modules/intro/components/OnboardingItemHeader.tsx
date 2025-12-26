@@ -3,11 +3,14 @@ import { LocationMetadata } from '../../../modules/intro/api/types';
 import PostcodeAutocomplete from '../../../modules/intro/components/PostcodeAutocomplete';
 import React, { useState } from 'react';
 import { Control, UseFormSetValue } from 'react-hook-form';
-import { Image, ImageRequireSource, Text, View } from 'react-native';
+import { Image, ImageRequireSource, Text, View, Pressable, Modal, ScrollView, TouchableOpacity } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import {
   bodyLargeRegular,
+  bodyMediumRegular,
   h2TextStyle,
   h4TextStyle,
+  h6TextStyle,
   subheadLarge,
   subheadMediumUppercase,
   subheadSmall,
@@ -42,6 +45,24 @@ export default function OnboardingItemHeader({
 }) {
   const [selectedLocation, setSelectedLocation] =
     useState<LocationMetadata | null>(null);
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState('');
+
+  const countries = [
+    { code: 'IN', name: 'India' },
+    { code: 'US', name: 'United States' },
+    { code: 'GB', name: 'United Kingdom' },
+    { code: 'AU', name: 'Australia' },
+    { code: 'CA', name: 'Canada' },
+    { code: 'CN', name: 'China' },
+    { code: 'JP', name: 'Japan' },
+    { code: 'KR', name: 'South Korea' },
+    { code: 'SG', name: 'Singapore' },
+    { code: 'AE', name: 'United Arab Emirates' },
+    { code: 'DE', name: 'Germany' },
+    { code: 'FR', name: 'France' },
+    { code: 'NZ', name: 'New Zealand' },
+  ];
 
   return (
     <>
@@ -136,16 +157,20 @@ export default function OnboardingItemHeader({
                 ]}
                 maxFontSizeMultiplier={1}
               >
-                Your postcode
+                Your country
               </Text>
 
-              <PostcodeAutocomplete
-                selectedLocation={selectedLocation}
-                setSelectedLocation={setSelectedLocation}
-                setValue={setValue}
-                containerStyle={tw`mx-5`}
-                textStyles={tw`text-center`}
-              />
+              <View style={tw`mx-5`}>
+                <Pressable
+                  style={tw`flex-row items-center justify-between overflow-hidden rounded-md border border-strokecream bg-white px-4 py-3`}
+                  onPress={() => setShowCountryPicker(true)}
+                >
+                  <Text style={tw.style(bodyMediumRegular, selectedCountry ? 'text-stone' : 'text-midgray')}>
+                    {selectedCountry || 'Select your country'}
+                  </Text>
+                  <Feather name="chevron-down" size={20} color="#666" />
+                </Pressable>
+              </View>
 
               {/* <ControlledTextInput
                   name="postcode"
@@ -175,6 +200,42 @@ export default function OnboardingItemHeader({
           </View>
         )}
       </View>
+      
+      {/* Country Picker Modal */}
+      <Modal
+        visible={showCountryPicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowCountryPicker(false)}
+      >
+        <TouchableOpacity 
+          style={tw`flex-1 bg-black/50 justify-end`}
+          activeOpacity={1}
+          onPress={() => setShowCountryPicker(false)}
+        >
+          <View style={tw`bg-white rounded-t-3xl px-5 py-6`}>
+            <Text style={tw.style(h6TextStyle, 'text-center mb-4')}>Select Your Country</Text>
+            <ScrollView style={tw`max-h-96`}>
+              {countries.map((country) => (
+                <TouchableOpacity
+                  key={country.code}
+                  style={tw`py-4 border-b border-stone/10`}
+                  onPress={() => {
+                    setSelectedCountry(country.name);
+                    setValue('postcode', country.code);
+                    setValue('suburb', country.name);
+                    setShowCountryPicker(false);
+                  }}
+                >
+                  <Text style={tw`text-base ${selectedCountry === country.name ? 'font-bold text-radish' : 'text-stone'}`}>
+                    {country.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </>
   );
 }

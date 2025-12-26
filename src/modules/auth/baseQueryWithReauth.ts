@@ -10,6 +10,7 @@ import { DataResponse } from '../api/types';
 import { clearSessionData, saveSessionData } from './sessionSlice';
 import EnvironmentManager from '../environment/environmentManager';
 import { RootState } from '../../store/store';
+import { CommonActions } from '@react-navigation/native';
 
 function getBaseURL() {
   const url = EnvironmentManager.shared.apiUrl();
@@ -17,11 +18,9 @@ function getBaseURL() {
   return url;
 }
 
-// create a new mutex so we can prevent multiple requests to the refresh token api
 const mutex = new Mutex();
 
-// Base query with dynamic base url
-// So we can fetch the base URL from the environment manager
+
 const baseQuery: BaseQueryFn<
   string | FetchArgs,
   unknown,
@@ -46,16 +45,12 @@ const baseQueryWithReauth: BaseQueryFn<
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  // wait until the mutex is available without locking it
   await mutex.waitForUnlock();
   let result = await baseQuery(args, api, extraOptions);
   if (result.error && result.error.status === 401) {
-    // checking whether the mutex is locked
     if (!mutex.isLocked()) {
-      // console.debug('Refreshing the access token');
       const release = await mutex.acquire();
       try {
-        // Get the current refresh token
         const { refresh_token } = (api.getState() as RootState).session;
         // Setup the query params
         const refreshQuery = {
@@ -85,7 +80,9 @@ const baseQueryWithReauth: BaseQueryFn<
         } else {
           if (refreshResult.error?.status === 401) {
             // If we get a 401 while trying to refresh the token, clear the session data
+            console.log('Refresh token failed - clearing session and logging out');
             await api.dispatch(clearSessionData());
+            // Session will be cleared, and useAuthListener will handle navigation to Intro
           }
         }
       } finally {

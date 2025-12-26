@@ -4,10 +4,14 @@ import {
   createNativeStackNavigator,
   NativeStackScreenProps,
 } from "@react-navigation/native-stack";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { PermissionStatus } from 'expo-modules-core';
 import useAccessToken from "../../auth/hooks/useSessionToken";
 import useNotifications from "../../notifications/hooks/useNotifications";
 import { useGetUserOnboardingQuery } from "../../intro/api/api";
+import useAuthListener from "../../auth/hooks/useAuthListener";
+import { useAppDispatch } from "../../../store/hooks";
+import { clearSessionData } from "../../auth/sessionSlice";
 
 import { RootStackParamList } from "./root/types";
 import IntroNavigator from "./intro/IntroNavigator";
@@ -20,9 +24,11 @@ import IngredientsStackNavigator, {
 } from "../../ingredients/navigation/IngredientsNavigator";
 import HackVideoScreen from "../../hack/screens/HackVideoScreen";
 import MakeItScreen from "../../make/screens/MakeItScreen";
+import AuthScreen from "../../intro/screens/AuthScreen";
 import OnboardingNavigator from "./onboarding/OnboardingNavigator";
 
 export type InitialStackParamList = {
+  Auth: undefined;
   Intro: undefined;
   Onboarding: undefined;
   Root: NavigatorScreenParams<RootStackParamList> | undefined;
@@ -52,10 +58,55 @@ export type InitialNavigationStackParams<
 function InitialNavigator() {
 
   const accessToken = useAccessToken();
+  const dispatch = useAppDispatch();
+  const navigation = useNavigation<NavigationProp<InitialStackParamList>>();
 
   const { data: userOnboarding } = useGetUserOnboardingQuery();
 
   const { permissionStatus, registerForNotifications } = useNotifications();
+
+  // Listen for auth state changes and handle automatic logout
+  useAuthListener();
+
+  // Navigate based on authentication state changes
+  useEffect(() => {
+    const determineRoute = () => {
+      if (!accessToken) {
+        return 'Auth';
+      }
+      if (!userOnboarding) {
+        return 'Onboarding';
+      }
+      return 'Root';
+    };
+
+    const targetRoute = determineRoute();
+    console.log('Auth state changed, navigating to:', targetRoute, { accessToken: !!accessToken, userOnboarding: !!userOnboarding });
+    
+    // Reset navigation stack to the appropriate route
+    navigation.reset({
+      index: 0,
+      routes: [{ name: targetRoute }],
+    });
+  }, [accessToken, userOnboarding, navigation]);
+
+  // Validate token on mount - immediately clear if invalid or expired
+  useEffect(() => {
+    if (accessToken) {
+      try {
+        const payload = JSON.parse(atob(accessToken.split('.')[1]));
+        const expirationTime = payload.exp * 1000;
+        
+        if (Date.now() >= expirationTime) {
+          console.log('Token expired on app mount - clearing session');
+          dispatch(clearSessionData());
+        }
+      } catch (error) {
+        console.log('Invalid token format on app mount - clearing session');
+        dispatch(clearSessionData());
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (userOnboarding) {
@@ -68,7 +119,7 @@ function InitialNavigator() {
   // Determine initial route based on auth state
   const getInitialRoute = (): keyof InitialStackParamList => {
     if (!accessToken) {
-      return 'Intro'; // Not authenticated - show intro/auth
+      return 'Auth'; // Not authenticated - go directly to sign in
     }
     if (!userOnboarding) {
       return 'Onboarding'; // Authenticated but no onboarding - show onboarding
@@ -78,6 +129,7 @@ function InitialNavigator() {
 
   return (
     <InitialNavigationStack.Navigator initialRouteName={getInitialRoute()} screenOptions={{ headerShown: false }}>
+      <InitialNavigationStack.Screen name="Auth" component={AuthScreen} options={{ headerShown: false }} />
       <InitialNavigationStack.Screen name="Intro" component={IntroNavigator} /> 
       <InitialNavigationStack.Screen name="Onboarding" component={OnboardingNavigator}/>
       <InitialNavigationStack.Screen name="Root" component={RootNavigator} />

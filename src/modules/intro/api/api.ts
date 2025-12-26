@@ -9,17 +9,46 @@ import {
 
 const introApi = api
   .enhanceEndpoints({
-    addTagTypes: ['Onboarding'],
+    addTagTypes: ['Onboarding', 'DietaryProfile'],
   })
   .injectEndpoints({
     overrideExisting: true,
     endpoints: builder => ({
+      // Update dietary profile (new endpoint)
+      updateDietaryProfile: builder.mutation<
+        any,
+        {
+          vegType?: 'OMNI' | 'VEGETARIAN' | 'VEGAN';
+          dairyFree?: boolean;
+          nutFree?: boolean;
+          glutenFree?: boolean;
+          hasDiabetes?: boolean;
+          otherAllergies?: string[];
+        }
+      >({
+        query: data => ({
+          url: '/api/auth/dietary-profile',
+          method: 'PUT',
+          body: data,
+        }),
+        invalidatesTags: ['DietaryProfile', 'CurrentUser'],
+        async onQueryStarted(_, { dispatch, queryFulfilled }) {
+          try {
+            await queryFulfilled;
+            // Refetch current user to get updated dietary profile
+            dispatch(api.util.invalidateTags(['CurrentUser']));
+          } catch {
+            // Handle error if needed
+          }
+        },
+      }),
+      
       getUserOnboarding: builder.query<
         Onboarding | null,
         { accessToken?: string } | void
       >({
         query: params => ({
-          url: '/api/onboarding',
+          url: '/api/auth/onboarding',
           method: 'get',
           headers: params?.accessToken
             ? { authorization: `Bearer ${params?.accessToken}` }
@@ -35,26 +64,24 @@ const introApi = api
           suburb: string;
           noOfAdults: number;
           noOfChildren: number;
-          dietaryRequirements: string[];
-          allergies: string[];
+          dietaryRequirements?: string[];
+          allergies?: string[];
           tastePreference: string[];
           trackSurveyDay: string;
         }
       >({
         query: params => ({
-          url: '/api/onboarding',
+          url: '/api/auth/onboarding',
           method: 'POST',
           body: {
             postcode: params.postcode,
             suburb: params.suburb,
-            no_of_people: {
-              adults: params.noOfAdults,
-              children: params.noOfChildren,
-            },
-            dietary_requirements: params.dietaryRequirements,
+            noOfAdults: params.noOfAdults,
+            noOfChildren: params.noOfChildren,
+            dietaryRequirements: params.dietaryRequirements,
             allergies: params.allergies,
-            taste_preference: params.tastePreference,
-            track_survey_day: params.trackSurveyDay,
+            tastePreference: params.tastePreference,
+            trackSurveyDay: params.trackSurveyDay,
           },
         }),
         invalidatesTags: ['Onboarding'],
@@ -69,22 +96,22 @@ const introApi = api
           noOfChildren?: number;
           dietaryRequirements?: string[];
           allergies?: string[];
+          tastePreference?: string[];
           trackSurveyDay?: string;
         }
       >({
         query: params => ({
-          url: '/api/onboarding/update',
+          url: '/api/auth/onboarding',
           method: 'POST',
           body: {
             postcode: params.postcode,
             suburb: params.suburb,
-            no_of_people: {
-              adults: params.noOfAdults,
-              children: params.noOfChildren,
-            },
-            dietary_requirements: params.dietaryRequirements,
+            noOfAdults: params.noOfAdults,
+            noOfChildren: params.noOfChildren,
+            dietaryRequirements: params.dietaryRequirements,
             allergies: params.allergies,
-            track_survey_day: params.trackSurveyDay,
+            tastePreference: params.tastePreference,
+            trackSurveyDay: params.trackSurveyDay,
           },
         }),
         invalidatesTags: ['Onboarding'],
@@ -149,6 +176,7 @@ export const {
   useCreateUserOnboardingMutation,
   useGetUserOnboardingQuery,
   useUpdateUserOnboardingMutation,
+  useUpdateDietaryProfileMutation,
   useDeleteUserOnboardingMutation,
   useSearchLocationsQuery,
   useGetLocationQuery,

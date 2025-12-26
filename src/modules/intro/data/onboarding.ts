@@ -86,10 +86,10 @@ const ONBOARDING = (firstName?: string) => [
   },
   {
     id: 2,
-    heading: 'Where in Australia are you cooking?',
+    heading: 'Where are you located?',
     showPostcode: true,
     description:
-      'Your postcode information helps us work out food savings at a local level.',
+      'Your location information helps us provide localized suggestions.',
     image: require('../../../../assets/onboarding/02.png'),
     buttonText: 'Next',
     showPostcodeInput: true,

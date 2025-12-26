@@ -13,12 +13,13 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View, Modal, TouchableOpacity } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import {
   bodyLargeBold,
   bodyLargeMedium,
   bodyMediumRegular,
+  h6TextStyle,
   h7TextStyle,
 } from '../../../theme/typography';
 
@@ -27,16 +28,40 @@ export default function OnboardingDietary({
   setDietaryRequirements,
   allergies,
   setAllergies,
+  vegType,
+  setVegType,
+  dairyFree,
+  setDairyFree,
+  nutFree,
+  setNutFree,
+  glutenFree,
+  setGlutenFree,
+  hasDiabetes,
+  setHasDiabetes,
 }: {
   dietaryRequirements: string[];
   setDietaryRequirements: (dietaryRequirements: string[]) => void;
   allergies: string[];
   setAllergies: (allergies: string[]) => void;
+  vegType?: 'OMNI' | 'VEGETARIAN' | 'VEGAN';
+  setVegType?: (vegType: 'OMNI' | 'VEGETARIAN' | 'VEGAN') => void;
+  dairyFree?: boolean;
+  setDairyFree?: (value: boolean) => void;
+  nutFree?: boolean;
+  setNutFree?: (value: boolean) => void;
+  glutenFree?: boolean;
+  setGlutenFree?: (value: boolean) => void;
+  hasDiabetes?: boolean;
+  setHasDiabetes?: (value: boolean) => void;
 }) {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ['1%', '80%'], []);
 
   const [searchInput, setSearchInput] = React.useState<string>('');
+  const [customAllergyInput, setCustomAllergyInput] = React.useState<string>('');
+  const [showCustomInput, setShowCustomInput] = React.useState<boolean>(false);
+  const [showVegTypePicker, setShowVegTypePicker] = useState(false);
+  
   const isAllergyIngredientSelected = (value: string) => {
     return allergies.findIndex(x => x === value) !== -1;
   };
@@ -111,6 +136,62 @@ export default function OnboardingDietary({
 
   return (
     <View>
+      {/* Veg Type Picker */}
+      {setVegType && (
+        <View style={tw`w-full border-b border-strokecream py-4`}>
+          <Text style={tw.style(bodyLargeBold, 'mb-3')}>Dietary Type</Text>
+          <Pressable
+            style={tw`flex-row items-center justify-between bg-creme rounded-xl px-3 py-3`}
+            onPress={() => setShowVegTypePicker(true)}
+          >
+            <View style={tw`flex-row items-center`}>
+              <Feather name="list" size={18} color="#666" style={tw`mr-2.5`} />
+              <Text style={tw.style(bodyMediumRegular)}>
+                {vegType === 'OMNI' ? 'Omnivore' : vegType === 'VEGETARIAN' ? 'Vegetarian' : 'Vegan'}
+              </Text>
+            </View>
+            <Feather name="chevron-down" size={18} color="#666" />
+          </Pressable>
+        </View>
+      )}
+
+      {/* Dietary Restrictions Toggles */}
+      {(setDairyFree || setNutFree || setGlutenFree || setHasDiabetes) && (
+        <View style={tw`w-full border-b border-strokecream py-4`}>
+          <Text style={tw.style(bodyLargeBold, 'mb-3')}>Dietary Restrictions</Text>
+          <View style={tw`gap-2`}>
+            {setDairyFree && (
+              <ToggleInput
+                label="Dairy Free"
+                value={dairyFree || false}
+                setValue={setDairyFree}
+              />
+            )}
+            {setNutFree && (
+              <ToggleInput
+                label="Nut Free"
+                value={nutFree || false}
+                setValue={setNutFree}
+              />
+            )}
+            {setGlutenFree && (
+              <ToggleInput
+                label="Gluten Free"
+                value={glutenFree || false}
+                setValue={setGlutenFree}
+              />
+            )}
+            {setHasDiabetes && (
+              <ToggleInput
+                label="Has Diabetes"
+                value={hasDiabetes || false}
+                setValue={setHasDiabetes}
+              />
+            )}
+          </View>
+        </View>
+      )}
+
       {categories.map(dietary => {
         return (
           <ToggleInput
@@ -133,11 +214,14 @@ export default function OnboardingDietary({
         );
       })}
       <View style={tw`w-full border-b border-strokecream py-4`}>
-        <View style={tw`flex-row items-center justify-between gap-2.5`}>
+        <View style={tw`flex-row items-center justify-between gap-2.5 mb-3`}>
           <Text style={tw.style(bodyLargeBold)}>Specific allergy?</Text>
           <Pressable
             onPress={() => {
-              bottomSheetModalRef.current?.present();
+              setShowCustomInput(!showCustomInput);
+              if (!showCustomInput) {
+                bottomSheetModalRef.current?.dismiss();
+              }
             }}
             style={tw`shrink`}
           >
@@ -147,10 +231,73 @@ export default function OnboardingDietary({
                 'text-right text-eggplant-vibrant underline',
               )}
             >
-              Tell us what it is
+              {showCustomInput ? 'Hide' : 'Tell us what it is'}
             </Text>
           </Pressable>
         </View>
+        
+        {showCustomInput && (
+          <View style={tw`gap-2`}>
+            <TextBoxInput
+              value={customAllergyInput}
+              placeholder="Type your allergy (e.g., shellfish, soy)"
+              onChangeText={setCustomAllergyInput}
+            />
+            <Pressable
+              onPress={() => {
+                if (customAllergyInput.trim()) {
+                  const allergyText = customAllergyInput.trim();
+                  if (!allergies.includes(allergyText)) {
+                    setAllergies([...allergies, allergyText]);
+                  }
+                  setCustomAllergyInput('');
+                }
+              }}
+              style={tw`bg-eggplant-vibrant py-3 px-4 rounded-xl items-center`}
+            >
+              <Text style={tw`text-white font-bold`}>Add Allergy</Text>
+            </Pressable>
+            
+            {/* Display added custom allergies */}
+            {allergies.filter(a => !ingredients.find(ing => ing.id === a)).length > 0 && (
+              <View style={tw`mt-2`}>
+                <Text style={tw.style(bodyMediumRegular, 'text-stone mb-2')}>
+                  Your custom allergies:
+                </Text>
+                <View style={tw`flex-row flex-wrap gap-2`}>
+                  {allergies
+                    .filter(a => !ingredients.find(ing => ing.id === a))
+                    .map((allergy, index) => (
+                      <View
+                        key={index}
+                        style={tw`flex-row items-center gap-2 bg-white border border-eggplant-vibrant rounded-lg px-3 py-1.5`}
+                      >
+                        <Text style={tw.style(bodyMediumRegular)}>{allergy}</Text>
+                        <Pressable
+                          onPress={() => {
+                            setAllergies(allergies.filter(a => a !== allergy));
+                          }}
+                        >
+                          <Feather name="x" size={14} color="#666" />
+                        </Pressable>
+                      </View>
+                    ))}
+                </View>
+              </View>
+            )}
+            
+            <Pressable
+              onPress={() => {
+                bottomSheetModalRef.current?.present();
+              }}
+              style={tw`py-2 items-center`}
+            >
+              <Text style={tw.style(bodyMediumRegular, 'text-eggplant-vibrant underline')}>
+                Or select from ingredients list
+              </Text>
+            </Pressable>
+          </View>
+        )}
       </View>
       <BottomSheetModal
         ref={bottomSheetModalRef}
@@ -224,6 +371,45 @@ export default function OnboardingDietary({
           </View>
         </ScrollView>
       </BottomSheetModal>
+
+      {/* Veg Type Picker Modal */}
+      <Modal
+        visible={showVegTypePicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowVegTypePicker(false)}
+      >
+        <TouchableOpacity 
+          style={tw`flex-1 bg-black/50 justify-end`}
+          activeOpacity={1}
+          onPress={() => setShowVegTypePicker(false)}
+        >
+          <View style={tw`bg-white rounded-t-3xl px-5 py-6`}>
+            <Text style={tw.style(h6TextStyle, 'text-center mb-4')}>Select Dietary Type</Text>
+            <View>
+              {[
+                { value: 'OMNI', label: 'Omnivore', description: 'Eats both plant and animal foods' },
+                { value: 'VEGETARIAN', label: 'Vegetarian', description: 'No meat, but includes dairy and eggs' },
+                { value: 'VEGAN', label: 'Vegan', description: 'No animal products at all' },
+              ].map((item) => (
+                <TouchableOpacity
+                  key={item.value}
+                  style={tw`py-4 border-b border-strokecream`}
+                  onPress={() => {
+                    if (setVegType) {
+                      setVegType(item.value as 'OMNI' | 'VEGETARIAN' | 'VEGAN');
+                    }
+                    setShowVegTypePicker(false);
+                  }}
+                >
+                  <Text style={tw.style(bodyLargeBold, 'mb-1')}>{item.label}</Text>
+                  <Text style={tw.style(bodyMediumRegular, 'text-stone')}>{item.description}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }

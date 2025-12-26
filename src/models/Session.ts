@@ -19,6 +19,13 @@ export interface CurrentUser {
   app_joined_at?: string;
   inserted_at?: string;
   timezone?: string;
+  dietary_profile?: {
+    veg_type: 'OMNI' | 'VEGETARIAN' | 'VEGAN';
+    dairy_free: boolean;
+    nut_free: boolean;
+    gluten_free: boolean;
+    has_diabetes: boolean;
+  };
 }
 
 export interface CurrentUserTOTP {

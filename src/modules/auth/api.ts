@@ -27,7 +27,7 @@ export interface SignupData {
   nutFree?: boolean;
   glutenFree?: boolean;
   hasDiabetes?: boolean;
-  otherAllergies?: string;
+  otherAllergies?: string[];
 }
 
 export interface AuthResponse {
@@ -41,6 +41,14 @@ export interface AuthResponse {
     name: string;
     phoneNumber?: string;
   };
+}
+
+export interface DietaryProfileUpdate {
+  vegType: 'OMNI' | 'VEGETARIAN' | 'VEGAN';
+  dairyFree?: boolean;
+  nutFree?: boolean;
+  glutenFree?: boolean;
+  hasDiabetes?: boolean;
 }
 
 const currentUserApi = api
@@ -91,6 +99,7 @@ const currentUserApi = api
         providesTags: ['CurrentUser'],
         transformResponse: (r: any) => {
           // Transform backend response to match CurrentUser model
+          console.log('getCurrentUser response:', r);
           if (!r) return null;
           return {
             id: r.id,
@@ -211,6 +220,35 @@ const currentUserApi = api
         }),
       }),
 
+      updateDietaryProfile: builder.mutation<CurrentUser, DietaryProfileUpdate>({
+        query: (data) => ({
+          url: '/api/auth/dietary-profile',
+          method: 'PUT',
+          body: data,
+        }),
+        invalidatesTags: ['CurrentUser'],
+        transformResponse: (r: any) => {
+          console.log('updateDietaryProfile response:', r);
+          if (!r) return null;
+          return {
+            id: r.id,
+            email: r.email,
+            first_name: r.name || '',
+            phone_number: r.phoneNumber || '',
+            ...r,
+          } as CurrentUser;
+        },
+        async onQueryStarted(_, { dispatch, queryFulfilled }) {
+          try {
+            await queryFulfilled;
+            // Refetch current user to get updated dietary profile
+            dispatch(currentUserApi.util.invalidateTags(['CurrentUser']));
+          } catch {
+            // Handle error if needed
+          }
+        },
+      }),
+
       deleteSession: builder.mutation<
         void,
         { refresh_token?: string; id?: string; notification_token?: string }
@@ -257,6 +295,7 @@ export const {
   useUpdateCurrentUserEmailMutation,
   useUpdateCurrentUserTimezoneMutation,
   useDeleteCurrentUserMutation,
+  useUpdateDietaryProfileMutation,
   useDeleteSessionMutation,
   useListSessionsQuery,
   useUpdateCurrentUserPasswordMutation,

@@ -31,6 +31,10 @@ export default function IntroScreen() {
         // @ts-ignore
         navigation.navigate('Onboarding');
       }
+    } else {
+      // No access token - go directly to sign in page
+      // @ts-ignore
+      navigation.navigate('Auth');
     }
   }, [accessToken, userOnboarding, navigation]);
 
@@ -39,8 +43,8 @@ export default function IntroScreen() {
     navigation.navigate('Auth');
   };
 
-  // Only show intro UI for new users (no access token)
-  if (accessToken) {
+  // Only show intro UI for new users (no access token) - but we auto-navigate now
+  if (accessToken !== null) {
     return null; // Will navigate automatically via useEffect
   }
 

@@ -55,6 +55,7 @@ export default function ToggleInput({
         <Text style={tw.style(bodyLargeBold)}>{label}</Text>
         <Pressable
           onPress={() => {
+            console.log(`Toggle ${label}: ${value} -> ${!value}`);
             setValue(!value);
           }}
         >

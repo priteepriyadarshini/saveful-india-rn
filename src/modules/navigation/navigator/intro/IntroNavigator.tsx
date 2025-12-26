@@ -10,6 +10,7 @@ const IntroNavigationStack = createNativeStackNavigator<IntroStackParamList>();
 function IntroNavigator() {
   return (
     <IntroNavigationStack.Navigator
+      initialRouteName="Auth"
       screenOptions={{
         headerTransparent: true,
         headerTintColor: '#000000',
