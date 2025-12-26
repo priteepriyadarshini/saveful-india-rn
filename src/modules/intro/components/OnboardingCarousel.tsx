@@ -189,11 +189,11 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
       
       // First, update dietary profile
       const dietaryProfileData = {
-        vegType: data.dietaryRequirements.includes(VEGAN_ID)
+        vegType: (data.dietaryRequirements.includes(VEGAN_ID)
           ? 'VEGAN' 
           : data.dietaryRequirements.includes(VEGETARIAN_ID)
           ? 'VEGETARIAN'
-          : 'OMNI',
+          : 'OMNI') as 'OMNI' | 'VEGETARIAN' | 'VEGAN',
         dairyFree: data.dietaryRequirements.includes(DAIRY_FREE_ID),
         nutFree: data.dietaryRequirements.includes(NUT_FREE_ID),
         glutenFree: data.dietaryRequirements.includes(GLUTEN_FREE_ID),
