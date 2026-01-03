@@ -45,7 +45,14 @@ export default function FeedSaved({
       );
     }) ?? challenge?.bonusAchievements[0];
 
-  if (!stats || isGetStatsLoading) return null;
+  // Use default values if stats are not available
+  const displayStats = stats || {
+    food_savings_user: '0',
+    food_savings_all_users: '0',
+    completed_meals_count: 0,
+  };
+
+  if (isGetStatsLoading) return null;
 
   return (
     <View style={tw`relative`}>
@@ -80,7 +87,7 @@ export default function FeedSaved({
             style={tw.style(h6TextStyle, 'text-radish')}
             maxFontSizeMultiplier={1}
           >
-            {stats.completed_meals_count}
+            {displayStats.completed_meals_count}
           </Text>
           <Text
             style={tw.style(subheadSmallUppercase, 'text-center text-white')}
@@ -127,7 +134,7 @@ export default function FeedSaved({
               <View style={tw`h-full w-[1px] bg-radish`} />
             </>
           )}
-          {!!stats.food_savings_user && !currentUserChallenge && (
+          {!!displayStats.food_savings_user && !currentUserChallenge && (
             <>
               <View style={tw`grow items-center gap-1`}>
                 <Text
@@ -143,7 +150,7 @@ export default function FeedSaved({
                   style={tw.style(h6TextStyle, 'text-radish')}
                   maxFontSizeMultiplier={1}
                 >
-                  {Number(stats.food_savings_user).toFixed(2)}
+                  {Number(displayStats.food_savings_user).toFixed(2)}
                 </Text>
                 <Text
                   style={tw.style(
@@ -179,7 +186,7 @@ export default function FeedSaved({
               style={tw.style(h6TextStyle, 'text-mint')}
               maxFontSizeMultiplier={1}
             >
-              {Number(stats.food_savings_all_users).toFixed(2)}
+              {Number(displayStats.food_savings_all_users).toFixed(2)}
             </Text>
             <Text
               style={tw.style(subheadSmallUppercase, 'text-center text-white')}

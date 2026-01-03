@@ -8,7 +8,7 @@ import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { PermissionStatus } from 'expo-modules-core';
 import useAccessToken from "../../auth/hooks/useSessionToken";
 import useNotifications from "../../notifications/hooks/useNotifications";
-import { useGetUserOnboardingQuery } from "../../intro/api/api";
+import { useGetCurrentUserQuery } from "../../auth/api";
 import useAuthListener from "../../auth/hooks/useAuthListener";
 import { useAppDispatch } from "../../../store/hooks";
 import { clearSessionData } from "../../auth/sessionSlice";
@@ -61,7 +61,10 @@ function InitialNavigator() {
   const dispatch = useAppDispatch();
   const navigation = useNavigation<NavigationProp<InitialStackParamList>>();
 
-  const { data: userOnboarding } = useGetUserOnboardingQuery();
+  const { data: currentUser } = useGetCurrentUserQuery();
+  
+  // Check if user has completed onboarding based on having country set
+  const hasCompletedOnboarding = currentUser?.country ? true : false;
 
   const { permissionStatus, registerForNotifications } = useNotifications();
 
@@ -74,21 +77,21 @@ function InitialNavigator() {
       if (!accessToken) {
         return 'Auth';
       }
-      if (!userOnboarding) {
+      if (!hasCompletedOnboarding) {
         return 'Onboarding';
       }
       return 'Root';
     };
 
     const targetRoute = determineRoute();
-    console.log('Auth state changed, navigating to:', targetRoute, { accessToken: !!accessToken, userOnboarding: !!userOnboarding });
+    console.log('Auth state changed, navigating to:', targetRoute, { accessToken: !!accessToken, hasCompletedOnboarding });
     
     // Reset navigation stack to the appropriate route
     navigation.reset({
       index: 0,
       routes: [{ name: targetRoute }],
     });
-  }, [accessToken, userOnboarding, navigation]);
+  }, [accessToken, hasCompletedOnboarding, navigation]);
 
   // Validate token on mount - immediately clear if invalid or expired
   useEffect(() => {
@@ -109,19 +112,19 @@ function InitialNavigator() {
   }, []);
 
   useEffect(() => {
-    if (userOnboarding) {
+    if (hasCompletedOnboarding) {
       if (permissionStatus === PermissionStatus.UNDETERMINED) {
         registerForNotifications();
       }
     }
-  }, [userOnboarding, permissionStatus, registerForNotifications]);
+  }, [hasCompletedOnboarding, permissionStatus, registerForNotifications]);
 
   // Determine initial route based on auth state
   const getInitialRoute = (): keyof InitialStackParamList => {
     if (!accessToken) {
       return 'Auth'; // Not authenticated - go directly to sign in
     }
-    if (!userOnboarding) {
+    if (!hasCompletedOnboarding) {
       return 'Onboarding'; // Authenticated but no onboarding - show onboarding
     }
     return 'Root'; // Authenticated and onboarded - show main app
