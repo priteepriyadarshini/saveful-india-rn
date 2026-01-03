@@ -42,7 +42,7 @@ export default function HackScreen() {
         return;
       }
     } catch (error) {
-      console.log('API not available, falling back to static content:', error);
+      // Silencing API fallback logs
     }
 
     // Fallback to static content

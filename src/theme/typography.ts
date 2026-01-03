@@ -40,19 +40,21 @@ const labelLarge = 'font-sans-semibold text-base leading-tightest text-black';
 const counterLarge = 'font-sans-bold text-7xl leading-tighter';
 
 const tagStyles = {
-  em: tw.style('font-sans-italic'),
-  strong: tw.style('font-sans-bold'),
-  b: tw.style('font-sans-bold'),
-  p: tw.style(bodyMediumRegular),
-  h1: tw.style(h1TextStyle),
-  h2: tw.style(h2TextStyle),
-  h3: tw.style(h3TextStyle),
-  h4: tw.style(h4TextStyle),
-  h5: tw.style(h5TextStyle),
-  h6: tw.style(h6TextStyle),
-  h7: tw.style(h7TextStyle),
-  ul: tw.style('right-5'),
-  li: tw.style('flex'),
+  em: tw.style('font-sans-italic text-black'),
+  i: tw.style('font-sans-italic text-black'),
+  strong: tw.style('font-sans-bold text-black'),
+  b: tw.style('font-sans-bold text-black'),
+  p: tw.style(bodyMediumRegular, 'mb-4'),
+  h1: tw.style(h1TextStyle, 'mb-4'),
+  h2: tw.style(h2TextStyle, 'mb-4'),
+  h3: tw.style(h3TextStyle, 'mb-4'),
+  h4: tw.style(h4TextStyle, 'mb-3'),
+  h5: tw.style(h5TextStyle, 'mb-3'),
+  h6: tw.style(h6TextStyle, 'mb-3'),
+  h7: tw.style(h7TextStyle, 'mb-3'),
+  ul: tw.style('px-5 mb-4'),
+  ol: tw.style('px-5 mb-4'),
+  li: tw.style('pl-2 mb-2 flex-row'),
 };
 
 export {

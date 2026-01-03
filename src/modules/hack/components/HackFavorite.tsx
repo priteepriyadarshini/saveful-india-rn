@@ -57,7 +57,7 @@ export default function HackFavorite({
         // setFavourite(result);
       }
     } catch (error: unknown) {
-      console.log('Favourite create error', JSON.stringify(error));
+      // Silencing favourite mutation error logs
     }
   };
 

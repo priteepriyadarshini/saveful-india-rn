@@ -30,7 +30,7 @@ export default function VideoBlock({ block }: { block: IArticleBlockVideo }) {
       setVideoMeta(meta);
     });
   }, [id]);
-  console.log(block.videoUrl);
+  
 
   return (
     <View style={tw.style('pb-4.5 mx-5 border-b border-creme-2')}>

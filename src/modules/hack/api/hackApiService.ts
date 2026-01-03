@@ -20,7 +20,7 @@ export interface Hack {
   heroImageUrl?: string;
   iconImageUrl?: string;
   leadText?: string;
-  sponsorId?: string;
+  sponsorId?: string | Sponsor; // Can be ID or populated object
   categoryId: string;
   articleBlocks: any[];
   order?: number;
@@ -33,10 +33,18 @@ export interface HackCategoryWithHacks {
   hacks: Hack[];
 }
 
+export interface Sponsor {
+  _id: string;
+  title: string;
+  broughtToYouBy?: string;
+  tagline?: string;
+  logo: string;
+  logoBlackAndWhite?: string;
+}
+
 class HackApiService {
   private getBaseUrl(): string {
     const url = EnvironmentManager.shared.apiUrl();
-    console.log('Hack API Base URL:', url);
     return url;
   }
 
@@ -46,7 +54,6 @@ class HackApiService {
       const response = await axios.get(`${baseUrl}/api/hack/category`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching hack categories:', error);
       throw error;
     }
   }
@@ -55,11 +62,9 @@ class HackApiService {
     try {
       const baseUrl = this.getBaseUrl();
       const response = await axios.get(`${baseUrl}/api/hack/category/${categoryId}`);
-      console.log('getCategoryWithHacks raw response:', response.data);
       const data = response.data.response || response.data;
       return data;
     } catch (error) {
-      console.error('Error fetching category with hacks:', error);
       throw error;
     }
   }
@@ -70,7 +75,16 @@ class HackApiService {
       const response = await axios.get(`${baseUrl}/api/hack/${hackId}`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching hack:', error);
+      throw error;
+    }
+  }
+
+  async getSponsorById(sponsorId: string): Promise<Sponsor> {
+    try {
+      const baseUrl = this.getBaseUrl();
+      const response = await axios.get(`${baseUrl}/api/sponsers/${sponsorId}`);
+      return response.data;
+    } catch (error) {
       throw error;
     }
   }

@@ -49,15 +49,12 @@ export default function HackCategory({ item, useApiData = false }: HackCategoryP
   const getApiContentData = async (categoryId: string) => {
     try {
       const response = await hackApiService.getCategoryWithHacks(categoryId);
-      console.log('getApiContentData response:', response);
       if (response && response.hacks) {
         setHackCount(response.hacks.length);
       } else {
-        console.log('No hacks found in response');
         setHackCount(0);
       }
     } catch (error) {
-      console.log('Error fetching API hack count:', error);
       setHackCount(0);
     }
   };
@@ -90,10 +87,7 @@ export default function HackCategory({ item, useApiData = false }: HackCategoryP
     const itemId = useApiData ? (apiItem._id || apiItem.id) : staticItem.id;
     const itemTitle = useApiData ? apiItem.name : staticItem.title;
 
-    if (!itemId) {
-      console.warn('Category ID is undefined');
-      return;
-    }
+    if (!itemId) return;
 
     sendAnalyticsEvent({
       event: mixpanelEventName.actionClicked,

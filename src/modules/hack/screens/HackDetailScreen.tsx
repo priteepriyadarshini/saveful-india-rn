@@ -1,4 +1,4 @@
-import RenderHTML from 'react-native-render-html';
+import RenderHTML, { defaultSystemFonts } from 'react-native-render-html';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
 import frameworkDeepLink from '../../../common/helpers/frameworkDeepLink';
 import { bundledSource } from '../../../common/helpers/uriHelpers';
@@ -19,6 +19,7 @@ import VideoBlock from '../components/blocks/VideoBlock';
 import HackFavorite from '../components/HackFavorite';
 import HackSponsor from '../components/HackSponsor';
 import { HackStackScreenProps } from '../navigation/HackNavigation';
+import { hackApiService, Hack as ApiHack, Sponsor as ApiSponsor } from '../api/hackApiService';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
@@ -41,14 +42,104 @@ const componentMap: Record<string, React.ComponentType<any>> = {
   articleBlocks_imageDetailsBlock_BlockType: ImageDetailsBlock,
 };
 
-function ContentDisplay({ block }: { block: any }) {
-  const Component = componentMap[block.__typename];
+// Stable constants and visitors for RenderHTML to avoid frequent provider updates
+const RENDERHTML_SYSTEM_FONTS = [
+  ...defaultSystemFonts,
+  'Saveful-Regular',
+  'Saveful-Bold',
+  'Saveful-Italic',
+  'Saveful-BoldItalic',
+];
 
-  if (Component) {
+const RENDERHTML_TAGS_STYLES = {
+  ...tagStyles,
+  b: { fontFamily: 'Saveful-Bold', color: '#1A1A1B' },
+  strong: { fontFamily: 'Saveful-Bold', color: '#1A1A1B' },
+  em: { fontFamily: 'Saveful-Italic', color: '#1A1A1B' },
+  i: { fontFamily: 'Saveful-Italic', color: '#1A1A1B' },
+};
+
+const RENDERHTML_CLASSES_STYLES = {
+  'sf-bold': { fontFamily: 'Saveful-Bold', color: '#1A1A1B' },
+  'sf-italic': { fontFamily: 'Saveful-Italic', color: '#1A1A1B' },
+  'sf-bolditalic': { fontFamily: 'Saveful-BoldItalic', color: '#1A1A1B' },
+};
+
+const RENDERHTML_DEFAULT_VIEW_PROPS = {
+  style: tw`m-0 shrink p-0`,
+};
+
+const RENDERHTML_DEFAULT_TEXT_PROPS = {
+  style: tw.style(subheadSmall, 'mx-5'),
+};
+
+const RENDERHTML_BASE_STYLE = {
+  fontFamily: 'Saveful-Regular',
+  color: '#575757',
+};
+
+const RENDERHTML_CONTENT_WIDTH = 225;
+
+function addFontClassesVisitor(el: any) {
+  if (el && el.type === 'tag') {
+    const isItalic = el.name === 'em' || el.name === 'i';
+    const isBold = el.name === 'strong' || el.name === 'b';
+    const hasAncestor = (names: string[]) => {
+      let p: any = el.parent;
+      while (p) {
+        if (p.type === 'tag' && names.includes(p.name)) return true;
+        p = p.parent;
+      }
+      return false;
+    };
+    const style = el.attribs?.style || '';
+    const isBoldStyle = /font-weight:\s*(?:700|bold)/i.test(style);
+    const isItalicStyle = /font-style:\s*italic/i.test(style);
+    const finalBold = isBold || isBoldStyle || hasAncestor(['strong', 'b']);
+    const finalItalic = isItalic || isItalicStyle || hasAncestor(['em', 'i']);
+
+    el.attribs = el.attribs || {};
+    const cleanedStyle = style
+      .replace(/font-family:[^;]+;?/gi, '')
+      .replace(/font-weight:[^;]+;?/gi, '')
+      .replace(/font-style:[^;]+;?/gi, '')
+      .trim();
+    if (cleanedStyle) {
+      el.attribs.style = cleanedStyle.endsWith(';') ? cleanedStyle : `${cleanedStyle};`;
+    } else if (el.attribs.style) {
+      delete el.attribs.style;
+    }
+    const currentClass = el.attribs.class ? `${el.attribs.class} ` : '';
+    if (finalBold && finalItalic) {
+      el.attribs.class = `${currentClass}sf-bolditalic`;
+    } else if (finalBold) {
+      el.attribs.class = `${currentClass}sf-bold`;
+    } else if (finalItalic) {
+      el.attribs.class = `${currentClass}sf-italic`;
+    }
+  }
+}
+
+const RENDERHTML_DOM_VISITORS = {
+  onElement: addFontClassesVisitor,
+};
+
+function ContentDisplay({ block }: { block: any }) {
+  // Craft CMS blocks use __typename keys mapped above.
+  const craftComponent = block.__typename && componentMap[block.__typename];
+  if (craftComponent) {
+    const Component = craftComponent;
     return <Component block={block} />;
   }
 
-  return null;
+  // API blocks use a simple `type` field (e.g., 'text').
+  switch (block.type) {
+    case 'text':
+      return <TextBlock block={block} />;
+    // Future: add mappings for 'image', 'video', etc. when available
+    default:
+      return null;
+  }
 }
 
 export default function HackDetailScreen({
@@ -61,14 +152,36 @@ export default function HackDetailScreen({
   const { getArticleContent } = useContent();
   const { sendScrollEventInitiation } = useAnalytics();
   const [article, setArticle] = useState<IArticleContent>();
+  const [apiHack, setApiHack] = useState<ApiHack>();
+  const [apiSponsor, setApiSponsor] = useState<ApiSponsor>();
+  const [useApiData, setUseApiData] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const getArticleData = async () => {
-    const data = await getArticleContent(id);
+    try {
+      // Try API first
+      const apiData = await hackApiService.getHackById(id);
+      if (apiData) {
+        setApiHack(apiData);
+        // Check if sponsorId is populated object
+        if (apiData.sponsorId && typeof apiData.sponsorId === 'object') {
+          setApiSponsor(apiData.sponsorId as ApiSponsor);
+        } else if (apiData.sponsorId) {
+          // sponsor present as ID; population handled elsewhere if needed
+        }
+        setUseApiData(true);
+        setIsLoading(false);
+        return;
+      }
+    } catch (error) {
+      // Fallback to Craft content
+      // Silencing verbose logs; fallback will load Craft content
+    }
 
+    const data = await getArticleContent(id);
     if (data) {
-      // Only hack article content
       setArticle(data);
+      setUseApiData(false);
       setIsLoading(false);
     }
   };
@@ -79,34 +192,54 @@ export default function HackDetailScreen({
   }, []);
 
   // Memoizing HTML source to prevent re-renders
-  const htmlSource = useMemo(
-    () => ({ html: frameworkDeepLink(article?.description || '') }),
-    [article?.description]
-  );
+  const htmlSource = useMemo(() => {
+    if (useApiData) {
+      // Prefer leadText; fall back to description/shortDescription
+      const html = apiHack?.leadText || apiHack?.description || apiHack?.shortDescription || '';
+      return { html: frameworkDeepLink(html) };
+    }
+    return { html: frameworkDeepLink(article?.description || '') };
+  }, [useApiData, apiHack?.leadText, apiHack?.description, apiHack?.shortDescription, article?.description]);
 
-  if (!article || isLoading) {
+  if (isLoading) {
     return null;
   }
 
   return (
     <View style={tw`relative flex-1 bg-creme`}>
-      <AnimatedHacksHeader animatedValue={offset} title={article.title} />
+      <AnimatedHacksHeader animatedValue={offset} title={useApiData ? (apiHack?.title || '') : article!.title} />
       <>
-        {article.heroImage.length > 0 && (
-          <Image
-            source={bundledSource(
-              article.heroImage[0].url,
-              env.useBundledContent,
-            )}
-            resizeMode="cover"
-            style={tw.style(
-              `absolute top-0 w-[${
-                Dimensions.get('window').width
-              }px] bg-eggplant h-[${
-                (Dimensions.get('screen').width * 260) / 375
-              }px]`,
-            )}
-          />
+        {useApiData ? (
+          apiHack?.heroImageUrl ? (
+            <Image
+              source={{ uri: apiHack.heroImageUrl }}
+              resizeMode="cover"
+              style={tw.style(
+                `absolute top-0 w-[${
+                  Dimensions.get('window').width
+                }px] bg-eggplant h-[${
+                  (Dimensions.get('screen').width * 260) / 375
+                }px]`,
+              )}
+            />
+          ) : null
+        ) : (
+          article && article.heroImage.length > 0 ? (
+            <Image
+              source={bundledSource(
+                article.heroImage[0].url,
+                env.useBundledContent,
+              )}
+              resizeMode="cover"
+              style={tw.style(
+                `absolute top-0 w-[${
+                  Dimensions.get('window').width
+                }px] bg-eggplant h-[${
+                  (Dimensions.get('screen').width * 260) / 375
+                }px]`,
+              )}
+            />
+          ) : null
         )}
         <View
           style={tw.style(
@@ -135,34 +268,49 @@ export default function HackDetailScreen({
               numberOfLines={2}
               style={tw.style(h3TextStyle, 'pb-4 text-center text-white')}
             >
-              {article.title}
+              {useApiData ? (apiHack?.title || '') : article!.title}
             </Text>
+            <HackFavorite id={useApiData ? (apiHack?._id || '') : article!.id} />
 
-            <HackFavorite id={article.id} />
-
-            {article.sponsor && article.sponsor[0] && (
-              <HackSponsor {...article.sponsor[0]} />
+            {useApiData ? (
+              apiSponsor?.logo ? (
+                <View
+                  style={tw.style(
+                    'top-5 mx-auto mt-4 flex-row items-center justify-center rounded-2lg border border-strokecream bg-white px-5 py-2',
+                  )}
+                >
+                  <Text style={tw.style('font-sans-semibold text-[10px] leading-tighter tracking-widest uppercase text-black', 'mr-2')}>
+                    Brought to you by
+                  </Text>
+                  <Image
+                    resizeMode="contain"
+                    style={tw`mr-2.5 h-[32px] w-[61px] rounded-2lg`}
+                    source={{ uri: apiSponsor.logo }}
+                    accessibilityIgnoresInvertColors
+                  />
+                </View>
+              ) : null
+            ) : (
+              article?.sponsor && article.sponsor[0] && (
+                <HackSponsor {...article.sponsor[0]} />
+              )
             )}
           </View>
 
           <View style={tw`bg-creme`}>
             <View style={tw`relative z-10 mt-7 gap-7`}>
               <RenderHTML
-                // source={{
-                //   html: frameworkDeepLink(article.description || ''),
-                // }}
                 source={htmlSource}
-                contentWidth={225}
-                tagsStyles={tagStyles}
-                defaultViewProps={{
-                  style: tw`m-0 shrink p-0`,
-                }}
-                defaultTextProps={{
-                  style: tw.style(subheadSmall, 'mx-5'),
-                }}
+                contentWidth={RENDERHTML_CONTENT_WIDTH}
+                tagsStyles={RENDERHTML_TAGS_STYLES}
+                classesStyles={RENDERHTML_CLASSES_STYLES}
+                systemFonts={RENDERHTML_SYSTEM_FONTS}
+                baseStyle={RENDERHTML_BASE_STYLE}
+                domVisitors={RENDERHTML_DOM_VISITORS}
+                defaultViewProps={RENDERHTML_DEFAULT_VIEW_PROPS}
+                defaultTextProps={RENDERHTML_DEFAULT_TEXT_PROPS}
               />
-
-              {article.articleBlocks.map((item, index) => {
+              {(useApiData ? apiHack?.articleBlocks || [] : article!.articleBlocks).map((item, index) => {
                 return <ContentDisplay key={index} block={item} />;
               })}
             </View>

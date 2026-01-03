@@ -24,6 +24,9 @@ const introApi = api
           glutenFree?: boolean;
           hasDiabetes?: boolean;
           otherAllergies?: string[];
+          noOfAdults?: number;
+          noOfChildren?: number;
+          country?: string;
         }
       >({
         query: data => ({
@@ -31,7 +34,7 @@ const introApi = api
           method: 'PUT',
           body: data,
         }),
-        invalidatesTags: ['DietaryProfile', 'CurrentUser'],
+        invalidatesTags: ['DietaryProfile', 'CurrentUser', 'Onboarding'],
         async onQueryStarted(_, { dispatch, queryFulfilled }) {
           try {
             await queryFulfilled;

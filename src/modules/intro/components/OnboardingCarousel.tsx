@@ -50,7 +50,7 @@ import * as Yup from 'yup';
 const schema = Yup.object({
   postcode: Yup.string().required('Please enter your postcode'),
   suburb: Yup.string().required('Please enter your suburb'),
-  country: Yup.string().optional(),
+  country: Yup.string().optional().default(undefined),
   noOfAdults: Yup.number().required('Please enter the number of adults'),
   noOfChildren: Yup.number().required('Please enter the number of children'),
   dietaryRequirements: Yup.array().required(
@@ -78,7 +78,7 @@ interface FormData {
 const defaultValues: FormData = {
   postcode: '',
   suburb: '',
-  country: '',
+  country: undefined,
   noOfAdults: 0,
   noOfChildren: 0,
   dietaryRequirements: [],
@@ -159,7 +159,7 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
     setValue,
     watch,
     // formState: { errors },
-  } = useForm<FormData>({
+  } = useForm<FormData, any, FormData>({
     mode: 'onBlur',
     defaultValues,
     resolver: yupResolver(schema),
@@ -206,56 +206,33 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
       
       console.log('Updating dietary profile during onboarding:', dietaryProfileData);
       
+      // Update dietary profile - this sets the country field which marks onboarding as complete
       await updateDietaryProfile(dietaryProfileData).unwrap();
-      try {
-        const result = await createUserOnboarding({
-          ...data,
-          trackSurveyDay:
-            data.trackSurveyDay === 'i don’t have a set day'
-              ? 'sunday'
-              : data.trackSurveyDay,
-        }).unwrap();
+      
+      console.log('Dietary profile updated successfully');
+      
+      // Track analytics
+      sendAnalyticsEvent({
+        event: mixpanelEventName.actionClicked,
+        properties: {
+          action: mixpanelEventName.onboardingComplete,
+        },
+      });
+      
+      mixpanel?.getPeople().set({
+        allergies: data.allergies,
+        dietary_requirements: data.dietaryRequirements,
+        adult_number: data.noOfAdults,
+        child_number: data.noOfChildren,
+        postcode: data.postcode,
+        suburb: data.suburb,
+        taste_preference: data.tastePreference,
+        track_survey_day: data.trackSurveyDay,
+        household_composition: `${data.noOfAdults} Adult ${data.noOfChildren} Children`,
+      });
 
-        if (result) {
-          sendAnalyticsEvent({
-            event: mixpanelEventName.actionClicked,
-            properties: {
-              action: mixpanelEventName.onboardingComplete,
-            },
-          });
-          mixpanel?.getPeople().set({
-            allergies: data.allergies,
-            dietary_requirements: data.dietaryRequirements,
-            adult_number: data.noOfAdults,
-            child_number: data.noOfChildren,
-            postcode: data.postcode,
-            suburb: data.suburb,
-            taste_preference: data.tastePreference,
-            track_survey_day: data.trackSurveyDay,
-            household_composition: `${data.noOfAdults} Adult ${data.noOfChildren} Children`,
-          });
-
-          linkTo('/Root/Feed');
-        }
-      } catch (error: any) {
-        // Onboarding endpoint doesn't exist yet, but dietary profile was saved
-        // Just log the error and proceed
-        console.log('Onboarding save failed (endpoint may not exist):', error);
-        
-        // Still track analytics with dietary data
-        sendAnalyticsEvent({
-          event: mixpanelEventName.actionClicked,
-          properties: {
-            action: mixpanelEventName.onboardingComplete,
-          },
-        });
-        mixpanel?.getPeople().set({
-          allergies: data.allergies,
-          dietary_requirements: data.dietaryRequirements,
-        });
-      }
-
-      // Navigate to feed regardless of onboarding save status
+      console.log('Onboarding complete, navigating to feed...');
+      // Navigate to feed - the country field being set will mark onboarding as complete
       linkTo('/Root/Feed');
     } catch (e) {
       // This catches dietary profile update errors
@@ -290,7 +267,7 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
 
             if (
               data[currentIndex].showSavedItems &&
-              trackSurveyDay === 'I don’t have a set day'
+              trackSurveyDay === "I don't have a set day"
             ) {
               scrollToItem(currentIndex - 2);
             } else {
@@ -440,7 +417,7 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
 
                   if (
                     data[currentIndex].showWeekPlanner &&
-                    trackSurveyDay === 'I don’t have a set day'
+                    trackSurveyDay === "I don't have a set day"
                   ) {
                     scrollToItem(currentIndex + 2);
                   } else {

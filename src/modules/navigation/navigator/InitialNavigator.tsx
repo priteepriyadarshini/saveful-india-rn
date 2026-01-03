@@ -9,6 +9,7 @@ import { PermissionStatus } from 'expo-modules-core';
 import useAccessToken from "../../auth/hooks/useSessionToken";
 import useNotifications from "../../notifications/hooks/useNotifications";
 import { useGetCurrentUserQuery } from "../../auth/api";
+import { useGetUserOnboardingQuery } from "../../intro/api/api";
 import useAuthListener from "../../auth/hooks/useAuthListener";
 import { useAppDispatch } from "../../../store/hooks";
 import { clearSessionData } from "../../auth/sessionSlice";
@@ -68,9 +69,16 @@ function InitialNavigator() {
       refetchOnMountOrArgChange: true,
     }
   );
+  const { data: userOnboarding } = useGetUserOnboardingQuery(
+    undefined,
+    {
+      skip: !accessToken,
+      refetchOnMountOrArgChange: true,
+    },
+  );
   
-  // Check if user has completed onboarding based on having country set
-  const hasCompletedOnboarding = currentUser?.country ? true : false;
+  // Check if user has completed onboarding: either country is set OR onboarding record exists
+  const hasCompletedOnboarding = !!(currentUser?.country || userOnboarding);
 
   const { permissionStatus, registerForNotifications } = useNotifications();
 
