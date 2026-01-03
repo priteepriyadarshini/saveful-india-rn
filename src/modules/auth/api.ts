@@ -73,6 +73,18 @@ const currentUserApi = api
           method: 'POST',
           body: credentials,
         }),
+        invalidatesTags: ['CurrentUser'],
+        async onQueryStarted(_, { dispatch, queryFulfilled }) {
+          try {
+            const { data } = await queryFulfilled;
+            // If login successful and has token, refetch user data
+            if (data.success && data.accessToken) {
+              dispatch(currentUserApi.util.invalidateTags(['CurrentUser']));
+            }
+          } catch {
+            // Handle error if needed
+          }
+        },
       }),
 
       // New signup endpoint for NestJS backend
@@ -82,6 +94,18 @@ const currentUserApi = api
           method: 'POST',
           body: data,
         }),
+        invalidatesTags: ['CurrentUser'],
+        async onQueryStarted(_, { dispatch, queryFulfilled }) {
+          try {
+            const { data } = await queryFulfilled;
+            // If signup successful and has token, refetch user data
+            if (data.success && data.accessToken) {
+              dispatch(currentUserApi.util.invalidateTags(['CurrentUser']));
+            }
+          } catch {
+            // Handle error if needed
+          }
+        },
       }),
 
       // Refresh token endpoint
@@ -105,6 +129,7 @@ const currentUserApi = api
             : undefined,
         }),
         providesTags: ['CurrentUser'],
+        keepUnusedDataFor: 3600, // Cache for 1 hour
         transformResponse: (r: any) => {
           // Transform backend response to match CurrentUser model
           console.log('getCurrentUser response:', r);
@@ -112,7 +137,19 @@ const currentUserApi = api
           return {
             id: r.id,
             email: r.email,
-            first_name: r.name || '',
+            first_name: r.name || r.first_name || '',
+            name: r.name,
+            country: r.country,
+            stateCode: r.stateCode,
+            vegType: r.vegType,
+            dairyFree: r.dairyFree,
+            nutFree: r.nutFree,
+            glutenFree: r.glutenFree,
+            hasDiabetes: r.hasDiabetes,
+            otherAllergies: r.otherAllergies,
+            noOfAdults: r.noOfAdults,
+            noOfChildren: r.noOfChildren,
+            tastePreference: r.tastePreference,
             ...r,
           } as CurrentUser;
         },

@@ -6,19 +6,32 @@ export interface Session {
 export interface CurrentUser {
   id: string;
   email: string;
-  email_verified: boolean;
+  email_verified?: boolean;
   first_name: string;
-  last_name: string;
-  phone_number: string;
-  photo_file: PhotoFile;
-  push_notification_enabled: boolean;
-  scope: string;
+  last_name?: string;
+  name?: string;
+  phone_number?: string;
+  photo_file?: PhotoFile;
+  push_notification_enabled?: boolean;
+  scope?: string;
   invitation_code?: string;
   onesignal_id_hash?: string;
   onesignal_email_hash?: string;
   app_joined_at?: string;
   inserted_at?: string;
   timezone?: string;
+  // Dietary and location fields from backend
+  country?: string;
+  stateCode?: string;
+  vegType?: 'OMNI' | 'VEGETARIAN' | 'VEGAN';
+  dairyFree?: boolean;
+  nutFree?: boolean;
+  glutenFree?: boolean;
+  hasDiabetes?: boolean;
+  otherAllergies?: string[];
+  noOfAdults?: number;
+  noOfChildren?: number;
+  tastePreference?: string[];
   dietary_profile?: {
     veg_type: 'OMNI' | 'VEGETARIAN' | 'VEGAN';
     dairy_free: boolean;

@@ -17,21 +17,41 @@ import useContent from "../../../common/hooks/useContent";
 import { ICategory } from "../../../models/craft";
 import { useEffect, useRef, useState } from "react";
 import useAnalytics from "../../analytics/hooks/useAnalytics";
+import { hackApiService, HackCategory as ApiHackCategory } from "../api/hackApiService";
+import useEnvironment from "../../environment/hooks/useEnvironment";
 
 export default function HackScreen() {
   const { getCategories } = useContent();
+  const env = useEnvironment();
   const [categories, setCategories] = useState<ICategory[]>([]);
+  const [apiCategories, setApiCategories] = useState<ApiHackCategory[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [useApiData, setUseApiData] = useState<boolean>(false);
 
   const offset = useRef(new Animated.Value(0)).current;
   const { sendScrollEventInitiation } = useAnalytics();
 
   const getCategoriesData = async () => {
+    try {
+      // Try to fetch from API first
+      const apiData = await hackApiService.getAllCategories();
+      if (apiData && apiData.length > 0) {
+        setApiCategories(apiData);
+        setUseApiData(true);
+        setIsLoading(false);
+        return;
+      }
+    } catch (error) {
+      console.log('API not available, falling back to static content:', error);
+    }
+
+    // Fallback to static content
     const data = await getCategories();
 
     if (data) {
       // Only hack categories
       setCategories(data.filter(item => item.groupHandle === 'hack'));
+      setUseApiData(false);
       setIsLoading(false);
     }
   };
@@ -94,9 +114,14 @@ export default function HackScreen() {
                 resizeMode="contain"
               />
             </View>
-            {categories.map(item => {
-              return <HackCategory key={item.id} item={item} />;
-            })}
+            {useApiData
+              ? apiCategories.map(item => {
+                  const key = item._id || item.id || item.name;
+                  return <HackCategory key={key} item={item} useApiData={true} />;
+                })
+              : categories.map(item => {
+                  return <HackCategory key={item.id} item={item} useApiData={false} />;
+                })}
           </View>
         </View>
       </ScrollView>

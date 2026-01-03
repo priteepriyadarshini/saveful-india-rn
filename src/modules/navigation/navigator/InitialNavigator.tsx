@@ -61,7 +61,13 @@ function InitialNavigator() {
   const dispatch = useAppDispatch();
   const navigation = useNavigation<NavigationProp<InitialStackParamList>>();
 
-  const { data: currentUser } = useGetCurrentUserQuery();
+  const { data: currentUser, isLoading: isUserLoading, refetch } = useGetCurrentUserQuery(
+    undefined,
+    { 
+      skip: !accessToken,
+      refetchOnMountOrArgChange: true,
+    }
+  );
   
   // Check if user has completed onboarding based on having country set
   const hasCompletedOnboarding = currentUser?.country ? true : false;
@@ -73,6 +79,12 @@ function InitialNavigator() {
 
   // Navigate based on authentication state changes
   useEffect(() => {
+    // Don't navigate while user data is loading
+    if (accessToken && isUserLoading) {
+      console.log('Waiting for user data to load...');
+      return;
+    }
+
     const determineRoute = () => {
       if (!accessToken) {
         return 'Auth';
@@ -84,14 +96,19 @@ function InitialNavigator() {
     };
 
     const targetRoute = determineRoute();
-    console.log('Auth state changed, navigating to:', targetRoute, { accessToken: !!accessToken, hasCompletedOnboarding });
+    console.log('Auth state changed, navigating to:', targetRoute, { 
+      accessToken: !!accessToken, 
+      hasCompletedOnboarding,
+      userCountry: currentUser?.country,
+      userName: currentUser?.name || currentUser?.first_name
+    });
     
     // Reset navigation stack to the appropriate route
     navigation.reset({
       index: 0,
       routes: [{ name: targetRoute }],
     });
-  }, [accessToken, hasCompletedOnboarding, navigation]);
+  }, [accessToken, hasCompletedOnboarding, navigation, isUserLoading]);
 
   // Validate token on mount - immediately clear if invalid or expired
   useEffect(() => {

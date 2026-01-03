@@ -26,6 +26,7 @@
     "@reduxjs/toolkit": "^2.9.0",
     "@shopify/flash-list": "1.7.6",
     "async-mutex": "^0.5.0",
+    "axios": "^1.13.2",
     "downshift": "^9.0.13",
     "eventemitter3": "^5.0.1",
     "expo": "^53.0.25",
