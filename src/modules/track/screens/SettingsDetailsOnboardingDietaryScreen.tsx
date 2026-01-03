@@ -89,6 +89,7 @@ export default function SettingsDetailsOnboardingDietaryScreen() {
         nutFree,
         glutenFree,
         hasDiabetes,
+        otherAllergies: allergies,
       }).unwrap();
 
       console.log('Dietary profile update result:', result);

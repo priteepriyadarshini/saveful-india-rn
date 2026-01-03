@@ -22,10 +22,7 @@ export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [countryCode, setCountryCode] = useState('+91');
-  const [showCountryPicker, setShowCountryPicker] = useState(false);
   
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
   const [signup, { isLoading: isSignupLoading }] = useSignupMutation();
@@ -56,7 +53,6 @@ export default function AuthScreen() {
           email,
           password,
           name,
-          phoneNumber: phoneNumber ? `${countryCode}${phoneNumber}` : undefined,
           stateCode: 'IN-DL', 
           vegType: 'OMNI', // Default, will be updated in dietary profile
         };
@@ -220,33 +216,6 @@ export default function AuthScreen() {
                     </Pressable>
                   </View>
                 </View>
-
-                {!isLogin && (
-                  <View>
-                    <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>
-                      Phone Number (Optional)
-                    </Text>
-                    <View style={tw`flex-row items-center bg-creme rounded-xl`}>
-                      <Feather name="phone" size={18} color="#666" style={tw`ml-3`} />
-                      <Pressable 
-                        style={tw`flex-row items-center px-2.5 py-2.5 border-r border-stone/20`}
-                        onPress={() => setShowCountryPicker(true)}
-                      >
-                        <Text style={tw`text-base text-stone mr-1`}>{countryCode}</Text>
-                        <Feather name="chevron-down" size={16} color="#666" />
-                      </Pressable>
-                      <TextInput
-                        style={tw`flex-1 px-3 py-2.5 text-base`}
-                        placeholder="9876543210"
-                        placeholderTextColor="#999"
-                        value={phoneNumber}
-                        onChangeText={setPhoneNumber}
-                        keyboardType="phone-pad"
-                        editable={!isLoading}
-                      />
-                    </View>
-                  </View>
-                )}
               </View>
 
               {/* Submit Button */}
@@ -290,50 +259,6 @@ export default function AuthScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-      
-      {/* Country Code Picker Modal */}
-      <Modal
-        visible={showCountryPicker}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowCountryPicker(false)}
-      >
-        <TouchableOpacity 
-          style={tw`flex-1 bg-black/50 justify-end`}
-          activeOpacity={1}
-          onPress={() => setShowCountryPicker(false)}
-        >
-          <View style={tw`bg-white rounded-t-3xl px-5 py-6`}>
-            <Text style={tw.style(h6TextStyle, 'text-center mb-4')}>Select Country Code</Text>
-            <ScrollView style={tw`max-h-80`}>
-              {[
-                { code: '+91', country: 'India' },
-                { code: '+1', country: 'USA/Canada' },
-                { code: '+44', country: 'UK' },
-                { code: '+61', country: 'Australia' },
-                { code: '+86', country: 'China' },
-                { code: '+81', country: 'Japan' },
-                { code: '+82', country: 'South Korea' },
-                { code: '+65', country: 'Singapore' },
-                { code: '+971', country: 'UAE' },
-              ].map((item) => (
-                <TouchableOpacity
-                  key={item.code}
-                  style={tw`py-4 border-b border-stone/10`}
-                  onPress={() => {
-                    setCountryCode(item.code);
-                    setShowCountryPicker(false);
-                  }}
-                >
-                  <Text style={tw`text-base`}>
-                    {item.code} - {item.country}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </TouchableOpacity>
-      </Modal>
       
       <FocusAwareStatusBar statusBarStyle="dark" />
     </ImageBackground>

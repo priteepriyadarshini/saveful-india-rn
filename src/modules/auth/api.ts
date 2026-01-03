@@ -20,7 +20,7 @@ export interface SignupData {
   email: string;
   password: string;
   name: string;
-  phoneNumber?: string;
+  country?: string;
   stateCode?: string;
   vegType?: string;
   dairyFree?: boolean;
@@ -28,19 +28,23 @@ export interface SignupData {
   glutenFree?: boolean;
   hasDiabetes?: boolean;
   otherAllergies?: string[];
+  noOfAdults?: number;
+  noOfChildren?: number;
+  tastePreference?: string[];
 }
 
 export interface AuthResponse {
   success: boolean;
   accessToken: string;
-  refreshToken: string;
-  user: {
+  refreshToken?: string;
+  user?: {
     id: string;
     email: string;
     role: string;
     name: string;
-    phoneNumber?: string;
   };
+  userId?: string;
+  message?: string;
 }
 
 export interface DietaryProfileUpdate {
@@ -49,6 +53,10 @@ export interface DietaryProfileUpdate {
   nutFree?: boolean;
   glutenFree?: boolean;
   hasDiabetes?: boolean;
+  otherAllergies?: string[];
+  country?: string;
+  noOfAdults?: number;
+  noOfChildren?: number;
 }
 
 const currentUserApi = api
@@ -105,7 +113,6 @@ const currentUserApi = api
             id: r.id,
             email: r.email,
             first_name: r.name || '',
-            phone_number: r.phoneNumber || '',
             ...r,
           } as CurrentUser;
         },
@@ -227,14 +234,12 @@ const currentUserApi = api
           body: data,
         }),
         invalidatesTags: ['CurrentUser'],
-        transformResponse: (r: any) => {
+        transformResponse: (r: any): CurrentUser => {
           console.log('updateDietaryProfile response:', r);
-          if (!r) return null;
           return {
-            id: r.id,
-            email: r.email,
+            id: r.id || '',
+            email: r.email || '',
             first_name: r.name || '',
-            phone_number: r.phoneNumber || '',
             ...r,
           } as CurrentUser;
         },

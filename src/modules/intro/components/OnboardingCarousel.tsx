@@ -9,7 +9,7 @@ import _ from 'lodash';
 import { mixpanelEventName } from '../../analytics/analytics';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
 import { handleFormSubmitException } from '../../forms/validation';
-import { useCreateUserOnboardingMutation, useUpdateDietaryProfileMutation } from '../api/api';
+import { useUpdateDietaryProfileMutation } from '../api/api';
 import FavouriteDishes from './FavouriteDishes';
 import OnboardingDietary from './OnboardingDietary';
 import OnboardingHeader from './OnboardingHeader';
@@ -50,6 +50,7 @@ import * as Yup from 'yup';
 const schema = Yup.object({
   postcode: Yup.string().required('Please enter your postcode'),
   suburb: Yup.string().required('Please enter your suburb'),
+  country: Yup.string().optional(),
   noOfAdults: Yup.number().required('Please enter the number of adults'),
   noOfChildren: Yup.number().required('Please enter the number of children'),
   dietaryRequirements: Yup.array().required(
@@ -65,6 +66,7 @@ const schema = Yup.object({
 interface FormData {
   postcode: string;
   suburb: string;
+  country?: string;
   noOfAdults: number;
   noOfChildren: number;
   dietaryRequirements: string[];
@@ -76,6 +78,7 @@ interface FormData {
 const defaultValues: FormData = {
   postcode: '',
   suburb: '',
+  country: '',
   noOfAdults: 0,
   noOfChildren: 0,
   dietaryRequirements: [],
@@ -147,10 +150,7 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
     }
   };
 
-  const [createUserOnboarding, { isLoading }] =
-    useCreateUserOnboardingMutation();
-  
-  const [updateDietaryProfile] = useUpdateDietaryProfileMutation();
+  const [updateDietaryProfile, { isLoading }] = useUpdateDietaryProfileMutation();
 
   const {
     control,
@@ -187,7 +187,7 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
       const NUT_FREE_ID = 'e0b82f0b-a03c-4735-8810-4d70b77ba231';
       const GLUTEN_FREE_ID = '06566409-dc8c-46f0-b575-44090446ca80';
       
-      // First, update dietary profile
+      // First, update dietary profile with data from UI
       const dietaryProfileData = {
         vegType: (data.dietaryRequirements.includes(VEGAN_ID)
           ? 'VEGAN' 
@@ -197,8 +197,11 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
         dairyFree: data.dietaryRequirements.includes(DAIRY_FREE_ID),
         nutFree: data.dietaryRequirements.includes(NUT_FREE_ID),
         glutenFree: data.dietaryRequirements.includes(GLUTEN_FREE_ID),
-        hasDiabetes: false, // Not in onboarding currently
+        hasDiabetes: false,
         otherAllergies: data.allergies,
+        noOfAdults: data.noOfAdults,
+        noOfChildren: data.noOfChildren,
+        country: data.suburb || data.country,
       };
       
       console.log('Updating dietary profile during onboarding:', dietaryProfileData);

@@ -224,6 +224,7 @@ export default function OnboardingItemHeader({
                     setSelectedCountry(country.name);
                     setValue('postcode', country.code);
                     setValue('suburb', country.name);
+                    setValue('country', country.name);
                     setShowCountryPicker(false);
                   }}
                 >
