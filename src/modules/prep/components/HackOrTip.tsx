@@ -1,8 +1,9 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
 import { IHackOrTip } from '../../../models/craft';
+import { hackOrTipApiService } from '../../hackOrTip/api/hackOrTipApiService';
+import { transformHackOrTip } from '../../hackOrTip/helpers/transformers';
 import HackOrTipSponsor from '../../../modules/make/components/HackOrTipSponsor';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Dimensions, Pressable, ScrollView, Text, View } from 'react-native';
@@ -40,14 +41,15 @@ export default function HackOrTip({
     bottomSheetModalRef.current?.close();
   }, [bottomSheetModalRef]);
 
-  const { getHackOrTip } = useContent();
   const [hackOrTip, setHackOrTip] = React.useState<IHackOrTip>();
 
   const getHackOrTipData = async () => {
-    const data = await getHackOrTip(id);
-
-    if (data) {
-      setHackOrTip(data);
+    try {
+      const apiData = await hackOrTipApiService.getHackOrTipById(id);
+      const transformed = transformHackOrTip(apiData);
+      setHackOrTip(transformed);
+    } catch (error) {
+      console.error('Failed to load HackOrTip from API', error);
     }
   };
 
@@ -58,7 +60,7 @@ export default function HackOrTip({
   useEffect(() => {
     getHackOrTipData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [id]);
 
   if (!hackOrTip) return null;
 

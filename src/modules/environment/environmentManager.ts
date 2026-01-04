@@ -8,7 +8,6 @@ import {
 } from '../../modules/environment/types';
 import { Platform } from 'react-native';
 
-// Simple event emitter that works in Expo Go
 class SimpleEventEmitter {
   private listeners: Map<string, Set<Function>> = new Map();
 

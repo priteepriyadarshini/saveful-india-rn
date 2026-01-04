@@ -23,6 +23,8 @@ import {
 } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { subheadLargeUppercase } from '../../../theme/typography';
+import { useGetIngredientByIdQuery } from '../api/ingredientsApi';
+import { transformIngredientToLegacyFormat } from '../helpers/ingredientTransformers';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -142,21 +144,38 @@ export default function IngredientDetailScreen({
 
   const { sendScrollEventInitiation } = useAnalytics();
 
+  // Try to use the new API first, fallback to old content service if it fails
+  const { data: apiIngredient, isLoading: isApiLoading, error: apiError } = useGetIngredientByIdQuery(id);
   const { getIngredient } = useContent();
   const [ingredient, setIngredient] = React.useState<IIngredient>();
 
-  const getIngredientsData = async () => {
-    const data = await getIngredient(id);
-
-    if (data) {
-      setIngredient(data);
-    }
-  };
-
   useEffect(() => {
-    getIngredientsData();
+    const loadIngredient = async () => {
+      try {
+        if (apiIngredient && !apiError) {
+          // Use new API data - transform to legacy format
+          const transformedData = transformIngredientToLegacyFormat(apiIngredient);
+          setIngredient(transformedData);
+        } else {
+          // Fallback to old content service
+          const data = await getIngredient(id);
+          if (data) {
+            setIngredient(data);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading ingredient:', error);
+        // Fallback to old content service on error
+        const data = await getIngredient(id);
+        if (data) {
+          setIngredient(data);
+        }
+      }
+    };
+
+    loadIngredient();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [id, apiIngredient, apiError]);
 
   if (!ingredient) return null;
 

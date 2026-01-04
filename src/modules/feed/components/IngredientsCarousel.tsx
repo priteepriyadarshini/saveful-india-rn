@@ -7,7 +7,6 @@ import {
     GenericCarouselWrapper, 
     GenericCarouselFlatlist 
 } from '../../../common/components/GenericCarousel';
-import currentMonth from '../../../common/helpers/currentMonths';
 import SkeletonLoader from '../../../common/components/SkeletonLoader';
 import { bundledSource } from '../../../common/helpers/uriHelpers';
 import tw from '../../../common/tailwind';
@@ -18,9 +17,10 @@ import { mixpanelEventName } from '../../analytics/analytics';
 import useEnvironment from '../../environment/hooks/useEnvironment';
 import { bgTheme } from '../utils/ingredientTheme';
 import { useGetUserOnboardingQuery } from '../../../modules/intro/api/api';
-import useContent from '../../../common/hooks/useContent';
 import { useCurentRoute } from '../../route/context/CurrentRouteContext';
 import { FeedStackScreenProps } from '../navigation/FeedNavigation';
+import { useGetAllIngredientsQuery } from '../../ingredients/api/ingredientsApi';
+import { transformIngredientsToLegacyFormat, isCurrentlyInSeason } from '../../ingredients/helpers/ingredientTransformers';
 
 interface RenderItemProps {
   id: string;
@@ -96,30 +96,49 @@ function IngredientCard({
 export default function IngredientsCarousel() {
   const flatListRef = React.useRef<any>(null);
 
-  const { getIngredients } = useContent();
+  // Use API only - no Craft CMS fallback
+  const { data: apiIngredients, isLoading: isApiLoading } = useGetAllIngredientsQuery();
   const { data: userOnboarding } = useGetUserOnboardingQuery();
   const [ingredients, setIngredients] = React.useState<IIngredient[]>([]);
-  const [isLoading, setIsLoading] = React.useState<boolean>(true);
-
-  const getIngredientsData = async () => {
-    setIsLoading(true);
-    const data = await getIngredients();
-
-    if (data) {
-      setIngredients(
-        data
-          .filter(x => currentMonth(x.inSeason as string[]))
-          .filter(x => !userOnboarding?.allergies.some(f => f === x.id))
-          .sort((a, b) => a.title.localeCompare(b.title)),
-      );
-      setIsLoading(false);
-    }
-  };
 
   useEffect(() => {
-    getIngredientsData();
+    if (apiIngredients) {
+      console.log('API Ingredients loaded:', apiIngredients.length);
+      
+      // Use API data only
+      const transformedData = transformIngredientsToLegacyFormat(apiIngredients);
+      console.log('Transformed ingredients:', transformedData.length);
+      
+      const filteredData = transformedData
+        .filter(x => {
+          // Check if ingredient has hasPage enabled and is in season
+          const originalIngredient = apiIngredients.find(i => i._id === x.id);
+          const hasPage = originalIngredient?.hasPage;
+          const inSeason = isCurrentlyInSeason(originalIngredient?.inSeason || null);
+          
+          console.log(`Ingredient ${x.title}: hasPage=${hasPage}, inSeason=${inSeason}, months=${JSON.stringify(originalIngredient?.inSeason)}`);
+          
+          return hasPage && inSeason;
+        })
+        .filter(x => !userOnboarding?.allergies.some(f => f === x.id))
+        .sort((a, b) => {
+          // Sort by order first, then by title
+          const ingredientA = apiIngredients.find(i => i._id === a.id);
+          const ingredientB = apiIngredients.find(i => i._id === b.id);
+          const orderA = ingredientA?.order ?? 999;
+          const orderB = ingredientB?.order ?? 999;
+          
+          if (orderA !== orderB) {
+            return orderA - orderB;
+          }
+          return a.title.localeCompare(b.title);
+        });
+      
+      console.log('Final filtered ingredients for carousel:', filteredData.length);
+      setIngredients(filteredData);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userOnboarding]);
+  }, [apiIngredients, userOnboarding]);
 
   const skeletonStyles = [
     'mb-3 h-[148px] w-[148px] overflow-hidden rounded-full',
@@ -136,7 +155,7 @@ export default function IngredientsCarousel() {
       </Text>
 
       <GenericCarouselWrapper style={tw.style(`relative mt-7 overflow-hidden`)}>
-        {isLoading ? (
+        {isApiLoading ? (
           <View style={tw`flex-row pl-5 pr-2`}>
             {Array.from(Array(3).keys()).map((_, index) => (
               <View style={tw`mr-3`} key={index}>

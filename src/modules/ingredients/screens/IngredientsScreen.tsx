@@ -22,6 +22,8 @@ import {
   Platform,
   View,
 } from 'react-native';
+import { useGetAllIngredientsQuery } from '../api/ingredientsApi';
+import { transformIngredientsToLegacyFormat } from '../helpers/ingredientTransformers';
 
 const windowWidth = Dimensions.get('window').width;
 const itemLength = windowWidth - 40;
@@ -48,22 +50,24 @@ export default function IngredientsScreen({
     forceUpdate();
   };
 
-  const { getIngredients, getFrameworks } = useContent();
+  const { getFrameworks } = useContent();
 
   const { data: userOnboarding } = useGetUserOnboardingQuery();
   
+  // Use API only - no Craft CMS fallback
+  const { data: apiIngredients, isLoading: isApiLoading } = useGetAllIngredientsQuery();
+  
   const [ingredients, setIngredients] = React.useState<IIngredient[]>([]);
   const [frameworks, setFrameworks] = React.useState<IFramework[]>([]);
-  const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
-  const getIngredientsData = async () => {
-    const data = await getIngredients();
-
-    if (data) {
-      setIngredients(data);
-      setIsLoading(false);
+  useEffect(() => {
+    if (apiIngredients) {
+      // Use API data only - transform to legacy format
+      const transformedData = transformIngredientsToLegacyFormat(apiIngredients);
+      setIngredients(transformedData);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiIngredients]);
 
   const getFrameworksData = async () => {
     const data = await getFrameworks();
@@ -76,7 +80,6 @@ export default function IngredientsScreen({
   };
 
   useEffect(() => {
-    getIngredientsData();
     getFrameworksData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -131,7 +134,7 @@ export default function IngredientsScreen({
         setSearchInput={setSearchInput}
       />
       <View style={tw`flex-1`}>
-        {isLoading ? (
+        {isApiLoading ? (
           <View style={tw`items-center pt-4`}>
             {Array.from(Array(20).keys()).map((_, index) => (
               <View key={index}>

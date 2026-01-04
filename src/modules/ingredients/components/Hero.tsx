@@ -61,7 +61,8 @@ export default function Hero({
       {sticker &&
         sticker.length > 0 &&
         sticker[0].image &&
-        !!sticker[0].image[0].url && (
+        sticker[0].image.length > 0 &&
+        !!sticker[0].image[0]?.url && (
           <Image
             style={[tw`absolute bottom-5 right-5 h-[115px] w-[106px]`]}
             resizeMode="contain"
