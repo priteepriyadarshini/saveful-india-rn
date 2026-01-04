@@ -132,11 +132,22 @@ function ContentDisplay({ block }: { block: any }) {
     return <Component block={block} />;
   }
 
-  // API blocks use a simple `type` field (e.g., 'text').
+  // API blocks use a simple `type` field (e.g., 'text', 'video', 'image').
   switch (block.type) {
     case 'text':
       return <TextBlock block={block} />;
-    // Future: add mappings for 'image', 'video', etc. when available
+    case 'image':
+      return <ImageBlock block={block} />;
+    case 'video':
+      return <VideoBlock block={block} />;
+    case 'list':
+      return <ListBlock block={block} />;
+    case 'accordion':
+      return <AccordionBlock block={block} />;
+    case 'image_details':
+      return <ImageDetailsBlock block={block} />;
+    case 'hack_or_tip':
+      return <HackOrTipBlock block={block} />;
     default:
       return null;
   }

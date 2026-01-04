@@ -4,8 +4,20 @@ import tw from '../../../../common/tailwind';
 import { IArticleBlockImage } from '../../../../models/craft';
 import useEnvironment from '../../../environment/hooks/useEnvironment';
 
-export default function ImageBlock({ block }: { block: IArticleBlockImage }) {
+// Extended type to handle both Craft CMS and API formats
+type ImageBlockProps = IArticleBlockImage | {
+  type?: string;
+  imageUrl: string;
+  caption?: string;
+};
+
+export default function ImageBlock({ block }: { block: ImageBlockProps }) {
   const env = useEnvironment();
+
+  // Determine image source - API uses imageUrl string, Craft uses image array
+  const imageSource = 'imageUrl' in block && typeof block.imageUrl === 'string'
+    ? { uri: block.imageUrl }
+    : bundledSource((block as IArticleBlockImage).image[0].url, env.useBundledContent);
 
   return (
     <Image
@@ -15,7 +27,7 @@ export default function ImageBlock({ block }: { block: IArticleBlockImage }) {
           ((Dimensions.get('screen').width - 40) * 245) / 335
         }px]`,
       )}
-      source={bundledSource(block.image[0].url, env.useBundledContent)}
+      source={imageSource}
       accessibilityIgnoresInvertColors
     />
   );

@@ -87,7 +87,13 @@ const RENDERHTML_DOM_VISITORS = {
 };
 
 
-export default function TextBlock({ block }: { block: IArticleBlockText }) {
+// Extended type to handle both Craft CMS and API formats
+type TextBlockProps = IArticleBlockText | {
+  type?: string;
+  text: string;
+};
+
+export default function TextBlock({ block }: { block: TextBlockProps }) {
   const systemFonts = RENDERHTML_SYSTEM_FONTS;
 
 
