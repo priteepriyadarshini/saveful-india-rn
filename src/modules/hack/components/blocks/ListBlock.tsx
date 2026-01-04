@@ -2,7 +2,6 @@ import { Text, View } from 'react-native';
 import RenderHTML from 'react-native-render-html';
 import frameworkDeepLink from '../../../../common/helpers/frameworkDeepLink';
 import tw from '../../../../common/tailwind';
-import { IArticleBlockList } from '../../../../models/craft';
 import { cardDrop } from '../../../../theme/shadow';
 import { 
   h7TextStyle, 
@@ -11,8 +10,20 @@ import {
   bodyMediumRegular 
 } from '../../../../theme/typography';
 
+interface ListItem {
+  id: string;
+  listText: string;
+}
 
-export default function ListBlock({ block }: { block: IArticleBlockList }) {
+interface ListBlockProps {
+  type: string;
+  listTitle: string;
+  listItems: ListItem[];
+  id: string;
+  order?: number;
+}
+
+export default function ListBlock({ block }: { block: ListBlockProps }) {
   return (
     <View
       style={tw.style(
@@ -26,9 +37,9 @@ export default function ListBlock({ block }: { block: IArticleBlockList }) {
         </Text>
       </View>
       <View style={tw`py-4`}>
-        {block.listItems.map((item: any, index: number) => {
+        {block.listItems.map((item: ListItem, index: number) => {
           return (
-            <View style={tw.style('mt-4 flex-row')} key={index}>
+            <View style={tw.style('mt-4 flex-row')} key={item.id}>
               <Text style={tw.style(h5TextStyle, 'pr-3.5 text-eggplant')}>
                 {index + 1}.
               </Text>
