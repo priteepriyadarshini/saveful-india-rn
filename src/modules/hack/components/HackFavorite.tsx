@@ -78,7 +78,7 @@ export default function HackFavorite({
         )}
       >
         <AntDesign
-          name={isFavorite ? 'heart' : 'hearto'}
+          name="heart"
           size={16}
           color={dark ? tw.color('black') : tw.color('white')}
         />
