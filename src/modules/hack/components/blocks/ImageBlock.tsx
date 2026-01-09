@@ -1,4 +1,4 @@
-import { Dimensions, Image } from 'react-native';
+import { Dimensions, Image, View } from 'react-native';
 import tw from '../../../../common/tailwind';
 
 interface ImageBlockProps {
@@ -11,15 +11,17 @@ interface ImageBlockProps {
 
 export default function ImageBlock({ block }: { block: ImageBlockProps }) {
   return (
-    <Image
-      resizeMode="contain"
-      style={tw.style(
-        `mx-5 w-[${Dimensions.get('window').width - 40}px] h-[${
-          ((Dimensions.get('screen').width - 40) * 245) / 335
-        }px]`,
-      )}
-      source={{ uri: block.imageUrl }}
-      accessibilityIgnoresInvertColors
-    />
+    <View style={tw.style('mx-5 overflow-hidden rounded-[28px]')}>
+      <Image
+        resizeMode="contain"
+        style={tw.style(
+          `w-[${Dimensions.get('window').width - 20}px] h-[${
+            ((Dimensions.get('screen').width - 40) * 245) / 335
+          }px]`,
+        )}
+        source={{ uri: block.imageUrl }}
+        accessibilityIgnoresInvertColors
+      />
+    </View>
   );
 }

@@ -22,12 +22,14 @@ export default function ImageDetailsBlock({
 
   return (
     <View style={tw.style('mx-5 items-center')}>
-      <Image
-        resizeMode="cover"
-        style={tw.style(`h-[163px] w-[200px]`)}
-        source={{ uri: block.blockImageUrl }}
-        accessibilityIgnoresInvertColors
-      />
+      <View style={tw.style('overflow-hidden rounded-[28px]')}>
+        <Image
+          resizeMode="cover"
+          style={tw.style(`h-[163px] w-[200px]`)}
+          source={{ uri: block.blockImageUrl }}
+          accessibilityIgnoresInvertColors
+        />
+      </View>
       <Text style={tw.style(subheadSmall, 'mt-2.5 text-center')}>
         {block.blockTitle}
       </Text>

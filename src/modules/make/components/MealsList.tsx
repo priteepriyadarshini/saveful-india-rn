@@ -69,13 +69,25 @@ export default function MealsList({ filters }: { filters: string[] }) {
     );
   }
 
+  // Helper to extract category ID from various formats
+  const extractCategoryId = (category: any): string => {
+    if (typeof category === 'string') return category;
+    if (category?.id) return typeof category.id === 'string' ? category.id : category.id.toString();
+    if (category?._id) return typeof category._id === 'string' ? category._id : category._id.toString();
+    return '';
+  };
+
   return (
     <View style={tw`m-5 gap-2`}>
       {frameworks
-        .filter(framework =>
-          filters.length === 0 ||
-          framework.frameworkCategories.some(category => filters.includes(category.id)),
-        )
+        .filter(framework => {
+          if (filters.length === 0) return true;
+          
+          return framework.frameworkCategories.some(category => {
+            const categoryId = extractCategoryId(category);
+            return filters.includes(categoryId);
+          });
+        })
         .map(item => (
           <MealCard key={item.id} {...item} />
         ))}

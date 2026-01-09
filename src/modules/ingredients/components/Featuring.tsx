@@ -2,19 +2,32 @@ import {
   GenericCarouselFlatlist,
   GenericCarouselWrapper,
 } from '../../../common/components/GenericCarousel';
-import { filterIngredientById } from '../../../common/helpers/filterIngredients';
-import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
-import { IFramework } from '../../../models/craft';
 import RecipeCard from '../../../modules/make/components/RecipeCard';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Text, View } from 'react-native';
 import { h7TextStyle } from '../../../theme/typography';
+import { recipeApiService } from '../../../modules/recipe/api/recipeApiService';
+import { Recipe } from '../../../modules/recipe/models/recipe';
 
 // const flexRow = 'flex-row justify-between items-center px-5 py-4.5';
 
 const windowWidth = Dimensions.get('window').width;
 const itemLength = windowWidth - 40;
+
+// Transform Recipe to format expected by RecipeCard
+const transformRecipeForCard = (recipe: Recipe) => {
+  return {
+    id: recipe._id,
+    title: recipe.title,
+    heroImage: recipe.heroImageUrl 
+      ? [{ url: recipe.heroImageUrl, title: recipe.title }] 
+      : [],
+    variantTags: recipe.components.flatMap(wrapper => 
+      (wrapper.variantTags || []).map(tag => ({ title: tag }))
+    ),
+  };
+};
 
 export default function Featuring({
   ingredientId,
@@ -23,9 +36,9 @@ export default function Featuring({
   ingredientId: string;
   title: string;
 }) {
-  const { getFrameworks } = useContent();
-  const [frameworks, setFrameworks] = React.useState<IFramework[]>([]);
+  const [recipes, setRecipes] = React.useState<Recipe[]>([]);
   const [, setCurrentIndex] = React.useState<number>(0);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   const flatListRef = React.useRef<any>(null); // Reference to the FlatList component
   // Function to scroll the FlatList
@@ -37,26 +50,25 @@ export default function Featuring({
 
   const [maxHeight, setMaxHeight] = useState<number>(0);
 
-  const getFrameworksData = async () => {
-    const data = await getFrameworks();
-
-    if (data) {
-      setFrameworks(data);
+  const fetchRecipes = async () => {
+    try {
+      setIsLoading(true);
+      const data = await recipeApiService.getRecipesByIngredient(ingredientId);
+      setRecipes(data);
+    } catch (error) {
+      console.error('Error fetching recipes for ingredient:', error);
+      setRecipes([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    getFrameworksData();
+    fetchRecipes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [ingredientId]);
 
-  if (frameworks.length === 0) {
-    return null;
-  }
-
-  const recommendedDishes = filterIngredientById(frameworks, ingredientId);
-
-  if (recommendedDishes.length === 0) {
+  if (isLoading || recipes.length === 0) {
     return null;
   }
 
@@ -69,27 +81,30 @@ export default function Featuring({
         <GenericCarouselFlatlist
           flatListRef={flatListRef}
           contentContainerStyle={tw`pl-5 pr-3`}
-          data={recommendedDishes}
+          data={recipes}
           itemLength={itemLength}
-          renderItem={(renderItem: { item: IFramework; index: number }) => (
-            <View style={{ width: itemLength }}>
-              <View style={tw.style(`mr-2`)}>
-                <RecipeCard
-                  {...renderItem.item}
-                  kind={[title]}
-                  maxHeight={maxHeight}
-                  setMaxHeight={setMaxHeight}
-                />
+          renderItem={(renderItem: { item: Recipe; index: number }) => {
+            const transformedRecipe = transformRecipeForCard(renderItem.item);
+            return (
+              <View style={{ width: itemLength }}>
+                <View style={tw.style(`mr-2`)}>
+                  <RecipeCard
+                    {...transformedRecipe}
+                    kind={[title]}
+                    maxHeight={maxHeight}
+                    setMaxHeight={setMaxHeight}
+                  />
+                </View>
               </View>
-            </View>
-          )}
+            );
+          }}
           getCurrentIndex={setCurrentIndex}
           section={'Feature'}
         />
-        {/* {recommendedDishes.length > 1 ? (
+        {/* {recipes.length > 1 ? (
           <View style={tw.style(flexRow)}>
             <GenericCarouselPagination
-              items={recommendedDishes}
+              items={recipes}
               dotSpacing={4}
               dotSize={4}
               activeDotColor="eggplant"

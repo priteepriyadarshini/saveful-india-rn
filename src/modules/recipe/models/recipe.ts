@@ -55,12 +55,12 @@ export interface Recipe {
   youtubeId?: string;
   portions: string;
   prepCookTime: number;
-  stickerId?: string; // ObjectId as string
-  frameworkCategories: string[]; // ObjectId[] as string[]
-  sponsorId?: string; // ObjectId as string
+  stickerId?: string; 
+  frameworkCategories: string[]; 
+  sponsorId?: string; 
   fridgeKeepTime?: string;
   freezeKeepTime?: string;
-  useLeftoversIn: string[]; // ObjectId[] as string[]
+  useLeftoversIn: string[]; 
   components: RecipeComponentWrapper[];
   order?: number;
   isActive: boolean;
@@ -68,7 +68,6 @@ export interface Recipe {
   updatedAt: string;
 }
 
-// Populated versions (when backend populates references)
 export interface PopulatedIngredient {
   _id: string;
   name: string;
@@ -103,7 +102,6 @@ export interface PopulatedFrameworkCategory {
   iconImageUrl?: string;
 }
 
-// Fully populated recipe (optional, for when backend populates all references)
 export interface PopulatedRecipe extends Omit<Recipe, 'frameworkCategories' | 'sponsorId' | 'stickerId' | 'hackOrTipIds'> {
   frameworkCategories: (string | PopulatedFrameworkCategory)[];
   sponsorId?: string | PopulatedSponsor;
