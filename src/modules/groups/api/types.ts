@@ -1,16 +1,22 @@
-type GroupMemberRole = 'admin' | 'member';
+type GroupMemberRole = 'OWNER' | 'MEMBER';
 enum GroupMemberRoleEnum {
-  Admin = 'admin',
-  Member = 'member',
+  Owner = 'OWNER',
+  Member = 'MEMBER',
 }
 
 interface GroupMember {
-  id: string;
-  group_id: string;
-  group: Group;
+  _id: string;
+  groupId: string;
+  userId: {
+    _id: string;
+    name: string;
+    email?: string;
+  };
   role: GroupMemberRole;
-  is_owner: boolean;
-  first_name: string;
+  isActive: boolean;
+  joinedAt: Date;
+  joinedViaCode?: string;
+  reJoined?: boolean;
 }
 
 interface GroupBanner {
@@ -26,18 +32,26 @@ interface ImageFileInfo {
 }
 
 interface Group {
-  id: string;
+  _id: string;
   name: string;
   description: string;
-  banner: GroupBanner;
-  is_owner: boolean;
-  code: string;
-  total: number;
-  food_savings: string;
+  profilePhotoUrl?: string;
+  joinCode: string;
+  ownerId: string | {
+    _id: string;
+    name: string;
+    email?: string;
+  };
+  memberCount: number;
+  totalFoodSaved?: number;
+  isDeleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface GroupResponse {
-  data: Group | null;
+  group: Group;
+  members: GroupMember[];
 }
 
 interface GroupsResponse {
@@ -45,45 +59,30 @@ interface GroupsResponse {
 }
 
 interface GroupChallengeParticipant {
-  id: string;
-  first_name: string;
-  group_challenge_id: string;
-  group_member_id: string;
-  is_deleted: boolean;
-  progress: {
-    completed_meals_count: number;
-    food_saved: number;
-  };
-}
-
-type GroupChallengeState = 'upcoming' | 'active' | 'ended' | 'cancelled';
-enum GroupChallengeStateEnum {
-  Upcoming = 'upcoming',
-  Active = 'active',
-  Ended = 'ended',
-  Cancelled = 'cancelled',
+  _id: string;
+  userId: string;
+  communityId: string;
+  challengeId: string;
+  isActive: boolean;
+  totalFoodSaved?: number;
+  totalMealsCompleted?: number;
+  joinedAt: Date;
 }
 
 interface GroupChallenge {
-  id: string;
-  name: string;
-  type: 'group';
-  state: GroupChallengeState;
-  group_id: string;
-  start_at: Date;
-  end_at: Date;
+  _id: string;
+  communityId: string;
+  createdBy: string;
+  challengeName: string;
   description: string;
-  created_by: string;
-  is_deleted: boolean;
-  participants: GroupChallengeParticipant[];
-  targets: {
-    key: string;
-    value: number;
-  }[];
-  progress: {
-    completed_meals_count: number;
-    food_saved: number;
-  };
+  startDate: Date;
+  endDate: Date;
+  challengeGoal: number;
+  memberCount: number;
+  totalFoodSaved?: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface GroupChallengeResponse {
@@ -99,10 +98,7 @@ export {
   GroupBanner,
   GroupChallenge,
   GroupChallengeParticipant,
-  GroupChallengeResponse,
-  GroupChallengeState,
-  GroupChallengeStateEnum,
-  GroupChallengesResponse,
+
   GroupMember,
   GroupMemberRole,
   GroupMemberRoleEnum,

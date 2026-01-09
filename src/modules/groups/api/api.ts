@@ -6,6 +6,7 @@ import {
   GroupChallenge,
   GroupChallengeParticipant,
   GroupMember,
+  GroupResponse,
 } from '../../../modules/groups/api/types';
 import { Platform } from 'react-native';
 
@@ -21,323 +22,212 @@ const groupsApi = api
   .injectEndpoints({
     overrideExisting: true,
     endpoints: builder => ({
-      getUserGroups: builder.query<Group[] | null, void>({
+      // Get all user's groups (created by user)
+      getUserGroups: builder.query<Group[], void>({
         query: () => ({
-          url: '/api/groups',
+          url: '/api/community-groups/individual-created',
           method: 'GET',
         }),
         providesTags: ['Groups'],
-        transformResponse: r => (r as DataResponse<Group[]>).data,
       }),
-      getUserGroup: builder.query<Group | null, { id: string }>({
+      
+      // Get specific group by ID with members
+      getUserGroup: builder.query<GroupResponse, { id: string }>({
         query: params => ({
-          url: `/api/groups/${params.id}`,
+          url: `/api/community-groups/${params.id}`,
           method: 'GET',
         }),
-        providesTags: ['Groups'],
-        transformResponse: r => (r as DataResponse<Group>).data,
+        providesTags: ['Groups', 'GroupMembers'],
       }),
-      getUserGroupBanner: builder.query<
-        { banner: GroupBanner } | null,
-        { id: string }
-      >({
-        query: params => ({
-          url: `/api/groups/${params.id}/banner`,
-          method: 'GET',
-        }),
-        providesTags: ['Groups'],
-        transformResponse: r =>
-          (r as DataResponse<{ banner: GroupBanner }>).data,
-      }),
+
+      // Create a new group
       createUserGroup: builder.mutation<
-        Group | null,
+        Group,
         {
           name: string;
           description: string;
-          banner?: string;
-        }
-      >({
-        query: params => ({
-          url: '/api/groups',
-          method: 'POST',
-          body: {
-            group: params,
-          },
-        }),
-        invalidatesTags: ['Groups'],
-        transformResponse: r => (r as DataResponse<Group>).data,
-      }),
-      updateUserGroupBanner: builder.mutation<
-        { banner: GroupBanner } | null,
-        {
-          id: string;
-          banner: {
+          profileImage?: {
             uri: string;
-            fileName: string;
+            name: string;
             type: string;
           };
         }
       >({
         query: params => {
+          // If no image, send JSON to simplify request
+          if (!params.profileImage) {
+            return {
+              url: '/api/community-groups',
+              method: 'POST',
+              body: {
+                name: params.name,
+                description: params.description,
+              },
+            };
+          }
+
           const formData = new FormData();
-          const banner = {
+          formData.append('name', params.name);
+          formData.append('description', params.description);
+
+          // @ts-ignore - React Native FormData accepts this format
+          formData.append('profileImage', {
             uri:
-              Platform.OS === `android`
-                ? params.banner.uri
-                : params.banner.uri.replace(`file://`, ''),
-            name: params.banner.fileName,
-            type: params.banner.type,
-          };
-          // @ts-ignore
-          formData.append('banner', banner);
+              Platform.OS === 'android'
+                ? params.profileImage.uri
+                : params.profileImage.uri.replace('file://', ''),
+            name: params.profileImage.name,
+            // Force a standard MIME type for reliability
+            type: 'image/jpeg',
+          } as any);
 
           return {
-            url: `/api/groups/${params.id}/banner`,
-            method: 'PATCH',
+            url: '/api/community-groups',
+            method: 'POST',
             body: formData,
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
           };
         },
         invalidatesTags: ['Groups'],
-        transformResponse: r =>
-          (r as DataResponse<{ banner: GroupBanner }>).data,
       }),
-      updateUserGroup: builder.mutation<Group | null, Partial<Group>>({
-        query: params => ({
-          url: `/api/groups/${params.id}`,
-          method: 'PATCH',
-          body: { group: params },
-        }),
-        invalidatesTags: ['Groups'],
-        transformResponse: r => (r as DataResponse<Group>).data,
-      }),
-      updateUserGroupOwner: builder.mutation<
-        Group | null,
+
+      // Update group
+      updateUserGroup: builder.mutation<
+        Group,
         {
-          id: string;
-          email: string;
+          groupId: string;
+          name?: string;
+          description?: string;
+          groupProfileImage?: {
+            uri: string;
+            name: string;
+            type: string;
+          };
         }
       >({
         query: params => {
-          const searchParams = new URLSearchParams();
-          searchParams.set('email', params.email);
+          // If no image, send JSON body
+          if (!params.groupProfileImage) {
+            return {
+              url: '/api/community-groups',
+              method: 'PATCH',
+              body: {
+                groupId: params.groupId,
+                name: params.name,
+                description: params.description,
+              },
+            };
+          }
+
+          const formData = new FormData();
+          formData.append('groupId', params.groupId);
+          if (params.name) formData.append('name', params.name);
+          if (params.description) formData.append('description', params.description);
+
+          // @ts-ignore - React Native FormData accepts this format
+          formData.append('groupProfileImage', {
+            uri:
+              Platform.OS === 'android'
+                ? params.groupProfileImage.uri
+                : params.groupProfileImage.uri.replace('file://', ''),
+            name: params.groupProfileImage.name,
+            type: 'image/jpeg',
+          } as any);
 
           return {
-            url: `/api/groups/${params.id}/change_owner`,
+            url: '/api/community-groups',
             method: 'PATCH',
-            params: searchParams,
+            body: formData,
           };
         },
         invalidatesTags: ['Groups'],
-        transformResponse: r => (r as DataResponse<Group>).data,
       }),
+
+      // Delete group
       deleteUserGroup: builder.mutation<void, { id: string }>({
         query: params => ({
-          url: `/api/groups/${params.id}`,
+          url: `/api/community-groups/${params.id}`,
           method: 'DELETE',
         }),
         invalidatesTags: ['Groups'],
       }),
+
+      // Join group by code
       joinUserGroup: builder.mutation<
-        { group_member: GroupMember } | null,
+        { message: string },
         { code: string }
       >({
         query: params => ({
-          url: `/api/group_members?code=${params.code}`,
+          url: '/api/community-groups/join-group',
           method: 'POST',
+          body: { code: params.code },
         }),
         invalidatesTags: ['Groups', 'GroupMembers'],
-        transformResponse: r =>
-          (r as DataResponse<{ group_member: GroupMember }>).data,
       }),
-      getGroupMembers: builder.query<
-        { group_members: GroupMember[] } | null,
-        { id: string; userId?: string }
-      >({
-        query: params => {
-          const searchParams = new URLSearchParams();
 
-          searchParams.set('group_id', params.id);
-
-          if (params.userId) {
-            searchParams.set('user_id', params.userId);
-          }
-
-          return {
-            url: `/api/group_members`,
-            method: 'GET',
-            params: searchParams,
-          };
-        },
-        providesTags: ['GroupMembers'],
-        transformResponse: r =>
-          (r as DataResponse<{ group_members: GroupMember[] }>).data,
-      }),
-      getGroupMembersCount: builder.query<
-        { count: number } | null,
-        { id: string }
-      >({
-        query: params => {
-          return {
-            url: `/api/groups/${params.id}/members_count`,
-            method: 'GET',
-          };
-        },
-        providesTags: ['GroupMembersCount'],
-        transformResponse: r => (r as DataResponse<{ count: number }>).data,
-      }),
-      removeMemberFromGroup: builder.mutation<
-        GroupMember | null,
-        { id: string }
-      >({
-        query: params => ({
-          url: `/api/group_members/${params.id}`,
-          method: 'DELETE',
-        }),
-        invalidatesTags: ['Groups', 'GroupMembers'],
-        transformResponse: r => (r as DataResponse<GroupMember>).data,
-      }),
-      removeMemberFromGroupAsAdmin: builder.mutation<
-        GroupMember | null,
-        { id: string }
-      >({
-        query: params => ({
-          url: `/api/group_members/${params.id}/remove`,
-          method: 'DELETE',
-        }),
-        invalidatesTags: ['Groups', 'GroupMembers'],
-        transformResponse: r => (r as DataResponse<GroupMember>).data,
-      }),
+      // Challenge endpoints
       getGroupChallenges: builder.query<
-        { group_challenges: GroupChallenge[] } | null,
-        { groupId: string }
+        GroupChallenge[],
+        { communityId: string }
       >({
         query: params => ({
-          url: `/api/groups/${params.groupId}/challenges`,
+          url: `/api/community-groups/${params.communityId}/challenges`,
           method: 'GET',
         }),
         providesTags: ['GroupChallenges'],
-        transformResponse: r =>
-          (r as DataResponse<{ group_challenges: GroupChallenge[] }>).data,
       }),
+
       getGroupChallenge: builder.query<
-        { group_challenge: GroupChallenge } | null,
-        { groupId: string; id: string }
+        GroupChallenge,
+        { challengeId: string }
       >({
         query: params => ({
-          url: `/api/groups/${params.groupId}/challenges/${params.id}`,
+          url: `/api/community-groups/challenges/${params.challengeId}`,
           method: 'GET',
         }),
         providesTags: ['GroupChallenges'],
-        transformResponse: r =>
-          (r as DataResponse<{ group_challenge: GroupChallenge }>).data,
       }),
+
       createGroupChallenge: builder.mutation<
-        { group_challenge: GroupChallenge } | null,
-        { groupId: string } & Partial<GroupChallenge>
+        GroupChallenge,
+        {
+          communityId: string;
+          challengeName: string;
+          description: string;
+          startDate: Date;
+          endDate: Date;
+          challengeGoals: number;
+        }
       >({
         query: params => ({
-          url: `/api/groups/${params.groupId}/challenges`,
+          url: '/api/community-groups/challenges',
           method: 'POST',
           body: params,
         }),
         invalidatesTags: ['Groups', 'GroupChallenges'],
-        transformResponse: r =>
-          (r as DataResponse<{ group_challenge: GroupChallenge }>).data,
       }),
-      cancelGroupChallenge: builder.mutation<
-        { group_challenge: GroupChallenge } | null,
-        { groupId: string; id: string }
-      >({
-        query: params => ({
-          url: `/api/groups/${params.groupId}/challenges/${params.id}`,
-          method: 'DELETE',
-        }),
-        invalidatesTags: ['Groups', 'GroupChallenges'],
-        transformResponse: r =>
-          (r as DataResponse<{ group_challenge: GroupChallenge }>).data,
-      }),
+
       joinGroupChallenge: builder.mutation<
-        { group_challenge_participant: GroupChallengeParticipant } | null,
-        { groupId: string; id: string }
+        { message: string; result: GroupChallengeParticipant },
+        { communityId: string; challnageId: string }
       >({
         query: params => ({
-          url: `/api/groups/${params.groupId}/challenges/${params.id}/participants`,
+          url: '/api/community-groups/challenges/join',
           method: 'POST',
+          body: params,
         }),
         invalidatesTags: ['Groups', 'GroupChallenges'],
-        transformResponse: r =>
-          (
-            r as DataResponse<{
-              group_challenge_participant: GroupChallengeParticipant;
-            }>
-          ).data,
       }),
-      getGroupChallengeParticipants: builder.query<
-        { group_challenge_participants: GroupChallengeParticipant[] } | null,
-        { groupId: string; id: string }
-      >({
-        query: params => ({
-          url: `/api/groups/${params.groupId}/challenges/${params.id}/participants`,
-          method: 'GET',
-        }),
-        providesTags: ['GroupChallenges'],
-        transformResponse: r =>
-          (
-            r as DataResponse<{
-              group_challenge_participants: GroupChallengeParticipant[];
-            }>
-          ).data,
-      }),
-      getGroupChallengeParticipant: builder.query<
-        { group_challenge_participant: GroupChallengeParticipant } | null,
-        { groupId: string; groupChallengeId: string; id: string }
-      >({
-        query: params => ({
-          url: `/api/groups/${params.groupId}/challenges/${params.groupChallengeId}/participants/${params.id}`,
-          method: 'GET',
-        }),
-        providesTags: ['GroupChallenges'],
-        transformResponse: r =>
-          (
-            r as DataResponse<{
-              group_challenge_participant: GroupChallengeParticipant;
-            }>
-          ).data,
-      }),
-      getGroupChallengeCurrentParticipant: builder.query<
-        { group_challenge_participant: GroupChallengeParticipant } | null,
-        { groupId: string; groupChallengeId: string }
-      >({
-        query: params => ({
-          url: `/api/groups/${params.groupId}/challenges/${params.groupChallengeId}/participant`,
-          method: 'GET',
-        }),
-        providesTags: ['GroupChallenges'],
-        transformResponse: r =>
-          (
-            r as DataResponse<{
-              group_challenge_participant: GroupChallengeParticipant;
-            }>
-          ).data,
-      }),
+
       leaveGroupChallenge: builder.mutation<
-        { group_challenge_participant: GroupChallengeParticipant } | null,
-        { groupId: string; groupChallengeId: string; id: string }
+        { message: string; status: boolean },
+        { communityId: string; challengeId: string }
       >({
         query: params => ({
-          url: `/api/groups/${params.groupId}/challenges/${params.groupChallengeId}/participants/${params.id}`,
-          method: 'DELETE',
+          url: '/api/community-groups/challenges/leave',
+          method: 'POST',
+          body: params,
         }),
         invalidatesTags: ['Groups', 'GroupChallenges'],
-        transformResponse: r =>
-          (
-            r as DataResponse<{
-              group_challenge_participant: GroupChallengeParticipant;
-            }>
-          ).data,
       }),
     }),
   });
@@ -347,24 +237,13 @@ export default groupsApi;
 export const {
   useGetUserGroupsQuery,
   useGetUserGroupQuery,
-  useGetUserGroupBannerQuery,
   useCreateUserGroupMutation,
-  useUpdateUserGroupBannerMutation,
   useJoinUserGroupMutation,
-  useGetGroupMembersQuery,
-  useGetGroupMembersCountQuery,
   useUpdateUserGroupMutation,
-  useUpdateUserGroupOwnerMutation,
   useDeleteUserGroupMutation,
-  useRemoveMemberFromGroupMutation,
-  useRemoveMemberFromGroupAsAdminMutation,
   useGetGroupChallengesQuery,
   useGetGroupChallengeQuery,
   useCreateGroupChallengeMutation,
-  useCancelGroupChallengeMutation,
   useJoinGroupChallengeMutation,
-  useGetGroupChallengeParticipantsQuery,
-  useGetGroupChallengeParticipantQuery,
-  useGetGroupChallengeCurrentParticipantQuery,
   useLeaveGroupChallengeMutation,
 } = groupsApi;

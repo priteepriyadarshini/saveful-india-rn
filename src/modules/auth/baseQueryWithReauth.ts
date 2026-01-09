@@ -36,6 +36,12 @@ const baseQuery: BaseQueryFn<
       return headers;
     },
   });
+  // Runtime debug logging for network issues
+  try {
+    const url = typeof args === 'string' ? args : args.url;
+    const method = typeof args === 'string' ? 'GET' : (args as FetchArgs).method || 'GET';
+    console.log('[API]', getBaseURL(), url, method);
+  } catch {}
   return rawBaseQuery(args, WebApi, extraOptions ?? {});
 };
 

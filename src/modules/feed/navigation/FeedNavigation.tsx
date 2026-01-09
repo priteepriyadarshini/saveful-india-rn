@@ -7,6 +7,7 @@ import tw from '../../../common/tailwind';
 import FeedScreen from '../screens/FeedScreen';
 import PartnersScreen from '../screens/PartnersScreen';
 import IngredientsStackNavigator, { IngredientsStackParamList } from '../../ingredients/navigation/IngredientsNavigator';
+import GroupsStackNavigator, { GroupsStackParamList } from '../../groups/navigation/GroupsNavigator';
 import { CompositeScreenProps, NavigatorScreenParams } from '@react-navigation/native';
 import { RootNavigationStackParams } from '../../navigation/navigator/root/RootNavigator';
 
@@ -15,6 +16,7 @@ export type FeedStackParamList = {
   FeedHome: undefined;
   Partners: undefined;
   Ingredients: NavigatorScreenParams<IngredientsStackParamList>;
+  Groups: NavigatorScreenParams<GroupsStackParamList>;
 };
 
 export type FeedStackScreenProps<Screen extends keyof FeedStackParamList> =
@@ -48,6 +50,12 @@ export default function FeedStackNavigator() {
         name="Ingredients"
         component={IngredientsStackNavigator}
         options={{ title: 'Ingredients', headerShown: false }}
+      />
+
+      <NavigationStack.Screen
+        name="Groups"
+        component={GroupsStackNavigator}
+        options={{ title: 'Groups', headerShown: false }}
       />
       
       {/* Add other screens here as needed */}

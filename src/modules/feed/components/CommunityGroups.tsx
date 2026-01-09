@@ -1,25 +1,31 @@
-import { useLinkTo } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import GenericCarouselFlatlist from '../../../common/components/GenericCarousel/GenericCarouselFlatlist';
 import EggplantButton from '../../../common/components/ThemeButtons/EggplantButton';
 import tw from '../../../common/tailwind';
 import { LinearGradient } from 'expo-linear-gradient';
-//import GroupCard from 'modules/feed/components/GroupCard';
-//import JoinGroupModal from 'modules/feed/components/JoinGroupModal';
+import GroupCard from '../../../modules/feed/components/GroupCard';
+import JoinGroupModal from '../../../modules/feed/components/JoinGroupModal';
 import { useGetUserGroupsQuery } from '../../../modules/groups/api/api';
 import HowItWorksModal from '../../../modules/groups/components/HowItWorksModal';
 import { Dimensions, Image, Text, View } from 'react-native';
 import { cardDrop } from '../../../theme/shadow';
 import { bodyLargeBold, bodySmallRegular, h6TextStyle } from '../../../theme/typography';
+import { FeedStackParamList } from '../navigation/FeedNavigation';
 
 const screenWidth = Dimensions.get('screen').width;
 const itemLength = screenWidth - 40;
 
 export default function CommunityGroups() {
-  const linkTo = useLinkTo();
+  const navigation = useNavigation<NativeStackNavigationProp<FeedStackParamList>>();
 
-  const { data: groups } = useGetUserGroupsQuery();
+  const { data: groups, isLoading, refetch } = useGetUserGroupsQuery();
 
-  if (!groups) return null;
+  const handleJoinSuccess = () => {
+    refetch();
+  };
+
+  if (isLoading) return null;
 
   return (
     <View style={tw.style('items-center gap-4 pt-10')}>
@@ -38,12 +44,8 @@ export default function CommunityGroups() {
               scrollEnabled={true}
               itemLength={itemLength + 8}
               renderItem={({ item }) => (
-                <View style={tw`mr-2`} key={item.id}>
-                  {/* <GroupCard
-                    id={item.id}
-                    name={item.name}
-                    // banner={item.banner.url}
-                  /> */}
+                <View style={tw`mr-2`} key={item._id}>
+                  <GroupCard group={item} />
                 </View>
               )}
             />
@@ -82,12 +84,10 @@ export default function CommunityGroups() {
       </View>
 
       <View style={tw.style('w-full flex-row justify-between gap-2 px-5 pb-8')}>
-        <EggplantButton onPress={() => linkTo('/groups/create')}>
+        <EggplantButton onPress={() => navigation.navigate('Groups', { screen: 'CreateGroup' })}>
           Create a group
         </EggplantButton>
-        {/* <JoinGroupModal
-          onJoin={(id: string) => linkTo(`/groups/${id}?joined=true`)}
-        /> */}
+        <JoinGroupModal onJoin={handleJoinSuccess} />
       </View>
 
       <LinearGradient

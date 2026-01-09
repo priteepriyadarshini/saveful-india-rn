@@ -13,4 +13,5 @@ export interface CustomButtonProps {
   iconRight?: keyof typeof Feather.glyphMap;
   disabled?: boolean;
   onPress?: () => void;
+  variant?: 'default' | 'solid-black';
 }

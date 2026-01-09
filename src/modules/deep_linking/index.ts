@@ -162,13 +162,12 @@ const linking = {
               FeedHome: { path: "feed", exact: true },
               Partners: { path: "partners", exact: true },
               Groups: {
-                initialRouteName: "Groups",
+                initialRouteName: "CreateGroup",
                 screens: {
                   CreateGroup: { path: "groups/create", exact: true },
-                  CreateGroupSuccess: { path: "groups/create/:id", exact: true },
                   GroupDetail: { path: "groups/:id", exact: true },
                   EditGroup: { path: "groups/:id/edit", exact: true },
-                  GroupChallengeDetail: { path: "groups/:groupId/challenges/:id", exact: true },
+                  ChallengeDetail: { path: "groups/:groupId/challenges/:challengeId", exact: true },
                   CreateChallenge: { path: "groups/:groupId/challenges/create", exact: true },
                 },
               },
