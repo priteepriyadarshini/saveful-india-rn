@@ -14,7 +14,6 @@ import { CommonActions } from '@react-navigation/native';
 
 function getBaseURL() {
   const url = EnvironmentManager.shared.apiUrl();
-  console.log('API Base URL:', url);
   return url;
 }
 

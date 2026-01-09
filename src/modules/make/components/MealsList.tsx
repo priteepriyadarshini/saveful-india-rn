@@ -7,6 +7,8 @@ import { useGetUserOnboardingQuery } from '../../../modules/intro/api/api';
 import MealCard from './MealCard';
 import React, { useEffect } from 'react';
 import { Dimensions, View } from 'react-native';
+import { recipeApiService } from '../../recipe/api/recipeApiService';
+import { recipesToFrameworks } from '../../recipe/adapters/recipeAdapter';
 
 const windowWidth = Dimensions.get('window').width;
 const itemLength = windowWidth - 40;
@@ -18,12 +20,30 @@ export default function MealsList({ filters }: { filters: string[] }) {
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
   const getFrameworksData = async () => {
-    const data = await getFrameworks();
-
-    if (data) {
-      setFrameworks(
-        filterAllergiesByUserPreferences(data, userOnboarding?.allergies),
-      );
+    try {
+      // Fetch recipes from the new API
+      const recipes = await recipeApiService.getAllRecipes();
+      
+      // Convert recipes to framework format for UI compatibility
+      const convertedFrameworks = recipesToFrameworks(recipes);
+      
+      // Apply allergy filters if needed
+      if (convertedFrameworks) {
+        setFrameworks(
+          filterAllergiesByUserPreferences(convertedFrameworks, userOnboarding?.allergies),
+        );
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching recipes:', error);
+      // Fallback to Craft CMS if new API fails
+      console.log('Falling back to Craft CMS...');
+      const data = await getFrameworks();
+      if (data) {
+        setFrameworks(
+          filterAllergiesByUserPreferences(data, userOnboarding?.allergies),
+        );
+      }
       setIsLoading(false);
     }
   };
@@ -53,9 +73,8 @@ export default function MealsList({ filters }: { filters: string[] }) {
     <View style={tw`m-5 gap-2`}>
       {frameworks
         .filter(framework =>
-          framework.frameworkCategories.some(
-            category => filters.includes(category.id) || filters.length === 0,
-          ),
+          filters.length === 0 ||
+          framework.frameworkCategories.some(category => filters.includes(category.id)),
         )
         .map(item => (
           <MealCard key={item.id} {...item} />

@@ -36,7 +36,9 @@ export default function OptionalIngredientsList({
                 })}
               />
             </View>
-            <Text style={tw.style(bodyMediumRegular)}>{ingredient.title}</Text>
+            <Text style={tw.style(bodyMediumRegular)}>
+              {ingredient.title?.trim() ? ingredient.title : ingredient.id}
+            </Text>
           </Pressable>
         );
       })}

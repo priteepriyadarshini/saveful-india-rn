@@ -1,4 +1,5 @@
 import { useLinkTo, useNavigation } from '@react-navigation/native';
+import { FlashListRef } from '@shopify/flash-list';
 import { FlashList } from '@shopify/flash-list';
 import { IFrameworkComponentStep } from '../../../models/craft';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
@@ -58,7 +59,7 @@ export default function MakeItCarousel({
   const { newCurrentRoute } = useCurentRoute();
   // const { scheduleNotification } = useNotifications();
 
-  const flashListRef = useRef<FlashList<any>>(null);
+  const flashListRef = useRef<FlashListRef<ICarouselItem>>(null);
 
   const [mixpanel] = useContext(MixPanelContext);
 
@@ -78,13 +79,8 @@ export default function MakeItCarousel({
   // };
 
   const toggleModal = () => {
+    // Only toggle visibility; navigation handled by modal's close
     setModalVisible(!isModalVisible);
-    // TODO: Go to feed
-    navigation.navigate('Make', {
-      screen: 'MakeHome',
-      params: undefined, // optional
-    });
-    // linkTo('/feed');
   };
   //UNCOMMENT these code once the logic part has been created
   const { data: userMeals, isLoading: isGetUserMealsLoading } =
@@ -109,7 +105,7 @@ export default function MakeItCarousel({
 
   const onCompleteCook = async () => {
     try {
-      const result = await updateUserMeal({
+      const mutationPromise = updateUserMeal({
         id: mealId,
         completed: true,
         saved: true, // Use this for notifications
@@ -118,7 +114,10 @@ export default function MakeItCarousel({
             item.ingredients.map(ingredient => ingredient.title),
           ),
         },
-      }).unwrap(); 
+      });
+      const result = typeof (mutationPromise as any)?.unwrap === 'function'
+        ? await (mutationPromise as any).unwrap()
+        : await mutationPromise;
 
       if (result) {
         completedSteps();
@@ -153,6 +152,7 @@ export default function MakeItCarousel({
       <FlashList
         ref={flashListRef}
         data={data}
+        keyExtractor={(item: ICarouselItem) => item.id}
         renderItem={({
           item,
           index,
@@ -171,7 +171,6 @@ export default function MakeItCarousel({
             />
           );
         }}
-        estimatedItemSize={screenWidth}
         horizontal
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}

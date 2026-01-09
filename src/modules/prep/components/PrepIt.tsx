@@ -1,9 +1,8 @@
 import { Feather } from '@expo/vector-icons';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import tw from '../../../common/tailwind';
 import CircularHeader from '../../../modules/prep/components/CircularHeader';
-import React, { useCallback, useMemo, useRef } from 'react';
-import { Dimensions, Pressable, Text, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { Dimensions, Modal, Pressable, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useReducedMotion } from 'react-native-reanimated';
 import RenderHTML from 'react-native-render-html';
@@ -21,23 +20,27 @@ export default function PrepIt({
   shortDescription: string;
   description: string | null;
 }) {
-  // ref
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   /* https://github.com/gorhom/react-native-bottom-sheet/issues/1560#issuecomment-1750466864
   Added fixes for ios / android users who uses reduce motion */
   const reducedMotion = useReducedMotion();
 
-  // variables
-  const snapPoints = useMemo(() => ['1%', '90%'], []);
+  // Stabilize RenderHTML props
+  const contentWidth = useMemo(() => Dimensions.get('window').width - 40, []);
+  const defaultViewProps = useMemo(() => ({ style: tw`m-0 p-0` }), []);
+  const defaultTextProps = useMemo(
+    () => ({ style: tw.style(bodyMediumRegular, 'pt-2.5 text-stone') }),
+    [],
+  );
 
   // callbacks
-  const handlePresentModalPress = useCallback(() => {
-    bottomSheetModalRef.current?.present();
-  }, [bottomSheetModalRef]);
-  const handlePresentModalDismiss = useCallback(() => {
-    bottomSheetModalRef.current?.close();
-  }, [bottomSheetModalRef]);
+  const handlePresentModalPress = () => {
+    setIsModalVisible(true);
+  };
+  const handlePresentModalDismiss = () => {
+    setIsModalVisible(false);
+  };
 
   return (
     <View style={tw.style('pt-4.5 px-5')}>
@@ -60,48 +63,43 @@ export default function PrepIt({
       )}
 
       {description && (
-        <BottomSheetModal
-          ref={bottomSheetModalRef}
-          index={1}
-          animateOnMount={!reducedMotion}
-          snapPoints={snapPoints}
-          // onChange={handleSheetChanges}
-          containerStyle={{ backgroundColor: 'rgba(26, 26, 27, 0.7)' }}
-          style={tw.style(
-            'overflow-hidden rounded-2.5xl border border-strokecream',
-          )}
-          handleStyle={tw.style('hidden')}
-          enableContentPanningGesture={false}
+        <Modal
+          animationType={reducedMotion ? 'none' : 'slide'}
+          transparent
+          visible={isModalVisible}
+          onRequestClose={handlePresentModalDismiss}
         >
-          <ScrollView style={tw.style('px-5')}>
-            <View style={tw.style('items-end py-4')}>
-              <Pressable onPress={handlePresentModalDismiss}>
-                <Feather name={'x'} size={16} color="black" />
-              </Pressable>
+          <View style={tw`flex-1 bg-black bg-opacity-70`}>
+            <View
+              style={tw.style(
+                'absolute bottom-0 left-0 right-0 max-h-[90%] overflow-hidden rounded-t-2.5xl border border-strokecream bg-white',
+              )}
+            >
+              <ScrollView style={tw.style('px-5')}>
+                <View style={tw.style('items-end py-4')}>
+                  <Pressable onPress={handlePresentModalDismiss}>
+                    <Feather name={'x'} size={16} color="black" />
+                  </Pressable>
+                </View>
+                <View style={tw.style('items-center justify-center')}>
+                  <Text style={tw.style(h7TextStyle, 'text-center')}>Prep it</Text>
+                </View>
+                <View style={tw.style('pb-[50px] pt-[22px]')}>
+                  <Text style={tw.style(bodyLargeBold, 'text-stone')}>
+                    {shortDescription}
+                  </Text>
+                  <RenderHTML
+                    source={{ html: description || '' }}
+                    contentWidth={contentWidth}
+                    tagsStyles={tagStyles}
+                    defaultViewProps={defaultViewProps}
+                    defaultTextProps={defaultTextProps}
+                  />
+                </View>
+              </ScrollView>
             </View>
-            <View style={tw.style('items-center justify-center')}>
-              <Text style={tw.style(h7TextStyle)}>Prep it</Text>
-            </View>
-            <View style={tw.style('pb-[50px] pt-[22px]')}>
-              <Text style={tw.style(bodyLargeBold, 'text-stone')}>
-                {shortDescription}
-              </Text>
-              <RenderHTML
-                source={{
-                  html: description || '',
-                }}
-                contentWidth={Dimensions.get('window').width - 40}
-                tagsStyles={tagStyles}
-                defaultViewProps={{
-                  style: tw`m-0 p-0`,
-                }}
-                defaultTextProps={{
-                  style: tw.style(bodyMediumRegular, 'pt-2.5 text-stone'),
-                }}
-              />
-            </View>
-          </ScrollView>
-        </BottomSheetModal>
+          </View>
+        </Modal>
       )}
     </View>
   );

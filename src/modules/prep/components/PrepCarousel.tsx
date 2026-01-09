@@ -1,5 +1,4 @@
 import { Feather } from '@expo/vector-icons';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import {
   GenericCarouselFlatlist,
   GenericCarouselWrapper,
@@ -11,11 +10,12 @@ import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
 import HackOrTip from '../../../modules/prep/components/HackOrTip';
 import { IDescription } from '../../../modules/prep/types';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
-import React, { Fragment, useCallback, useMemo, useRef, useState } from 'react';
+import React, { Fragment, useCallback, useState } from 'react';
 import {
   Animated,
   Dimensions,
   Image,
+  Modal,
   Pressable,
   Text,
   View,
@@ -60,15 +60,23 @@ export default function PrepCarousel({
 
   const [activeDotIndex, setActiveDotIndex] = useState<number>(0);
   const [maxHeight, setMaxHeight] = useState<number>(0);
+  const [isReadMoreModalVisible, setIsReadMoreModalVisible] = useState(false);
+  const [selectedReadMore, setSelectedReadMore] = useState<{
+    readMoreTitle: string;
+    readMoreSubTitle: string;
+    readMoreDescription: string;
+  } | null>(null);
 
-  // ref
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-
-  // variables
-  const snapPoints = useMemo(() => ['1%', '90%'], []);
+  /* https://github.com/gorhom/react-native-bottom-sheet/issues/1560#issuecomment-1750466864
+  Added fixes for ios / android users who uses reduce motion */
+  const reducedMotion = useReducedMotion();
 
   // callbacks
-  const handlePresentModalPress = useCallback(() => {
+  const handlePresentModalPress = (readMoreData: {
+    readMoreTitle: string;
+    readMoreSubTitle: string;
+    readMoreDescription: string;
+  }) => {
     sendAnalyticsEvent({
       event: mixpanelEventName.actionClicked,
       properties: {
@@ -78,16 +86,13 @@ export default function PrepCarousel({
         mead_name: frameworkName,
       },
     });
-    bottomSheetModalRef.current?.present();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bottomSheetModalRef]);
-  const handlePresentModalDismiss = useCallback(() => {
-    bottomSheetModalRef.current?.close();
-  }, [bottomSheetModalRef]);
+    setSelectedReadMore(readMoreData);
+    setIsReadMoreModalVisible(true);
+  };
 
-  /* https://github.com/gorhom/react-native-bottom-sheet/issues/1560#issuecomment-1750466864
-  Added fixes for ios / android users who uses reduce motion */
-  const reducedMotion = useReducedMotion();
+  const handlePresentModalDismiss = () => {
+    setIsReadMoreModalVisible(false);
+  };
 
   const data = [
     {
@@ -97,7 +102,7 @@ export default function PrepCarousel({
       readMore: {
         readMoreTitle: 'About this meal',
         readMoreSubTitle: shortDescription,
-        readMoreDescription: description,
+        readMoreDescription: description || '',
       },
       description: shortDescription,
     },
@@ -167,7 +172,7 @@ export default function PrepCarousel({
                 >
                   <View
                     style={tw.style(
-                      `${item.icon ? 'flex-row justify-center' : 'flex'}`,
+                      `${item.icon ? 'flex-row justify-center items-center' : 'flex items-center'}`,
                     )}
                   >
                     {item.icon && (
@@ -239,7 +244,11 @@ export default function PrepCarousel({
                       </View>
                       {item.readMore && (
                         <Pressable
-                          onPress={handlePresentModalPress}
+                          onPress={() => {
+                            if (item.readMore) {
+                              handlePresentModalPress(item.readMore);
+                            }
+                          }}
                           style={tw.style(
                             'mx-auto mt-3.5 rounded-full bg-strokecream px-4 py-1',
                           )}
@@ -253,56 +262,6 @@ export default function PrepCarousel({
                   )}
                 </View>
               </Animated.View>
-
-              {item.readMore && (
-                <BottomSheetModal
-                  ref={bottomSheetModalRef}
-                  index={1}
-                  animateOnMount={!reducedMotion}
-                  snapPoints={snapPoints}
-                  containerStyle={{ backgroundColor: 'rgba(26, 26, 27, 0.7)' }}
-                  // onChange={handleSheetChanges}
-                  style={tw.style(
-                    'overflow-hidden rounded-2.5xl border border-strokecream',
-                  )}
-                  handleStyle={tw.style('hidden')}
-                  enableContentPanningGesture={false}
-                >
-                  <ScrollView style={tw.style('px-5')}>
-                    <View style={tw.style('items-end py-4')}>
-                      <Pressable onPress={handlePresentModalDismiss}>
-                        <Feather name={'x'} size={16} color="black" />
-                      </Pressable>
-                    </View>
-                    <View style={tw.style('items-center justify-center')}>
-                      <Text style={tw.style(h7TextStyle)}>
-                        {item.readMore.readMoreTitle}
-                      </Text>
-                    </View>
-                    <View style={tw.style('pb-[50px] pt-[22px]')}>
-                      <Text style={tw.style(bodyLargeBold, 'text-stone')}>
-                        {item.readMore.readMoreSubTitle}
-                      </Text>
-                      <RenderHTML
-                        source={{
-                          html: item.readMore.readMoreDescription || '',
-                        }}
-                        contentWidth={Dimensions.get('window').width - 40}
-                        tagsStyles={tagStyles}
-                        defaultViewProps={{
-                          style: tw`m-0 p-0`,
-                        }}
-                        defaultTextProps={{
-                          style: tw.style(
-                            bodyMediumRegular,
-                            'pt-2.5 text-stone',
-                          ),
-                        }}
-                      />
-                    </View>
-                  </ScrollView>
-                </BottomSheetModal>
-              )}
             </View>
           );
         }}
@@ -319,6 +278,59 @@ export default function PrepCarousel({
           currentIndex={activeDotIndex}
         />
       </View>
+
+      <Modal
+        animationType={reducedMotion ? 'none' : 'slide'}
+        transparent
+        visible={isReadMoreModalVisible}
+        onRequestClose={handlePresentModalDismiss}
+      >
+        <View style={tw`flex-1 bg-black bg-opacity-70`}>
+          <View
+            style={tw.style(
+              'absolute bottom-0 left-0 right-0 max-h-[90%] overflow-hidden rounded-t-2.5xl border border-strokecream bg-white',
+            )}
+          >
+            <ScrollView style={tw.style('px-5')}>
+              <View style={tw.style('items-end py-4')}>
+                <Pressable onPress={handlePresentModalDismiss}>
+                  <Feather name={'x'} size={16} color="black" />
+                </Pressable>
+              </View>
+              {selectedReadMore && (
+                <>
+                  <View style={tw.style('items-center justify-center')}>
+                    <Text style={tw.style(h7TextStyle, 'text-center')}>
+                      {selectedReadMore.readMoreTitle}
+                    </Text>
+                  </View>
+                  <View style={tw.style('pb-[50px] pt-[22px]')}>
+                    <Text style={tw.style(bodyLargeBold, 'text-stone')}>
+                      {selectedReadMore.readMoreSubTitle}
+                    </Text>
+                    <RenderHTML
+                      source={{
+                        html: selectedReadMore.readMoreDescription || '',
+                      }}
+                      contentWidth={Dimensions.get('window').width - 40}
+                      tagsStyles={tagStyles}
+                      defaultViewProps={{
+                        style: tw`m-0 p-0`,
+                      }}
+                      defaultTextProps={{
+                        style: tw.style(
+                          bodyMediumRegular,
+                          'pt-2.5 text-stone',
+                        ),
+                      }}
+                    />
+                  </View>
+                </>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </GenericCarouselWrapper>
   );
 }

@@ -59,6 +59,13 @@ export default function HackOrTip({
   /* https://github.com/gorhom/react-native-bottom-sheet/issues/1560#issuecomment-1750466864
   Added fixes for ios / android users who uses reduce motion */
   const reducedMotion = useReducedMotion();
+  // Stabilize RenderHTML props
+  const contentWidth = useMemo(() => Dimensions.get('window').width - 40, []);
+  const defaultViewProps = useMemo(() => ({ style: tw`m-0 p-0` }), []);
+  const defaultTextProps = useMemo(
+    () => ({ style: tw.style(bodyMediumRegular, 'pt-2.5 text-stone') }),
+    [],
+  );
 
   if (!hackOrTip) return null;
 
@@ -152,17 +159,11 @@ export default function HackOrTip({
                 {hackOrTip.shortDescription}
               </Text>
               <RenderHTML
-                source={{
-                  html: hackOrTip.description || '',
-                }}
-                contentWidth={Dimensions.get('window').width - 40}
+                source={{ html: hackOrTip.description || '' }}
+                contentWidth={contentWidth}
                 tagsStyles={tagStyles}
-                defaultViewProps={{
-                  style: tw`m-0 p-0`,
-                }}
-                defaultTextProps={{
-                  style: tw.style(bodyMediumRegular, 'pt-2.5 text-stone'),
-                }}
+                defaultViewProps={defaultViewProps}
+                defaultTextProps={defaultTextProps}
               />
             </View>
           </ScrollView>

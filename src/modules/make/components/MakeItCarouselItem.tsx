@@ -1,9 +1,9 @@
 import SecondaryButton from '../../../common/components/ThemeButtons/SecondaryButton';
 import tw from '../../../common/tailwind';
 import { IFrameworkComponentStep } from '../../../models/craft';
-import HackOrTip from '../../../modules/make/components/HackOrTip';
+import HackOrTip from '../../../modules/prep/components/HackOrTip';
 import RelevantIngredients from './RelevantIngredients';
-import React, { useState } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
 import { Dimensions, Pressable, ScrollView, View } from 'react-native';
 // import Modal from 'react-native-modal';
 import RenderHTML, {
@@ -38,6 +38,42 @@ export default function MakeItCarouselItem({
   const [isIngredientsActive, setIsIngredientsActive] =
     useState<boolean>(false);
 
+  // Stabilize RenderHTML props to avoid frequent provider rerenders
+  const contentWidth = useMemo(() => Dimensions.get('window').width - 40, []);
+  const tagsStyles = useMemo(
+    () => ({
+      p: tw.style('text-white'),
+      strong: tw.style('text-lemon'),
+    }),
+    [],
+  );
+  const defaultViewProps = useMemo(() => ({ style: tw`m-0 p-0` }), []);
+  const defaultTextProps = useMemo(
+    () => ({
+      style: tw.style('mb-4 font-sans-semibold text-3.5xl leading-tightest'),
+      maxFontSizeMultiplier: 1 as const,
+    }),
+    [],
+  );
+  const onStrongPress = useCallback(() => {
+    setIsIngredientsActive(prev => !prev);
+  }, []);
+  const customHTMLElementModels = useMemo(
+    () => ({
+      strong: HTMLElementModel.fromCustomModel({
+        tagName: 'strong',
+        mixedUAStyles: tw.style('text-lemon'),
+        contentModel: HTMLContentModel.textual,
+        reactNativeProps: {
+          native: {
+            onPress: onStrongPress,
+          },
+        },
+      }),
+    }),
+    [onStrongPress],
+  );
+
   return (
     <View
       style={tw`relative pb-4 w-[${
@@ -50,37 +86,12 @@ export default function MakeItCarouselItem({
         showsVerticalScrollIndicator={false}
       >
         <RenderHTML
-          source={{
-            html: item.stepInstructions || '',
-          }}
-          contentWidth={Dimensions.get('window').width - 40}
-          tagsStyles={{
-            p: tw.style('text-white'),
-            strong: tw.style('text-lemon'),
-          }}
-          defaultViewProps={{
-            style: tw`m-0 p-0`,
-          }}
-          defaultTextProps={{
-            style: tw.style(
-              'mb-4 font-sans-semibold text-3.5xl leading-tightest',
-            ),
-            maxFontSizeMultiplier: 1,
-          }}
-          customHTMLElementModels={{
-            strong: HTMLElementModel.fromCustomModel({
-              tagName: 'strong',
-              mixedUAStyles: tw.style('text-lemon'),
-              contentModel: HTMLContentModel.textual,
-              reactNativeProps: {
-                native: {
-                  onPress: () => {
-                    setIsIngredientsActive(!isIngredientsActive);
-                  },
-                },
-              },
-            }),
-          }}
+          source={{ html: item.stepInstructions || '' }}
+          contentWidth={contentWidth}
+          tagsStyles={tagsStyles}
+          defaultViewProps={defaultViewProps}
+          defaultTextProps={defaultTextProps}
+          customHTMLElementModels={customHTMLElementModels}
         />
 
         {item.hackOrTip.length > 0 && (

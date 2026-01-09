@@ -42,7 +42,9 @@ export default function OptionalIngredient({
       )}
       <View style={tw.style('flex-row justify-between')}>
         <Text style={tw.style(bodyLargeMedium, 'pb-3.5')}>
-          {ingredient.ingredient[0].title}
+          {ingredient.ingredient[0].title?.trim()
+            ? ingredient.ingredient[0].title
+            : ingredient.ingredient[0].id}
         </Text>
         <Pressable
           style={tw.style('pt-0.5')}

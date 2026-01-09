@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+// Replacing BottomSheet with a reliable RN Modal for consistent display
 import PrimaryButton from '../../../common/components/ThemeButtons/PrimaryButton';
 import tw from '../../../common/tailwind';
 import { IFrameworkComponent } from '../../../models/craft';
@@ -13,8 +13,9 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, Text, TextInput, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
+import { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cardDrop } from '../../../theme/shadow';
 import {
@@ -80,22 +81,25 @@ export default function PrepComponent({
 }: IPrepComponent) {
   const [selectedOptionalIngredients, setSelectedOptionalIngredients] =
     useState<string[]>([]);
+  const [optionalSearchQuery, setOptionalSearchQuery] = useState<string>('');
 
   const insets = useSafeAreaInsets();
   const paddingBottom = `pb-${insets.bottom + 44}px`;
-  // ref
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-
-  // variables
-  const snapPoints = useMemo(() => ['1%', '90%'], []);
+  
+  /* https://github.com/gorhom/react-native-bottom-sheet/issues/1560#issuecomment-1750466864
+  Added fixes for ios / android users who uses reduce motion */
+  const reducedMotion = useReducedMotion();
+  
+  // Modal visibility state (replaces BottomSheet)
+  const [isOptionalModalVisible, setIsOptionalModalVisible] = useState(false);
 
   // // callbacks
   const handlePresentModalPress = useCallback(() => {
-    bottomSheetModalRef.current?.present();
-  }, [bottomSheetModalRef]);
+    setIsOptionalModalVisible(true);
+  }, [optionalIngredients]);
   const handlePresentModalDismiss = useCallback(() => {
-    bottomSheetModalRef.current?.close();
-  }, [bottomSheetModalRef]);
+    setIsOptionalModalVisible(false);
+  }, []);
 
   const onOptionalIngredientChecked = (value: string) => {
     const valueIndex = selectedOptionalIngredients.findIndex(x => x === value);
@@ -132,23 +136,24 @@ export default function PrepComponent({
   }, [selectedOptionalIngredients]);
 
   return (
-    <View style={tw.style(`px-5 pt-6`)}>
-      <View style={tw.style('mb-2')}>
-        <Text
-          style={tw.style(
-            subheadLargeUppercase,
-            'text-midgray',
-            componentInstructions ? 'mb-2' : 'mb-0',
-          )}
-        >
-          {componentTitle}
-        </Text>
-        {componentInstructions && (
-          <Text style={tw.style(bodySmallRegular, 'text-midgray')}>
-            {componentInstructions}
+    <>
+      <View style={tw.style(`px-5 pt-6`)}>
+        <View style={tw.style('mb-2')}>
+          <Text
+            style={tw.style(
+              subheadLargeUppercase,
+              'text-midgray',
+              componentInstructions ? 'mb-2' : 'mb-0',
+            )}
+          >
+            {componentTitle}
           </Text>
-        )}
-      </View>
+          {componentInstructions && (
+            <Text style={tw.style(bodySmallRegular, 'text-midgray')}>
+              {componentInstructions}
+            </Text>
+          )}
+        </View>
       <View
         style={[
           tw.style('rounded-md border border-radish bg-white py-5'),
@@ -222,9 +227,9 @@ export default function PrepComponent({
               </View>
             )}
 
-            {/* Show this only when no required ingredients */}
-            {(!requiredIngredients || requiredIngredients.length === 0) &&
-              selectedOptionalIngredients.length === 0 && (
+            {/* Show tag and description when no required ingredients or when no optional ingredients selected yet */}
+            {((!requiredIngredients || requiredIngredients.length === 0) &&
+              selectedOptionalIngredients.length === 0) && (
                 <View
                   style={tw.style(
                     `items-center gap-2.5 border-b border-radish pb-3.5`,
@@ -254,64 +259,109 @@ export default function PrepComponent({
                 </View>
               )}
 
+            {/* Show plus button for all optional ingredients sections */}
             <Pressable
               onPress={handlePresentModalPress}
-              style={tw.style('flex-row justify-center pt-1.5')}
+              style={tw.style(
+                'flex-row justify-center pt-1.5',
+                selectedOptionalIngredients.length > 0 ? 'border-t border-strokecream pt-3.5' : '',
+              )}
             >
-              <Feather name="plus-circle" size={18} color={tw.color('kale')} />
+              <Feather 
+                name="plus-circle" 
+                size={18} 
+                color={tw.color(
+                  stronglyRecommended.includes('stronglyRecommended') ? 'kale' : 'eggplant'
+                )} 
+              />
               <Text
                 style={tw.style(
                   bodyMediumBold,
-                  'ml-2 mt-[1px] flex-row text-kale',
+                  'ml-2 mt-[1px] flex-row',
+                  stronglyRecommended.includes('stronglyRecommended')
+                    ? 'text-kale'
+                    : 'text-eggplant',
                 )}
               >
                 {buttonText ?? 'add extra flavour'}
               </Text>
             </Pressable>
+          </View>
+        )}
+      </View>
+    </View>
 
-            {/* Modal with optional ingredients list */}
-            <BottomSheetModal
-              ref={bottomSheetModalRef}
-              index={1}
-              snapPoints={snapPoints}
-              // onChange={handleSheetChanges}
-              containerStyle={{ backgroundColor: 'rgba(26, 26, 27, 0.7)' }}
-              style={tw.style(
-                'overflow-hidden rounded-2.5xl border border-strokecream',
-              )}
-              handleStyle={tw.style('hidden')}
-              enableContentPanningGesture={false}
-            >
-              <ScrollView style={tw.style('px-5')}>
-                <View style={tw.style('items-end py-4')}>
-                  <Pressable onPress={handlePresentModalDismiss}>
-                    <Feather name={'x'} size={16} color="black" />
-                  </Pressable>
-                </View>
+    {/* Modal with optional ingredients list - reliable overlay implementation */}
+    {optionalIngredients && optionalIngredients.length > 0 && (
+      <Modal
+        animationType={reducedMotion ? 'none' : 'slide'}
+        transparent
+        visible={isOptionalModalVisible}
+        onRequestClose={handlePresentModalDismiss}
+      >
+        <View style={tw`flex-1 bg-black bg-opacity-70`}> 
+          <View
+            style={tw.style(
+              'absolute bottom-0 left-0 right-0 overflow-hidden rounded-t-2.5xl border border-strokecream bg-white',
+            )}
+          >
+            <View style={tw.style('px-5')}>
+              <View style={tw.style('items-end py-4')}>
+                <Pressable onPress={handlePresentModalDismiss}>
+                  <Feather name={'x'} size={16} color="black" />
+                </Pressable>
+              </View>
 
-                <View style={tw.style('mb-[9px] items-center justify-center')}>
-                  <Text style={tw.style(h7TextStyle)}>
-                    {buttonText ?? 'add extra flavour'}
+              <View style={tw.style('mb-[9px] items-center justify-center')}>
+                <Text style={tw.style(h7TextStyle)}>
+                  {buttonText ?? 'add extra flavour'}
+                </Text>
+                {choiceInstructions && (
+                  <Text style={tw.style(bodyMediumRegular, 'mt-1.5')}>
+                    {choiceInstructions}
                   </Text>
-                  {choiceInstructions && (
-                    <Text style={tw.style(bodyMediumRegular, 'mt-1.5')}>
-                      {choiceInstructions}
-                    </Text>
+                )}
+              </View>
+
+              {/* Search bar */}
+              <View style={tw.style('mb-3')}>
+                <View style={tw.style('flex-row items-center rounded-md border border-strokecream bg-white px-3 py-2')}>
+                  <Feather name="search" size={16} color={tw.color('stone')} />
+                  <TextInput
+                    value={optionalSearchQuery}
+                    onChangeText={setOptionalSearchQuery}
+                    placeholder="Search ingredients"
+                    placeholderTextColor={tw.color('stone')}
+                    style={tw.style('ml-2 flex-1 text-stone')}
+                  />
+                  {optionalSearchQuery.length > 0 && (
+                    <Pressable onPress={() => setOptionalSearchQuery('')}>
+                      <Feather name="x" size={16} color={tw.color('stone')} />
+                    </Pressable>
                   )}
                 </View>
+              </View>
 
-                <OptionalIngredientsList
-                  ingredients={optionalIngredients
-                    .map(item => ({
-                      id: item.ingredient[0].id,
-                      title: item.ingredient[0].title,
-                    }))
-                    .sort((a, b) => a.title.localeCompare(b.title))}
-                  selectedOptionalIngredients={selectedOptionalIngredients}
-                  setSelectedOptionalIngredients={onOptionalIngredientChecked}
-                />
-              </ScrollView>
-              <View style={tw.style('px-5', paddingBottom)}>
+              <OptionalIngredientsList
+                ingredients={(() => {
+                  const mapped = optionalIngredients.map(item => ({
+                    id: item.ingredient[0].id,
+                    title: item.ingredient[0].title,
+                  })).sort((a, b) => a.title.localeCompare(b.title));
+                  const q = optionalSearchQuery.trim().toLowerCase();
+                  const filtered = q.length === 0
+                    ? mapped
+                    : mapped.filter(x =>
+                        (x.title || '').toLowerCase().includes(q) ||
+                        (x.id || '').toLowerCase().includes(q)
+                      );
+                  return filtered;
+                })()}
+                selectedOptionalIngredients={selectedOptionalIngredients}
+                setSelectedOptionalIngredients={onOptionalIngredientChecked}
+              />
+
+              <View style={tw.style('px-0', paddingBottom)}>
                 <PrimaryButton
                   onPress={() => {
                     handlePresentModalDismiss();
@@ -321,10 +371,11 @@ export default function PrepComponent({
                   {'Add to your meal'}
                 </PrimaryButton>
               </View>
-            </BottomSheetModal>
+            </View>
           </View>
-        )}
-      </View>
-    </View>
+        </View>
+      </Modal>
+    )}
+    </>
   );
 }

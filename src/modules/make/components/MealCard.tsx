@@ -53,6 +53,29 @@ export default function MealCard({
         meal_name: title,
       },
     });
+
+    try {
+      // Try new recipe API first
+      const { recipeApiService } = await import('../../recipe/api/recipeApiService');
+      const recipe = await recipeApiService.getRecipeById(id);
+      
+      if (recipe) {
+        // Generate slug from recipe title
+        const slug = recipe.title.toLowerCase().replace(/\s+/g, '-');
+        navigation.navigate('Root', {
+          screen: 'Make',
+          params: {
+            screen: 'PrepDetail',
+            params: { slug },
+          },
+        });
+        return;
+      }
+    } catch (error) {
+      console.error('Error fetching recipe, falling back to framework:', error);
+    }
+
+    // Fallback to Craft CMS
     const framework = await getFramework(id);
     if (framework) {
       //linkTo(`/make/prep/${framework.slug}`);

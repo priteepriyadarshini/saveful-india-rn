@@ -6,6 +6,7 @@ import { ICategory } from '../../../models/craft';
 import { mixpanelEventName } from '../../analytics/analytics';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
 import { useCurentRoute } from '../../route/context/CurrentRouteContext';
+import { frameworkCategoryApiService } from '../../frameworkCategory/api/frameworkCategoryApiService';
 // import FILTERS from 'modules/make/data/filters';
 import React, { useEffect } from 'react';
 import { LayoutAnimation, View } from 'react-native';
@@ -36,13 +37,52 @@ export default function Filters({
   const [categories, setCategories] = React.useState<ICategory[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
-  const getCategoriesData = async () => {
-    const data = await getCategories();
+  // Helper to normalize Mongo ObjectId or string to string
+  const extractId = (value: any): string => {
+    if (typeof value === 'string') return value;
+    if (value?.$oid) return value.$oid;
+    if (value?._id) return typeof value._id === 'string' ? value._id : value._id.$oid || value._id.toString();
+    return value?.toString() || '';
+  };
 
-    if (data) {
-      // Only ingredient categories
-      setCategories(data.filter(item => item.groupHandle === 'framework'));
+  const getCategoriesData = async () => {
+    try {
+      // First try to fetch from new API
+      const frameworkCategories = await frameworkCategoryApiService.getAllCategories();
+      
+      // Convert framework categories to ICategory format
+      const convertedCategories: ICategory[] = frameworkCategories.map(cat => ({
+        id: extractId(cat._id as any),
+        title: cat.title,
+        groupHandle: 'framework',
+        groupId: 'framework-group',
+        uid: extractId(cat._id as any),
+        heroImage: cat.heroImageUrl ? [{
+          id: `${extractId(cat._id as any)}-hero`,
+          title: cat.title,
+          url: cat.heroImageUrl,
+          uid: `${extractId(cat._id as any)}-hero-uid`
+        }] : undefined,
+        image: cat.iconImageUrl ? [{
+          id: `${extractId(cat._id as any)}-icon`,
+          title: cat.title,
+          url: cat.iconImageUrl,
+          uid: `${extractId(cat._id as any)}-icon-uid`
+        }] : undefined,
+      }));
+
+      setCategories(convertedCategories);
       setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching framework categories from new API, falling back to Craft CMS:', error);
+      
+      // Fallback to Craft CMS
+      const data = await getCategories();
+      if (data) {
+        // Only ingredient categories
+        setCategories(data.filter(item => item.groupHandle === 'framework'));
+        setIsLoading(false);
+      }
     }
   };
 

@@ -48,6 +48,22 @@ export default function RecipeCard({
 
   const onMakeIt = React.useCallback(
   async (id: string) => {
+    try {
+      // Try new recipe API first
+      const { recipeApiService } = await import('../../recipe/api/recipeApiService');
+      const recipe = await recipeApiService.getRecipeById(id);
+      
+      if (recipe) {
+        // Generate slug from recipe title
+        const slug = recipe.title.toLowerCase().replace(/\s+/g, '-');
+        navigation.navigate('PrepDetail', { slug });
+        return;
+      }
+    } catch (error) {
+      console.error('Error fetching recipe, falling back to framework:', error);
+    }
+
+    // Fallback to Craft CMS
     const framework = await getFramework(id);
     if (framework) {
       navigation.navigate('PrepDetail', { slug: framework.slug });

@@ -158,6 +158,74 @@ export default function PrepScreen({
   };
 
   const getFrameworksData = async () => {
+    try {
+      // Try new recipe API first
+      const { recipeApiService } = await import('../../recipe/api/recipeApiService');
+      const { recipeToFramework } = await import('../../recipe/adapters/recipeAdapter');
+      const { ingredientApiService } = await import('../../ingredients/api/ingredientApiService');
+      const { transformIngredientToLegacyFormat } = await import('../../ingredients/helpers/ingredientTransformers');
+      
+      const recipe = await recipeApiService.getRecipeBySlug(slug);
+      
+      if (recipe) {
+        const convertedFramework = recipeToFramework(recipe);
+        // Inject ingredient names/weights from API into framework
+        const allIds: string[] = [];
+        convertedFramework.components.forEach(comp => {
+          comp.requiredIngredients.forEach(ri => {
+            ri.recommendedIngredient.forEach(ing => allIds.push(ing.id));
+            ri.alternativeIngredients.forEach(ai => ai.ingredient.forEach(ing => allIds.push(ing.id)));
+          });
+          comp.optionalIngredients.forEach(oi => oi.ingredient.forEach(ing => allIds.push(ing.id)));
+          comp.componentSteps.forEach(step => step.relevantIngredients.forEach(ing => allIds.push(ing.id)));
+        });
+        const ingredientMap = await ingredientApiService.getIngredientsByIds(allIds);
+        convertedFramework.components.forEach(comp => {
+          comp.requiredIngredients.forEach(ri => {
+            ri.recommendedIngredient.forEach(ing => {
+              const apiIng = ingredientMap[ing.id];
+              if (apiIng) {
+                const legacy = transformIngredientToLegacyFormat(apiIng);
+                ing.title = legacy.title;
+                ing.averageWeight = legacy.averageWeight;
+              }
+            });
+            ri.alternativeIngredients.forEach(ai => ai.ingredient.forEach(ing => {
+              const apiIng = ingredientMap[ing.id];
+              if (apiIng) {
+                const legacy = transformIngredientToLegacyFormat(apiIng);
+                ing.title = legacy.title;
+                ing.averageWeight = legacy.averageWeight;
+              }
+            }));
+          });
+          comp.optionalIngredients.forEach(oi => oi.ingredient.forEach(ing => {
+            const apiIng = ingredientMap[ing.id];
+            if (apiIng) {
+              const legacy = transformIngredientToLegacyFormat(apiIng);
+              ing.title = legacy.title;
+              ing.averageWeight = legacy.averageWeight;
+            }
+          }));
+          comp.componentSteps.forEach(step => step.relevantIngredients.forEach(ing => {
+            const apiIng = ingredientMap[ing.id];
+            if (apiIng) {
+              const legacy = transformIngredientToLegacyFormat(apiIng);
+              ing.title = legacy.title;
+            }
+          }));
+        });
+        setFramework(convertedFramework);
+        setSelectedFlavor(convertedFramework.variantTags[0]?.id || '');
+        setIsLoading(false);
+        setDefaultRequiredIngredients();
+        return;
+      }
+    } catch (error) {
+      console.error('Error fetching from recipe API, falling back to Craft CMS:', error);
+    }
+
+    // Fallback to Craft CMS
     const data = await getFrameworkBySlug(slug);
 
     if (data) {
@@ -380,21 +448,24 @@ export default function PrepScreen({
 
           {/* Filter the components based on the selectedFlavour id being one of the includedInVariants */}
           {framework.components
-            .filter(component =>
-              component.includedInVariants.some(
+            .filter(component => {
+              const hasMatch = component.includedInVariants.some(
                 variant => variant.id === selectedFlavor,
-              ),
-            )
-            .map((component, index) => (
-              <PrepComponent
-                key={component.id}
-                {...component}
-                index={index}
-                allRequiredIngredients={allRequiredIngredients}
-                setAllRequiredIngredients={setAllRequiredIngredients}
-                setAllOptionalIngredients={setAllOptionalIngredients}
-              />
-            ))}
+              );
+              return hasMatch;
+            })
+            .map((component, index) => {
+              return (
+                <PrepComponent
+                  key={component.id}
+                  {...component}
+                  index={index}
+                  allRequiredIngredients={allRequiredIngredients}
+                  setAllRequiredIngredients={setAllRequiredIngredients}
+                  setAllOptionalIngredients={setAllOptionalIngredients}
+                />
+              );
+            })}
         </SafeAreaView>
       </ScrollView>
 
