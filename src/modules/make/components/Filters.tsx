@@ -1,6 +1,5 @@
 import Pill from '../../../common/components/Pill';
 import SkeletonLoader from '../../../common/components/SkeletonLoader';
-import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
 import { ICategory } from '../../../models/craft';
 import { mixpanelEventName } from '../../analytics/analytics';
@@ -33,7 +32,6 @@ export default function Filters({
     setIsActive(value);
   };
 
-  const { getCategories } = useContent();
   const [categories, setCategories] = React.useState<ICategory[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
@@ -75,13 +73,9 @@ export default function Filters({
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching framework categories from new API:', error);
-      
-      const data = await getCategories();
-      if (data) {
-        // Only ingredient categories
-        setCategories(data.filter(item => item.groupHandle === 'framework'));
-        setIsLoading(false);
-      }
+      // Do not fallback to Craft CMS; keep only API usage
+      setCategories([]);
+      setIsLoading(false);
     }
   };
 

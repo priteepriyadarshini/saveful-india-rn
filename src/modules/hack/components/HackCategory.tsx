@@ -74,12 +74,9 @@ export default function HackCategory({ item, useApiData = false }: HackCategoryP
   const data = [...articles, ...videos];
   const totalCount = useApiData ? hackCount : data.length;
 
-  // Don't render if no content (only for static data)
-  if (!useApiData && data.length === 0) {
+  if (totalCount === 0) {
     return null;
   }
-
-  // Always render API categories, even with 0 hacks
 
   const handlePress = () => {
     const apiItem = item as ApiHackCategory;

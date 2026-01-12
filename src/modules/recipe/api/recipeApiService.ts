@@ -83,12 +83,39 @@ class RecipeApiService {
         return allRecipes;
       }
 
-      return allRecipes.filter(recipe => 
+      const extractId = (val: any): string => {
+        if (typeof val === 'string') return val;
+        if (val?.$oid) return val.$oid as string;
+        if (val?._id) {
+          return typeof val._id === 'string'
+            ? (val._id as string)
+            : (val._id?.$oid as string) || String(val._id);
+        }
+        const str = String(val);
+        return str === '[object Object]' ? '' : str;
+      };
+
+      const filtered = allRecipes.filter(recipe =>
+        Array.isArray(recipe.frameworkCategories) &&
         recipe.frameworkCategories.some(cat => {
-          const catId = typeof cat === 'string' ? cat : (cat as any)._id;
-          return categoryIds.includes(catId);
+          const catId = extractId(cat);
+          return catId && categoryIds.includes(catId);
         })
       );
+
+      // If no matches found, try a more defensive check where cat may have nested objects
+      if (!filtered || filtered.length === 0) {
+        return allRecipes.filter(recipe => {
+          if (!Array.isArray(recipe.frameworkCategories)) return false;
+          for (const cat of recipe.frameworkCategories) {
+            const id = extractId(cat);
+            if (id && categoryIds.includes(id)) return true;
+          }
+          return false;
+        });
+      }
+
+      return filtered;
     } catch (error) {
       console.error('Error filtering recipes by categories:', error);
       throw error;

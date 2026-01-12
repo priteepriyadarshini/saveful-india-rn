@@ -1,12 +1,12 @@
 import { Feather } from '@expo/vector-icons';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+// Replacing BottomSheet with a reliable RN Modal for consistent display
 import tw from '../../../common/tailwind';
 import { IHackOrTip } from '../../../models/craft';
 import { hackOrTipApiService } from '../../hackOrTip/api/hackOrTipApiService';
 import { transformHackOrTip } from '../../hackOrTip/helpers/transformers';
 import HackOrTipSponsor from '../../../modules/make/components/HackOrTipSponsor';
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { Dimensions, Pressable, ScrollView, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Dimensions, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import RenderHTML from 'react-native-render-html';
 import {
@@ -27,19 +27,16 @@ export default function HackOrTip({
   maxHeight?: number;
   setMaxHeight?: (value: number) => void;
 }) {
-  // ref
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-
-  // variables
-  const snapPoints = useMemo(() => ['1%', '90%'], []);
+  // Modal visibility state (replaces BottomSheet)
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   // callbacks
   const handlePresentModalPress = useCallback(() => {
-    bottomSheetModalRef.current?.present();
-  }, [bottomSheetModalRef]);
+    setIsModalVisible(true);
+  }, []);
   const handlePresentModalDismiss = useCallback(() => {
-    bottomSheetModalRef.current?.close();
-  }, [bottomSheetModalRef]);
+    setIsModalVisible(false);
+  }, []);
 
   const [hackOrTip, setHackOrTip] = React.useState<IHackOrTip>();
 
@@ -133,48 +130,49 @@ export default function HackOrTip({
       </View>
 
       {hackOrTip.description && (
-        <BottomSheetModal
-          ref={bottomSheetModalRef}
-          index={1}
-          animateOnMount={!reducedMotion}
-          snapPoints={snapPoints}
-          containerStyle={{ backgroundColor: 'rgba(26, 26, 27, 0.7)' }}
-          // onChange={handleSheetChanges}
-          style={tw.style(
-            'overflow-hidden rounded-2.5xl border border-strokecream',
-          )}
-          handleStyle={tw.style('hidden')}
-          enableContentPanningGesture={false}
+        <Modal
+          animationType={reducedMotion ? 'none' : 'slide'}
+          transparent
+          visible={isModalVisible}
+          onRequestClose={handlePresentModalDismiss}
         >
-          <ScrollView style={tw.style('px-5')}>
-            <View style={tw.style('items-end py-4')}>
-              <Pressable onPress={handlePresentModalDismiss}>
-                <Feather name={'x'} size={16} color="black" />
-              </Pressable>
+          <View style={tw`flex-1 bg-black bg-opacity-70`}>
+            <View
+              style={tw.style(
+                'absolute bottom-0 left-0 right-0 overflow-hidden rounded-t-2.5xl border border-strokecream bg-white',
+              )}
+            >
+              <ScrollView style={tw.style('px-5')}>
+                <View style={tw.style('items-end py-4')}>
+                  <Pressable onPress={handlePresentModalDismiss}>
+                    <Feather name={'x'} size={16} color="black" />
+                  </Pressable>
+                </View>
+                <View style={tw.style('items-center justify-center')}>
+                  <Text style={tw.style(h7TextStyle)}>{title}</Text>
+                </View>
+                <View style={tw.style('pb-[50px] pt-[22px]')}>
+                  <Text style={tw.style(bodyLargeBold, 'text-stone')}>
+                    {hackOrTip.shortDescription}
+                  </Text>
+                  <RenderHTML
+                    source={{
+                      html: hackOrTip.description || '',
+                    }}
+                    contentWidth={Dimensions.get('window').width - 40}
+                    tagsStyles={tagStyles}
+                    defaultViewProps={{
+                      style: tw`m-0 p-0`,
+                    }}
+                    defaultTextProps={{
+                      style: tw.style(bodyMediumRegular, 'pt-2.5 text-stone'),
+                    }}
+                  />
+                </View>
+              </ScrollView>
             </View>
-            <View style={tw.style('items-center justify-center')}>
-              <Text style={tw.style(h7TextStyle)}>{title}</Text>
-            </View>
-            <View style={tw.style('pb-[50px] pt-[22px]')}>
-              <Text style={tw.style(bodyLargeBold, 'text-stone')}>
-                {hackOrTip.shortDescription}
-              </Text>
-              <RenderHTML
-                source={{
-                  html: hackOrTip.description || '',
-                }}
-                contentWidth={Dimensions.get('window').width - 40}
-                tagsStyles={tagStyles}
-                defaultViewProps={{
-                  style: tw`m-0 p-0`,
-                }}
-                defaultTextProps={{
-                  style: tw.style(bodyMediumRegular, 'pt-2.5 text-stone'),
-                }}
-              />
-            </View>
-          </ScrollView>
-        </BottomSheetModal>
+          </View>
+        </Modal>
       )}
     </>
   );
