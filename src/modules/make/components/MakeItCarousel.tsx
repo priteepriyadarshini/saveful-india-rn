@@ -8,10 +8,7 @@ import CompletedCookModal from '../../../modules/make/components/CompletedCookMo
 import MakeItCarouselItem from '../../../modules/make/components/MakeItCarouselItem';
 import { MixPanelContext } from '../../../modules/mixpanel/context/MixpanelContext';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
-import {
-  useGetUserMealsQuery,
-  useUpdateUserMealMutation,
-} from '../../../modules/track/api/api'; 
+// Removed Craft CMS dependencies 
 import React, { useContext, useRef, useState } from 'react';
 import {
   Alert,
@@ -22,6 +19,8 @@ import {
 } from 'react-native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootStackParamList } from '../../navigation/navigator/root/types';
+import { useCreateFeedbackMutation } from '../../../modules/track/api/api';
+import { useGetCookedRecipesQuery } from '../../../modules/analytics/api/api';
 
 const screenWidth = Dimensions.get('screen').width;
 
@@ -38,7 +37,7 @@ export default function MakeItCarousel({
   frameworkId,
   // title,
   data,
-  // totalWeightOfSelectedIngredients,
+  totalWeightOfSelectedIngredients,
   mealId,
   onScroll,
   completedSteps,
@@ -64,6 +63,12 @@ export default function MakeItCarousel({
   const [mixpanel] = useContext(MixPanelContext);
 
   const [isModalVisible, setModalVisible] = useState(false);
+  const [createFeedback, { isLoading: isCreateFeedbackLoading }] =
+    useCreateFeedbackMutation();
+  const {
+    data: cookedRecipesData,
+    refetch: refetchCookedRecipes,
+  } = useGetCookedRecipesQuery();
 
   const scrollToItem = (index: number) => {
     if (flashListRef.current) {
@@ -82,11 +87,7 @@ export default function MakeItCarousel({
     // Only toggle visibility; navigation handled by modal's close
     setModalVisible(!isModalVisible);
   };
-  //UNCOMMENT these code once the logic part has been created
-  const { data: userMeals, isLoading: isGetUserMealsLoading } =
-    useGetUserMealsQuery();
-  const [updateUserMeal, { isLoading: isUpdateUserMealLoading }] =
-    useUpdateUserMealMutation();
+  // Removed Craft CMS meal tracking
 
   
   // DEMO CODE fallback for userMeals
@@ -105,42 +106,34 @@ export default function MakeItCarousel({
 
   const onCompleteCook = async () => {
     try {
-      const mutationPromise = updateUserMeal({
-        id: mealId,
-        completed: true,
-        saved: true, // Use this for notifications
-        data: {
-          ingredients: data.map(item =>
-            item.ingredients.map(ingredient => ingredient.title),
-          ),
+      completedSteps();
+      sendAnalyticsEvent({
+        event: mixpanelEventName.actionClicked,
+        properties: {
+          location: newCurrentRoute,
+          action: mixpanelEventName.cookCompleted,
+          meal_id: frameworkId,
         },
       });
-      const result = typeof (mutationPromise as any)?.unwrap === 'function'
-        ? await (mutationPromise as any).unwrap()
-        : await mutationPromise;
-
-      if (result) {
-        completedSteps();
-        sendAnalyticsEvent({
-          event: mixpanelEventName.actionClicked,
-          properties: {
-            location: newCurrentRoute,
-            action: mixpanelEventName.cookCompleted,
-            meal_id: frameworkId,
-            total_cooked: userMeals?.length,
-          },
-        });
-        mixpanel?.getPeople().set({
-          total_cooked: userMeals?.length,
-        });
-        setModalVisible(true);
-
-        // scheduleNotification({
-        //   message: `How was your ${title ?? 'meal'}?`,
-        //   delayInSeconds: 30 * 60, // 30 minutes
-        //   url: `/survey/postmake/${result.id}`,
-        // });
+      // Create feedback so stats/groups update. Use computed foodSaved if available
+      if (!isCreateFeedbackLoading) {
+        await createFeedback({
+          frameworkId,
+          prompted: false,
+          foodSaved: (totalWeightOfSelectedIngredients || 0) / 1000,
+          mealId,
+        }).unwrap();
+        // Ensure cooked count reflects this completion
+        await refetchCookedRecipes();
       }
+
+      setModalVisible(true);
+
+      // scheduleNotification({
+      //   message: `How was your ${title ?? 'meal'}?`,
+      //   delayInSeconds: 30 * 60, // 30 minutes
+      //   url: `/survey/postmake/${result.id}`,
+      // });
     } catch (error: unknown) {
       sendFailedEventAnalytics(error);
       Alert.alert('User update error', JSON.stringify(error));
@@ -165,7 +158,7 @@ export default function MakeItCarousel({
               item={item}
               index={index}
               noOfItems={data.length}
-              isLoading={isGetUserMealsLoading || isUpdateUserMealLoading}
+              isLoading={false}
               onCompleteCook={onCompleteCook}
               scrollToItem={scrollToItem}
             />
@@ -190,7 +183,7 @@ export default function MakeItCarousel({
         />
       ) : ( */}
       <CompletedCookModal
-        userMeals={userMeals}
+        mealsCookedCount={cookedRecipesData?.cookedRecipes?.length ?? 0}
         isModalVisible={isModalVisible}
         toggleModal={toggleModal}
       />

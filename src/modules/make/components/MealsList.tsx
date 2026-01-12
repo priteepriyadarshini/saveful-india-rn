@@ -36,8 +36,7 @@ export default function MealsList({ filters }: { filters: string[] }) {
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching recipes:', error);
-      // Fallback to Craft CMS if new API fails
-      console.log('Falling back to Craft CMS...');
+      // Error fetching from API
       const data = await getFrameworks();
       if (data) {
         setFrameworks(

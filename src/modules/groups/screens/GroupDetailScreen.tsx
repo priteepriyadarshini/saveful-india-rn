@@ -9,9 +9,10 @@ import {
   View,
   Image,
   RefreshControl,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import tw from '../../../common/tailwind';
 import PrimaryButton from '../../../common/components/ThemeButtons/PrimaryButton';
@@ -19,6 +20,8 @@ import {
   useGetUserGroupQuery,
   useDeleteUserGroupMutation,
   useGetGroupChallengesQuery,
+  useTransferGroupOwnershipMutation,
+  useLeaveGroupMutation,
 } from '../../../modules/groups/api/api';
 import { bodyLargeBold, bodySmallRegular, h6TextStyle, subheadSmallUppercase } from '../../../theme/typography';
 import { cardDrop } from '../../../theme/shadow';
@@ -35,16 +38,29 @@ export default function GroupDetailScreen() {
   const { id } = route.params as { id: string };
 
   const { data, isLoading, refetch } = useGetUserGroupQuery({ id });
-  const { data: challenges } = useGetGroupChallengesQuery({ communityId: id });
+  const { data: challengesData } = useGetGroupChallengesQuery({ communityId: id });
   const [deleteGroup, { isLoading: isDeleting }] = useDeleteUserGroupMutation();
+  const [transferOwnership, { isLoading: isTransferring }] = useTransferGroupOwnershipMutation();
+  const [leaveGroup, { isLoading: isLeaving }] = useLeaveGroupMutation();
 
+  // All hooks must be declared before any conditional returns to keep order stable
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'food' | 'challenges' | 'members'>('food');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [pendingOwnerId, setPendingOwnerId] = useState<string | null>(null);
 
   const onRefresh = async () => {
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
   };
+
+  // Ensure the latest stats are fetched whenever screen gains focus
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   const handleCopyCode = () => {
     if (data?.group?.joinCode) {
@@ -88,6 +104,56 @@ export default function GroupDetailScreen() {
     );
   };
 
+  const handleLeaveGroup = () => {
+    Alert.alert(
+      'Leave Group',
+      'Are you sure you want to leave this group?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Leave',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await leaveGroup({ groupId: id }).unwrap();
+              Alert.alert('Success', 'Left group successfully');
+              navigation.goBack();
+            } catch (error: any) {
+              Alert.alert('Error', error?.data?.message || 'Failed to leave group');
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const confirmTransferToMember = async (memberName: string) => {
+    if (!pendingOwnerId) return;
+    Alert.alert(
+      'Transfer Ownership',
+      `Are you sure you want to transfer ownership to ${memberName}? You will become a regular member.`,
+      [
+        { text: 'Cancel', style: 'cancel', onPress: () => setPendingOwnerId(null) },
+        {
+          text: 'Transfer',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await transferOwnership({ groupId: id, newOwnerId: pendingOwnerId }).unwrap();
+              Alert.alert('Success', 'Ownership transferred successfully');
+              setPendingOwnerId(null);
+              setIsSettingsOpen(false);
+              refetch();
+            } catch (error: any) {
+              Alert.alert('Error', error?.data?.message || 'Failed to transfer ownership');
+              setPendingOwnerId(null);
+            }
+          },
+        },
+      ],
+    );
+  };
+
   if (isLoading) {
     return (
       <SafeAreaView style={tw.style('flex-1 items-center justify-center bg-creme')}>
@@ -107,8 +173,6 @@ export default function GroupDetailScreen() {
   const { group, members } = data;
   const isOwner = typeof group.ownerId === 'object' ? true : false; // If populated, user is owner
   const bannerImage = group.profilePhotoUrl ? { uri: group.profilePhotoUrl } : getGroupImage(group._id || group.name);
-  const [activeTab, setActiveTab] = useState<'food' | 'challenges' | 'members'>('food');
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const savedKg = ((group.totalFoodSaved || 0) / 1000).toFixed(3);
 
   return (
@@ -170,14 +234,14 @@ export default function GroupDetailScreen() {
         {activeTab === 'challenges' && (
           <View style={tw.style('mx-5 mt-4 gap-6')}>
             {(() => {
-              const now = new Date();
-              const list = challenges || [];
-              const active = list.filter(c => !!c.isActive);
-              const upcoming = list.filter(c => new Date(c.startDate) > now);
-              const closed = list.filter(c => new Date(c.endDate) < now);
-              const cancelled: typeof list = [];
+              const categorized = challengesData?.categorized || {
+                active: [],
+                upcoming: [],
+                closed: [],
+                cancelled: [],
+              };
 
-              const Section = ({ title, items }: { title: string; items: typeof list }) => (
+              const Section = ({ title, items }: { title: string; items: any[] }) => (
                 <View style={tw.style('gap-2')}>
                   <Text style={tw.style(subheadSmallUppercase, 'text-center text-midgray')}>{title}</Text>
                   {items.length === 0 ? (
@@ -199,10 +263,10 @@ export default function GroupDetailScreen() {
 
               return (
                 <>
-                  <Section title="ACTIVE CHALLENGES" items={active} />
-                  <Section title="UPCOMING CHALLENGES" items={upcoming} />
-                  <Section title="CLOSED CHALLENGES" items={closed} />
-                  <Section title="CANCELLED CHALLENGES" items={cancelled} />
+                  <Section title="ACTIVE CHALLENGES" items={categorized.active} />
+                  <Section title="UPCOMING CHALLENGES" items={categorized.upcoming} />
+                  <Section title="CLOSED CHALLENGES" items={categorized.closed} />
+                  <Section title="CANCELLED CHALLENGES" items={categorized.cancelled} />
                 </>
               );
             })()}
@@ -220,18 +284,34 @@ export default function GroupDetailScreen() {
         {activeTab === 'members' && (
           <View style={tw.style('mx-5 mt-4')}>
             {members && members.length > 0 ? (
-              members.map((member) => (
-                <View key={member._id} style={tw.style('mb-2 flex-row items-center justify-between rounded-2xl border border-strokecream bg-white p-3', cardDrop)}>
-                  <View>
-                    <Text style={tw.style(bodySmallRegular, 'text-darkgray')}>
-                      {typeof member.userId === 'object' ? member.userId.name : 'User'}
-                    </Text>
-                    {member.role === 'OWNER' && (
-                      <Text style={tw.style(bodySmallRegular, 'text-eggplant')}>Owner</Text>
+              members.map((member) => {
+                const memberName = typeof member.userId === 'object' ? member.userId.name : 'User';
+                const memberId = typeof member.userId === 'object' ? member.userId._id : member.userId;
+                const isMemberOwner = member.role === 'OWNER';
+                return (
+                  <DebouncedPressable
+                    key={member._id}
+                    disabled={!isOwner || isMemberOwner}
+                    onPress={() => {
+                      setPendingOwnerId(memberId as string);
+                      confirmTransferToMember(memberName);
+                    }}
+                    style={tw.style('mb-2 flex-row items-center justify-between rounded-2xl border border-strokecream bg-white p-3')}
+                  >
+                    <View>
+                      <Text style={tw.style(bodySmallRegular, 'text-darkgray')}>
+                        {memberName}
+                      </Text>
+                      {isMemberOwner && (
+                        <Text style={tw.style(bodySmallRegular, 'text-eggplant')}>Owner</Text>
+                      )}
+                    </View>
+                    {isOwner && !isMemberOwner && (
+                      <Text style={tw.style(subheadSmallUppercase, 'text-eggplant')}>Tap to make owner</Text>
                     )}
-                  </View>
-                </View>
-              ))
+                  </DebouncedPressable>
+                );
+              })
             ) : (
               <Text style={tw.style(bodySmallRegular, 'text-center text-midgray')}>No members yet</Text>
             )}
@@ -240,10 +320,15 @@ export default function GroupDetailScreen() {
 
         {/* Invite Button (not shown on Challenges tab) */}
         {activeTab !== 'challenges' && (
-          <View style={tw.style('mx-5 mt-6')}>
+          <View style={tw.style('mx-5 mt-6 gap-3')}>
             <PrimaryButton width="full" buttonSize="large" variant="solid-black" onPress={handleShareCode}>
               Invite people to this group
             </PrimaryButton>
+            {!isOwner && (
+              <SecondaryButton width="full" buttonSize="large" onPress={handleLeaveGroup}>
+                Leave group
+              </SecondaryButton>
+            )}
           </View>
         )}
 
@@ -257,15 +342,30 @@ export default function GroupDetailScreen() {
           horizontalPadding
         >
           <View style={tw.style('gap-3')}>
-            <SecondaryButton width="full" buttonSize="large" onPress={() => { setIsSettingsOpen(false); navigation.navigate('EditGroup', { id }); }}>
-              Edit group
-            </SecondaryButton>
-            <SecondaryButton width="full" buttonSize="large" onPress={() => { setIsSettingsOpen(false); Alert.alert('Transfer ownership', 'This feature will be available soon.'); }}>
-              Transfer ownership
-            </SecondaryButton>
-            <SecondaryButton width="full" buttonSize="large" onPress={() => { setIsSettingsOpen(false); handleDeleteGroup(); }}>
-              Delete group
-            </SecondaryButton>
+            {isOwner && (
+              <SecondaryButton width="full" buttonSize="large" onPress={() => { setIsSettingsOpen(false); navigation.navigate('EditGroup', { id }); }}>
+                Edit group
+              </SecondaryButton>
+            )}
+
+            {isOwner && (
+              <View style={tw.style('gap-2')}>
+                <Text style={tw.style(subheadSmallUppercase, 'text-midgray')}>TRANSFER OWNERSHIP</Text>
+                <Text style={tw.style(bodySmallRegular, 'text-midgray')}>
+                  Tap a member in the Members tab to transfer ownership.
+                </Text>
+              </View>
+            )}
+
+            {isOwner ? (
+              <SecondaryButton width="full" buttonSize="large" onPress={() => { setIsSettingsOpen(false); handleDeleteGroup(); }}>
+                Delete group
+              </SecondaryButton>
+            ) : (
+              <SecondaryButton width="full" buttonSize="large" onPress={() => { setIsSettingsOpen(false); handleLeaveGroup(); }}>
+                Leave group
+              </SecondaryButton>
+            )}
           </View>
         </ModalComponent>
       </ScrollView>

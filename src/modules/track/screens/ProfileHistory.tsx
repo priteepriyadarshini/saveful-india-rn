@@ -17,8 +17,8 @@ import MealCard from '../../../modules/make/components/MealCard';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
 import {
   useGetFavouritesQuery,
-  useGetUserMealsQuery,
 } from '../../../modules/track/api/api';
+import { useGetCookedRecipesQuery } from '../../../modules/analytics/api/api';
 import AnimatedProfileHeader from '../../../modules/track/components/AnimatedProfileHeader';
 import { TrackStackScreenProps } from '../../../modules/track/navigation/TrackNavigation';
 import React, { useEffect, useRef } from 'react';
@@ -50,7 +50,8 @@ export default function ProfileHistoryScreen({
 
   const env = useEnvironment();
 
-  const { data: cookedMeals } = useGetUserMealsQuery();
+  const { data: cookedRecipesData } = useGetCookedRecipesQuery();
+  const cookedMeals = cookedRecipesData?.cookedRecipes || [];
   const { data: savedMeals } = useGetFavouritesQuery();
 
   const { getFrameworks, getArticleContents, getVideoContents } = useContent();

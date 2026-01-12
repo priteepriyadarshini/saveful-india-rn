@@ -1,45 +1,3 @@
-interface Survey {
-  // week: number;
-  cooking_frequency: number;
-  scraps: number;
-  uneaten_leftovers: number;
-  binned_items: {
-    fruit: number;
-    veggies: number;
-    dairy: number;
-    bread: number;
-    meat: number;
-    herbs: number;
-  };
-  preferred_ingredients: string[];
-  no_of_cooks?: number;
-  prompt_at?: string;
-}
-
-interface SurveyResult extends Survey {
-  co2: string;
-  co2_savings: string;
-  completed_at: string;
-  cost_savings: string;
-  food_saved: string;
-  id: string;
-  spent: string;
-  waste: string;
-}
-
-interface SurveyResponse {
-  track_survey: SurveyResult;
-}
-
-interface UserSurveysResponse {
-  track_surveys: SurveyResult[];
-}
-
-interface SurveyEligibilityResponse {
-  eligible: boolean;
-  next_survey_date: string;
-}
-
 interface Feedback {
   framework_id: string;
   prompted: boolean;
@@ -60,29 +18,6 @@ interface FeedbackResponse {
 
 interface FeedbacksForFrameworkResponse {
   feedback_list: FeedbackResult[];
-}
-
-interface UserMeal {
-  id: string;
-  framework_id: string;
-  variant_id: string;
-  saved: boolean;
-  completed: boolean;
-  data: {
-    ingredients: string[][];
-  };
-}
-
-interface UserMealResult extends UserMeal {
-  id: string;
-}
-
-interface UserMealResponse {
-  meal: UserMealResult;
-}
-
-interface UserMealsResponse {
-  meals: UserMealResult[];
 }
 
 interface Favourite {
@@ -129,13 +64,4 @@ export {
   FeedbacksForFrameworkResponse,
   Stats,
   StatsResponse,
-  Survey,
-  SurveyEligibilityResponse,
-  SurveyResponse,
-  SurveyResult,
-  UserMeal,
-  UserMealResponse,
-  UserMealResult,
-  UserMealsResponse,
-  UserSurveysResponse,
 };

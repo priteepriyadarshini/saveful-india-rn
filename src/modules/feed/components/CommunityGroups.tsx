@@ -6,7 +6,7 @@ import tw from '../../../common/tailwind';
 import { LinearGradient } from 'expo-linear-gradient';
 import GroupCard from '../../../modules/feed/components/GroupCard';
 import JoinGroupModal from '../../../modules/feed/components/JoinGroupModal';
-import { useGetUserGroupsQuery } from '../../../modules/groups/api/api';
+import { useGetMemberGroupsQuery } from '../../../modules/groups/api/api';
 import HowItWorksModal from '../../../modules/groups/components/HowItWorksModal';
 import { Dimensions, Image, Text, View } from 'react-native';
 import { cardDrop } from '../../../theme/shadow';
@@ -19,7 +19,7 @@ const itemLength = screenWidth - 40;
 export default function CommunityGroups() {
   const navigation = useNavigation<NativeStackNavigationProp<FeedStackParamList>>();
 
-  const { data: groups, isLoading, refetch } = useGetUserGroupsQuery();
+  const { data: groups, isLoading, refetch } = useGetMemberGroupsQuery();
 
   const handleJoinSuccess = () => {
     refetch();
@@ -43,9 +43,9 @@ export default function CommunityGroups() {
               contentContainerStyle={tw`pl-5 pr-3`}
               scrollEnabled={true}
               itemLength={itemLength + 8}
-              renderItem={({ item }) => (
+              renderItem={({ item }: { item: any }) => (
                 <View style={tw`mr-2`} key={item._id}>
-                  <GroupCard group={item} />
+                  <GroupCard group={item as any} />
                 </View>
               )}
             />

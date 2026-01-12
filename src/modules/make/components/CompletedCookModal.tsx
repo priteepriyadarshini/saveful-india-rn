@@ -1,6 +1,5 @@
 import SecondaryButton from '../../../common/components/ThemeButtons/SecondaryButton';
 import tw from '../../../common/tailwind';
-import { UserMealResult } from '../../../modules/track/api/types';
 import { Image, Modal, Text, View } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { h1TextStyle, h7TextStyle } from '../../../theme/typography';
@@ -10,12 +9,10 @@ import { InitialStackParamList } from '../../navigation/navigator/InitialNavigat
 
 export default function CompletedCookModal({
   isModalVisible,
-  userMeals,
+  mealsCookedCount,
   toggleModal,
 }: {
-  //UNCOMMENT the line once UserMealResult is available
-  userMeals: UserMealResult[] | null | undefined;
-  //userMeals: any[] | null | undefined;
+  mealsCookedCount?: number | null;
   isModalVisible: boolean;
   toggleModal: () => void;
 }) {
@@ -66,7 +63,7 @@ const navigation = useNavigation<InitialNav>();
                 style={tw.style(h1TextStyle, 'text-eggplant')}
                 maxFontSizeMultiplier={1}
               >
-                {userMeals ? userMeals.length : '0'}
+                {typeof mealsCookedCount === 'number' ? mealsCookedCount : '0'}
               </Text>
             </View>
             <Text
@@ -77,7 +74,7 @@ const navigation = useNavigation<InitialNav>();
               maxFontSizeMultiplier={1}
             >
               {`saveful ${
-                userMeals && userMeals.length > 1 ? 'meals' : 'meal'
+                (mealsCookedCount ?? 0) > 1 ? 'meals' : 'meal'
               }`}
             </Text>
             <Text

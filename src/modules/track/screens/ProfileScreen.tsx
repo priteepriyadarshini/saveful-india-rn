@@ -17,7 +17,7 @@ import { filterAllergiesByUserPreferences } from '../../../common/helpers/filter
 import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
 import { useGetUserOnboardingQuery } from '../../../modules/intro/api/api';
-import { useGetUserMealsQuery } from '../../../modules/track/api/api';
+import { useGetCookedRecipesQuery } from '../../../modules/analytics/api/api';
 import { IFramework } from '../../../models/craft';
 import { mixpanelEventName } from '../../analytics/analytics';
 import { useCurentRoute } from '../../route/context/CurrentRouteContext';
@@ -55,7 +55,8 @@ export default function ProfileScreen() {
     [navigation],
   );
 
-  const { data: userMeals } = useGetUserMealsQuery();
+  const { data: cookedRecipesData } = useGetCookedRecipesQuery();
+  const userMeals = cookedRecipesData?.cookedRecipes || [];
 
   const { sendAnalyticsEvent } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();

@@ -15,8 +15,8 @@ import { useGetUserOnboardingQuery } from '../../../modules/intro/api/api';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
 import {
   useGetFavouritesQuery,
-  useGetUserMealsQuery,
 } from '../../../modules/track/api/api';
+import { useGetCookedRecipesQuery } from '../../../modules/analytics/api/api';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, ImageBackground, Text, View } from 'react-native';
 import { h6TextStyle } from '../../../theme/typography';
@@ -31,7 +31,8 @@ export default function MealsCarousel() {
   };
 
   const { getFrameworks } = useContent();
-  const { data: cookedMeals } = useGetUserMealsQuery();
+  const { data: cookedRecipesData } = useGetCookedRecipesQuery();
+  const cookedMeals = cookedRecipesData?.cookedRecipes || [];
   const { data: savedMeals } = useGetFavouritesQuery();
   const { data: userOnboarding } = useGetUserOnboardingQuery();
 

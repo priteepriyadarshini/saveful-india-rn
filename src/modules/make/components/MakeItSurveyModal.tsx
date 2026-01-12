@@ -7,6 +7,7 @@ import tw from '../../../common/tailwind';
 import { IChallenge } from '../../../models/craft';
 import { mixpanelEventName } from '../../analytics/analytics';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
+import { useGetCookedRecipesQuery } from '../../analytics/api/api';
 import { 
   useGetUserChallengeQuery,
   useUpdateUserChallengeMutation,
@@ -15,8 +16,6 @@ import useNotifications from '../../../modules/notifications/hooks/useNotificati
 import { useCurentRoute } from '../../route/context/CurrentRouteContext';
 import {
   useCreateFeedbackMutation,
-  useGetUserMealsQuery,
-  useUpdateUserMealMutation,
 } from '../../../modules/track/api/api';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -71,9 +70,6 @@ export default function MakeItSurveyModal({
   const { sendAnalyticsEvent } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
 
-  // User meals object
-  const [updateUserMeal, { isLoading: isUpdateUserMealLoading }] =
-    useUpdateUserMealMutation();
   // Create feedback to record food saved
   const [createFeedback, { isLoading: isCreateFeedbackLoading }] =
     useCreateFeedbackMutation();
@@ -86,7 +82,8 @@ export default function MakeItSurveyModal({
   );
   const [updateUserChallenge] = useUpdateUserChallengeMutation();
 
-  const { data: userMeals } = useGetUserMealsQuery();
+  const { data: cookedRecipesData } = useGetCookedRecipesQuery();
+  const userMeals = cookedRecipesData?.cookedRecipes || [];
 
   const currentUserChallenge =
     userChallenge?.data?.challengeStatus === 'joined' ? userChallenge : null;
@@ -116,22 +113,11 @@ export default function MakeItSurveyModal({
   }, []);
 
   const onStartCooking = async () => {
-    const isLoading = isUpdateUserMealLoading || isCreateFeedbackLoading;
-
-    if (isLoading) {
+    if (isCreateFeedbackLoading) {
       return;
     }
 
     try {
-      await updateUserMeal({
-        id: mealId,
-        completed: true,
-        saved: true, // Use this for notifications
-        data: {
-          ingredients: ingredientsForComponents,
-        },
-      }).unwrap();
-
       await createFeedback({
         frameworkId,
         prompted: false, // Use it to still show feedback
@@ -176,9 +162,16 @@ export default function MakeItSurveyModal({
       setIsCompltedModalVisible(true);
       // setIsVisible(false);
     } catch (error: unknown) {
+      console.error('Error creating feedback:', error);
+      const errorMessage = error && typeof error === 'object' && 'data' in error 
+        ? JSON.stringify(error.data) 
+        : error && typeof error === 'object' && 'message' in error
+        ? (error as any).message
+        : JSON.stringify(error);
+      
       Alert.alert(
-        'Feedback create error. Try again later.',
-        JSON.stringify(error),
+        'Error completing meal',
+        `Failed to save meal completion. ${errorMessage}`,
       );
     }
   };
@@ -279,7 +272,8 @@ export default function MakeItSurveyModal({
 
             <SecondaryButton
               onPress={onStartCooking}
-              loading={isUpdateUserMealLoading || isCreateFeedbackLoading}
+              // Meals update is removed; show only feedback loading
+              loading={isCreateFeedbackLoading}
             >
               Next
             </SecondaryButton>

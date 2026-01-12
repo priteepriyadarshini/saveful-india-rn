@@ -63,7 +63,7 @@ export default function RecipeCard({
       console.error('Error fetching recipe, falling back to framework:', error);
     }
 
-    // Fallback to Craft CMS
+    // Use API data
     const framework = await getFramework(id);
     if (framework) {
       navigation.navigate('PrepDetail', { slug: framework.slug });

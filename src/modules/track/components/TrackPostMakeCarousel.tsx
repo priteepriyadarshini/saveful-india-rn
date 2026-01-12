@@ -4,11 +4,11 @@ import tw from '../../../common/tailwind';
 import { IFramework } from '../../../models/craft';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
+import { useSaveFoodAnalyticsMutation } from '../../../modules/analytics/api/api';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
 import {
   useCreateFeedbackMutation,
   useUpdateFeedbackMutation,
-  useUpdateUserMealMutation,
 } from '../../../modules/track/api/api';
 import { FeedbackResult } from '../../../modules/track/api/types';
 import LeftoversComponent from '../../../modules/track/components/PostMakeQuestion/LeftoversComponent';
@@ -125,26 +125,15 @@ export default function TrackPostMakeCarousel({
     useCreateFeedbackMutation();
   const [updateFeedback, { isLoading: isUpdateFeedbackLoading }] =
     useUpdateFeedbackMutation();
-
-  // To update user meal as feedback completed
-  const [updateUserMeal, { isLoading: isUpdateUserMealLoading }] =
-    useUpdateUserMealMutation();
+  // Meals update was removed; keep UI consistent by setting loading to false
+  const isUpdateUserMealLoading = false;
 
   const onFeedbackComplete = async () => {
-    if (
-      isCreateFeedbackLoading ||
-      isUpdateFeedbackLoading ||
-      isUpdateUserMealLoading
-    ) {
+    if (isCreateFeedbackLoading || isUpdateFeedbackLoading) {
       return;
     }
 
     try {
-      await updateUserMeal({
-        id: mealId,
-        saved: false,
-      }).unwrap();
-
       if (!feedback) {
         await createFeedback({
           frameworkId: framework.id,

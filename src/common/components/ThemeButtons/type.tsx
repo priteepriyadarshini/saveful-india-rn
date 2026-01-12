@@ -3,6 +3,7 @@ import { ReactNode } from 'react';
 import { ViewStyle } from 'react-native';
 
 export interface CustomButtonProps {
+
   style?: ViewStyle;
   buttonTextStyle?: ViewStyle;
   buttonSize?: 'small' | 'medium' | 'large';
@@ -14,4 +15,9 @@ export interface CustomButtonProps {
   disabled?: boolean;
   onPress?: () => void;
   variant?: 'default' | 'solid-black';
-}
+
+ }
+
+
+
+

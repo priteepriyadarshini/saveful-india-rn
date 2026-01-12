@@ -222,10 +222,9 @@ export default function PrepScreen({
         return;
       }
     } catch (error) {
-      console.error('Error fetching from recipe API, falling back to Craft CMS:', error);
+      console.error('Error fetching from recipe API:', error);
     }
 
-    // Fallback to Craft CMS
     const data = await getFrameworkBySlug(slug);
 
     if (data) {

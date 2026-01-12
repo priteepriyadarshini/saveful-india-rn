@@ -74,9 +74,8 @@ export default function Filters({
       setCategories(convertedCategories);
       setIsLoading(false);
     } catch (error) {
-      console.error('Error fetching framework categories from new API, falling back to Craft CMS:', error);
+      console.error('Error fetching framework categories from new API:', error);
       
-      // Fallback to Craft CMS
       const data = await getCategories();
       if (data) {
         // Only ingredient categories

@@ -1,6 +1,5 @@
 import api from '../../../modules/api';
 import groupsApi from '../../../modules/groups/api/api';
-//import qantasApi from 'modules/qantas/api/api';
 import {
   Favourite,
   FavouriteResponse,
@@ -11,14 +10,6 @@ import {
   FeedbacksForFrameworkResponse,
   Stats,
   StatsResponse,
-  SurveyEligibilityResponse,
-  SurveyResponse,
-  SurveyResult,
-  UserMeal,
-  UserMealResponse,
-  UserMealResult,
-  UserMealsResponse,
-  UserSurveysResponse,
 } from '../../../modules/track/api/types';
 
 const trackApi = api
@@ -170,71 +161,6 @@ const trackApi = api
         transformResponse: r =>
           (r as FeedbacksForFrameworkResponse).feedback_list,
       }),
-      getUserMeals: builder.query<UserMealResult[] | null, void>({
-        query: () => ({
-          url: '/api/meals',
-          method: 'get',
-        }),
-        providesTags: ['UserMeals'],
-        transformResponse: r => (r as UserMealsResponse).meals,
-      }),
-      createUserMeal: builder.mutation<
-        UserMealResult,
-        {
-          frameworkId: string;
-          variantId: string;
-          saved: boolean;
-          completed: boolean;
-          data?: {
-            ingredients: string[][];
-          };
-        }
-      >({
-        query: params => ({
-          url: '/api/meals',
-          method: 'POST',
-          body: {
-            framework_id: params.frameworkId,
-            variant_id: params.variantId,
-            saved: params.saved,
-            completed: params.completed,
-            data: params.data,
-          },
-        }),
-        invalidatesTags: ['UserMeals', 'Stats'],
-        transformResponse: r => (r as UserMealResponse).meal,
-      }),
-      getUserMeal: builder.query<UserMealResult | null, { id: string }>({
-        query: params => ({
-          url: `/api/meals/${params.id}`,
-          method: 'get',
-        }),
-        providesTags: ['UserMeals'],
-        transformResponse: r => (r as UserMealResponse).meal,
-      }),
-      updateUserMeal: builder.mutation<
-        UserMeal,
-        {
-          id: string;
-          completed?: boolean;
-          saved?: boolean;
-          data?: {
-            ingredients?: string[][];
-          };
-        }
-      >({
-        query: params => ({
-          url: `/api/meals/${params.id}/update`,
-          method: 'POST',
-          body: {
-            completed: params.completed,
-            saved: params.saved,
-            data: params.data,
-          },
-        }),
-        invalidatesTags: ['UserMeals', 'Stats'],
-        transformResponse: r => (r as UserMealResponse).meal,
-      }),
       getFavourites: builder.query<Favourite[] | null, void>({
         query: () => ({
           url: '/api/favourites',
@@ -272,11 +198,11 @@ const trackApi = api
       }),
       getStats: builder.query<Stats | null, void>({
         query: () => ({
-          url: '/api/stats',
+          url: '/api/analytics/stats',
           method: 'get',
         }),
         providesTags: ['Stats'],
-        transformResponse: r => (r as StatsResponse).stats,
+        transformResponse: r => r as Stats,
       }),
     }),
   });
@@ -284,18 +210,22 @@ const trackApi = api
 export default trackApi;
 
 export const {
-  useGetUserTrackSurveysQuery,
-  useCreateUserTrackSurveyMutation,
-  useGetUserTrackSurveyEligibilityQuery,
   useCreateFeedbackMutation,
   useUpdateFeedbackMutation,
   useGetFeedbacksForFrameworkQuery,
-  useCreateUserMealMutation,
-  useGetUserMealsQuery,
-  useGetUserMealQuery,
-  useUpdateUserMealMutation,
   useGetFavouritesQuery,
   useCreateFavouriteMutation,
   useDeleteFavouriteMutation,
   useGetStatsQuery,
 } = trackApi;
+
+// Stubs for removed surveys - return empty/default data
+export const useGetUserTrackSurveysQuery = () => ({ data: [] });
+export const useGetUserTrackSurveyEligibilityQuery = () => ({ data: false });
+
+// Temporary stubs for removed meals endpoints to avoid runtime errors in UI components
+export const useGetUserMealsQuery = () => ({ data: [] as any[] });
+export const useUpdateUserMealMutation = () => {
+  const mutate = async (_params: any) => Promise.resolve();
+  return [mutate, { isLoading: false }] as const;
+};

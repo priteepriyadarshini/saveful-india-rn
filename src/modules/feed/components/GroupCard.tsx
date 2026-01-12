@@ -24,7 +24,6 @@ export default function GroupCard({ group }: GroupCardProps) {
       onPress={() => navigation.navigate('Groups', { screen: 'GroupDetail', params: { id: group._id } })}
       style={tw.style(
         'w-full rounded-2xl border border-strokecream bg-white overflow-hidden',
-        cardDrop,
       )}
     >
       <View style={tw.style('w-85')}>

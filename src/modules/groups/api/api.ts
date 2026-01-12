@@ -17,6 +17,7 @@ const groupsApi = api
       'GroupMembers',
       'GroupMembersCount',
       'GroupChallenges',
+      'Challenges',
     ],
   })
   .injectEndpoints({
@@ -28,6 +29,29 @@ const groupsApi = api
           url: '/api/community-groups/individual-created',
           method: 'GET',
         }),
+        transformResponse: (response: Group[]) =>
+          Array.isArray(response) ? response.filter(g => !(g as any).isDeleted) : [],
+        refetchOnFocus: true,
+        refetchOnReconnect: true,
+        providesTags: ['Groups'],
+      }),
+
+      // Get groups where the user is a member (not just owner)
+      getMemberGroups: builder.query<Group[], void>({
+        query: () => ({
+          url: '/api/community-groups/userGroups',
+          method: 'GET',
+        }),
+        // The backend returns an array of objects { role, joinedViaCode, group: { ... } }
+        // Server already filters isDeleted; map cleanly to Group[]
+        transformResponse: (response: any[]) =>
+          Array.isArray(response)
+            ? response
+                .filter(item => !!item?.group)
+                .map(item => item.group as Group)
+            : [],
+        refetchOnFocus: true,
+        refetchOnReconnect: true,
         providesTags: ['Groups'],
       }),
       
@@ -37,6 +61,8 @@ const groupsApi = api
           url: `/api/community-groups/${params.id}`,
           method: 'GET',
         }),
+        refetchOnFocus: true,
+        refetchOnReconnect: true,
         providesTags: ['Groups', 'GroupMembers'],
       }),
 
@@ -148,7 +174,7 @@ const groupsApi = api
           url: `/api/community-groups/${params.id}`,
           method: 'DELETE',
         }),
-        invalidatesTags: ['Groups'],
+        invalidatesTags: ['Groups', 'GroupMembers', 'Challenges'],
       }),
 
       // Join group by code
@@ -166,7 +192,15 @@ const groupsApi = api
 
       // Challenge endpoints
       getGroupChallenges: builder.query<
-        GroupChallenge[],
+        {
+          challenges: GroupChallenge[];
+          categorized: {
+            active: GroupChallenge[];
+            upcoming: GroupChallenge[];
+            closed: GroupChallenge[];
+            cancelled: GroupChallenge[];
+          };
+        },
         { communityId: string }
       >({
         query: params => ({
@@ -229,6 +263,60 @@ const groupsApi = api
         }),
         invalidatesTags: ['Groups', 'GroupChallenges'],
       }),
+
+      transferGroupOwnership: builder.mutation<
+        { message: string; newOwner: any },
+        { groupId: string; newOwnerId: string }
+      >({
+        query: params => ({
+          url: '/api/community-groups/transfer-ownership',
+          method: 'POST',
+          body: params,
+        }),
+        invalidatesTags: ['Groups', 'GroupMembers'],
+      }),
+
+      updateGroupChallenge: builder.mutation<
+        GroupChallenge,
+        {
+          challengeId: string;
+          challengeName?: string;
+          description?: string;
+          startDate?: Date;
+          endDate?: Date;
+          challengeGoals?: number;
+          status?: boolean;
+        }
+      >({
+        query: ({ challengeId, ...body }) => ({
+          url: `/api/community-groups/challenges/${challengeId}`,
+          method: 'PATCH',
+          body,
+        }),
+        invalidatesTags: ['Groups', 'GroupChallenges'],
+      }),
+
+      deleteGroupChallenge: builder.mutation<
+        { message: string },
+        { challengeId: string }
+      >({
+        query: params => ({
+          url: `/api/community-groups/challenges/${params.challengeId}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['Groups', 'GroupChallenges'],
+      }),
+
+      leaveGroup: builder.mutation<
+        { message: string },
+        { groupId: string }
+      >({
+        query: params => ({
+          url: `/api/community-groups/${params.groupId}/leave`,
+          method: 'POST',
+        }),
+        invalidatesTags: ['Groups', 'GroupMembers'],
+      }),
     }),
   });
 
@@ -236,6 +324,7 @@ export default groupsApi;
 
 export const {
   useGetUserGroupsQuery,
+  useGetMemberGroupsQuery,
   useGetUserGroupQuery,
   useCreateUserGroupMutation,
   useJoinUserGroupMutation,
@@ -246,4 +335,8 @@ export const {
   useCreateGroupChallengeMutation,
   useJoinGroupChallengeMutation,
   useLeaveGroupChallengeMutation,
+  useTransferGroupOwnershipMutation,
+  useUpdateGroupChallengeMutation,
+  useDeleteGroupChallengeMutation,
+  useLeaveGroupMutation,
 } = groupsApi;

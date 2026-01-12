@@ -35,7 +35,8 @@ export default function FeedNotification({
   const { newCurrentRoute } = useCurentRoute();
 
   // const { data: meal } = useGetUserMealQuery({ id });
-  const { data: cookedMeals } = useGetUserMealsQuery();
+  const { data: cookedRecipesData } = useGetCookedRecipesQuery();
+  const cookedMeals = cookedRecipesData?.cookedRecipes || [];
   const meal = cookedMeals ? cookedMeals?.filter(m => m.saved)[0] : null;
 
   const [updateUserMeal, { isLoading }] = useUpdateUserMealMutation();
