@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Feather } from '@expo/vector-icons';
 import AnimatedHeader from '../../../common/components/AnimatedHeader';
 import DebouncedPressable from '../../../common/components/DebouncePressable';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
@@ -25,6 +26,7 @@ import PrepFlavor from '../../../modules/prep/components/PrepFlavor';
 import PrepInfoSticker from '../../../modules/prep/components/PrepInfoSticker';
 import PrepIt from '../../../modules/prep/components/PrepIt';
 import PrepVideo from '../../../modules/prep/components/PrepVideo';
+import PrepShareQRModal from '../../../modules/prep/components/PrepShareQRModal';
 import TutorialModal from '../../../modules/prep/components/TutorialModal';
 import { PREPTUTORIAL } from '../../../modules/prep/data/data';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
@@ -107,6 +109,7 @@ export default function PrepScreen({
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [isFirstPrepSession, setIsFirstPrepSession] =
     React.useState<boolean>(false);
+  const [isShareModalVisible, setIsShareModalVisible] = React.useState<boolean>(false);
 
   const [selectedFlavor, setSelectedFlavor] = useState<string>('');
   const selectFlavor = (item: string) => {
@@ -337,7 +340,12 @@ export default function PrepScreen({
   if (!framework || isLoading) {
     return (
       <View style={tw`flex-1 bg-creme`}>
-        <AnimatedHeader animatedValue={offset} title={framework?.title} />
+        <AnimatedHeader 
+          animatedValue={offset} 
+          title={framework?.title}
+          rightActionIcon={<Feather name="share-2" size={20} color="black" />}
+          onRightAction={() => setIsShareModalVisible(true)}
+        />
         <ScrollView>
           <SafeAreaView
             edges={['bottom']}
@@ -353,7 +361,12 @@ export default function PrepScreen({
 
   return (
     <View style={tw`flex-1 bg-creme`}>
-      <AnimatedHeader animatedValue={offset} title={framework.title} />
+      <AnimatedHeader 
+        animatedValue={offset} 
+        title={framework.title}
+        rightActionIcon={<Feather name="share-2" size={20} color="black" />}
+        onRightAction={() => setIsShareModalVisible(true)}
+      />
 
       <ScrollView
         contentContainerStyle={tw`pb-20`}
@@ -481,6 +494,12 @@ export default function PrepScreen({
           MAKE IT
         </Text>
       </DebouncedPressable>
+      <PrepShareQRModal
+        isVisible={isShareModalVisible}
+        onClose={() => setIsShareModalVisible(false)}
+        recipeSlug={slug}
+        recipeTitle={framework.title}
+      />
       <TutorialModal
         data={PREPTUTORIAL}
         isFirst={isFirstPrepSession}

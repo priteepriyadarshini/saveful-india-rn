@@ -1,12 +1,7 @@
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
 import SkeletonLoader from '../../../common/components/SkeletonLoader';
-import {
-  filterAllergiesByUserPreferences,
-  getAllIngredientsFromComponents,
-} from '../../../common/helpers/filterIngredients';
-import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
-import { IFramework, IIngredient } from '../../../models/craft';
+import { IIngredient } from '../../../models/craft';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
 import IngredientsFooter from '../../../modules/ingredients/components/IngredientsFooter';
@@ -50,15 +45,13 @@ export default function IngredientsScreen({
     forceUpdate();
   };
 
-  const { getFrameworks } = useContent();
-
   const { data: userOnboarding } = useGetUserOnboardingQuery();
   
   // Use API only - no Craft CMS fallback
   const { data: apiIngredients, isLoading: isApiLoading } = useGetAllIngredientsQuery();
   
   const [ingredients, setIngredients] = React.useState<IIngredient[]>([]);
-  const [frameworks, setFrameworks] = React.useState<IFramework[]>([]);
+  // Removed Craft frameworks dependency; use backend ingredients only
 
   useEffect(() => {
     if (apiIngredients) {
@@ -69,40 +62,10 @@ export default function IngredientsScreen({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiIngredients]);
 
-  const getFrameworksData = async () => {
-    const data = await getFrameworks();
-
-    if (data) {
-      setFrameworks(
-        filterAllergiesByUserPreferences(data, userOnboarding?.allergies),
-      );
-    }
-  };
-
-  useEffect(() => {
-    getFrameworksData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const [searchInput, setSearchInput] = React.useState<string>('');
 
-  const allExistingIngredients = (frameworks: IFramework[]) => {
-    const allExtractedIngredients = [] as string[];
-    frameworks.forEach(framework => {
-      allExtractedIngredients.push(
-        ...getAllIngredientsFromComponents(framework.components).map(
-          item => item.title,
-        ),
-      );
-    });
-    return Array.from(new Set(allExtractedIngredients));
-  };
-
-  const extractedIngredients = allExistingIngredients(frameworks);
-
-  const filteredIngredients = ingredients.filter(ingredient =>
-    extractedIngredients.some(ex => ex === ingredient.title),
-  );
+  // Show all backend ingredients; optionally filter by search input and selection
+  const filteredIngredients = ingredients;
 
   const filteredData = filteredIngredients.filter(item => {
     const matchInput = item.title.toLowerCase().includes(searchInput.toLowerCase());

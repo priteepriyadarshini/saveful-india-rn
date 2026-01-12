@@ -2,15 +2,9 @@ import { useNavigation } from '@react-navigation/native';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
 import Pill from '../../../common/components/Pill';
 import SkeletonLoader from '../../../common/components/SkeletonLoader';
-import {
-  filterIngredientByArray,
-  getAllIngredientsFromComponentsByArray,
-} from '../../../common/helpers/filterIngredients';
-import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
-import { IFramework } from '../../../models/craft';
 import RecipeCard from '../../../modules/make/components/RecipeCard';
-import React, { useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { Dimensions, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -18,6 +12,8 @@ import {
   subheadMediumUppercase,
   subheadSmallUppercase,
 } from '../../../theme/typography';
+import { useGetRecipesByIngredientsQuery } from '../../recipe/api/recipeApi';
+import { Recipe } from '../../recipe/models/recipe';
 
 const windowWidth = Dimensions.get('window').width;
 const itemLength = windowWidth - 60;
@@ -36,66 +32,62 @@ export default function IngredientsResultsScreen({
 }) {
   const navigation = useNavigation();
 
-  const [, updateState] = React.useState<unknown>();
-  const forceUpdate = React.useCallback(() => updateState({}), []);
-  const onValueChecked = (value: string) => {
-    if (selectedIngredients.length - 1 === 0) navigation.goBack();
-
-    const valueIndex = selectedIngredients.findIndex(
-      (x: string) => x === value,
-    );
-
-    if (valueIndex === -1) {
-      setSelectedIngredients([...selectedIngredients, value]);
-    } else {
-      const updatedArray = [...selectedIngredients];
-      updatedArray.splice(valueIndex, 1);
-
-      setSelectedIngredients(updatedArray);
-    }
-
-    forceUpdate();
-  };
-
-  const { getFrameworks } = useContent();
-  const [frameworks, setFrameworks] = React.useState<IFramework[]>([]);
   const [selectedIngredients, setSelectedIngredients] = React.useState<any>(
     route.params.selectedIngredients,
   );
-  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  
+  // Fetch recipes from backend API based on selected ingredient IDs
+  const ingredientIds = useMemo(() => 
+    selectedIngredients.map((ing: any) => ing.id),
+    [selectedIngredients]
+  );
+  
+  const { data: recipes = [], isLoading } = useGetRecipesByIngredientsQuery(ingredientIds);
 
-  const getFrameworksData = async () => {
-    const data = await getFrameworks();
+  // Sort recipes by number of matching ingredients
+  const sortedRecipes = useMemo(() => {
+    return [...recipes].sort((a, b) => {
+      // Count how many selected ingredients are in each recipe
+      const countMatchingIngredients = (recipe: Recipe) => {
+        let count = 0;
+        recipe.components?.forEach(wrapper => {
+          wrapper.component?.forEach(comp => {
+            // Check required ingredients
+            comp.requiredIngredients?.forEach(reqIng => {
+              if (ingredientIds.includes(reqIng.recommendedIngredient)) count++;
+              reqIng.alternativeIngredients?.forEach(altIng => {
+                if (ingredientIds.includes(altIng.ingredient)) count++;
+              });
+            });
+            // Check optional ingredients
+            comp.optionalIngredients?.forEach(optIng => {
+              if (ingredientIds.includes(optIng.ingredient)) count++;
+            });
+          });
+        });
+        return count;
+      };
 
-    if (data) {
-      setFrameworks(data);
-      setIsLoading(false);
+      return countMatchingIngredients(b) - countMatchingIngredients(a);
+    });
+  }, [recipes, ingredientIds]);
+
+  const onValueChecked = (value: string) => {
+    if (selectedIngredients.length - 1 === 0) {
+      navigation.goBack();
+      return;
+    }
+
+    const valueIndex = selectedIngredients.findIndex(
+      (x: any) => x.id === value,
+    );
+
+    if (valueIndex !== -1) {
+      const updatedArray = [...selectedIngredients];
+      updatedArray.splice(valueIndex, 1);
+      setSelectedIngredients(updatedArray);
     }
   };
-
-  useEffect(() => {
-    getFrameworksData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // if (frameworks.length === 0) {
-  //   return null;
-  // }
-
-  const searchDishes = filterIngredientByArray(frameworks, selectedIngredients);
-
-  const sortedSearchDishes = searchDishes.slice().sort((a, b) => {
-    const ingredientsA = getAllIngredientsFromComponentsByArray(
-      a.components,
-      route.params.selectedIngredients,
-    );
-    const ingredientsB = getAllIngredientsFromComponentsByArray(
-      b.components,
-      route.params.selectedIngredients,
-    );
-
-    return ingredientsB.length - ingredientsA.length;
-  });
 
   const skeletonStyles = [
     `mb-3 h-[311px] w-[${itemLength}px] overflow-hidden rounded`,
@@ -154,27 +146,31 @@ export default function IngredientsResultsScreen({
               </View>
 
               <View style={tw`mb-5 w-full px-5`}>
-                {/* List of recipes */}
-                {sortedSearchDishes.length > 0 &&
-                  sortedSearchDishes.map(recipe => {
-                    const getMatchingIngredients =
-                      getAllIngredientsFromComponentsByArray(
-                        recipe.components,
-                        route.params.selectedIngredients,
-                      );
-
+                {/* List of recipes from backend */}
+                {sortedRecipes.length > 0 ? (
+                  sortedRecipes.map(recipe => {
+                    // Transform backend recipe to legacy format for RecipeCard
+                    const heroImageAsset = recipe.heroImageUrl 
+                      ? [{ url: recipe.heroImageUrl }] 
+                      : [];
+                    
                     return (
                       <RecipeCard
-                        key={recipe.id}
-                        id={recipe.id}
+                        key={recipe._id}
+                        id={recipe._id}
                         title={recipe.title}
-                        heroImage={recipe.heroImage}
-                        variantTags={recipe.variantTags}
-                        kind={getMatchingIngredients}
+                        heroImage={heroImageAsset as any}
+                        variantTags={[]}
+                        kind={selectedIngredients.map((ing: any) => ing.title)}
                         cardStyle={tw`mb-2 mr-0`}
                       />
                     );
-                  })}
+                  })
+                ) : (
+                  <Text style={tw.style(subheadMediumUppercase, 'text-center mt-10')}>
+                    No recipes found with these ingredients
+                  </Text>
+                )}
               </View>
             </View>
           </SafeAreaView>

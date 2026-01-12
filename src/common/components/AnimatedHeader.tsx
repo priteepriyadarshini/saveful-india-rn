@@ -13,6 +13,8 @@ export default function AnimatedHeader({
   showCloseButton = false,
   onBack,
   onClose,
+  rightActionIcon,
+  onRightAction,
 }: {
   animatedValue: Animated.Value;
   title?: string;
@@ -20,6 +22,8 @@ export default function AnimatedHeader({
   showCloseButton?: boolean;
   onBack?: () => void;
   onClose?: () => void;
+  rightActionIcon?: React.ReactNode;
+  onRightAction?: () => void;
 }) {
   const navigation = useNavigation();
   const headerOpacity = animatedValue.interpolate({
@@ -98,6 +102,14 @@ export default function AnimatedHeader({
               accessibilityRole="button"
             >
               <Feather name="x" color="black" size={20} />
+            </Pressable>
+          ) : rightActionIcon && onRightAction ? (
+            <Pressable
+              style={tw`mr-5 flex h-11 w-11 items-end justify-center`}
+              onPress={onRightAction}
+              accessibilityRole="button"
+            >
+              {rightActionIcon}
             </Pressable>
           ) : (
             <View style={tw`mr-5 h-11 w-11`} />
