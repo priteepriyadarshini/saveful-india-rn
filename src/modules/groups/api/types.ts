@@ -81,6 +81,8 @@ interface GroupChallenge {
   memberCount: number;
   totalFoodSaved?: number;
   isActive: boolean;
+  status?: boolean;
+  isParticipant?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

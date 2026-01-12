@@ -105,7 +105,7 @@ const trackApi = api
             },
           },
         }),
-        invalidatesTags: ['Feedback', 'Stats'],
+        invalidatesTags: ['Feedback', 'Stats', 'Analytics'],
         transformResponse: r => (r as FeedbackResponse).feedback,
         onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
           await queryFulfilled;
@@ -140,7 +140,7 @@ const trackApi = api
             },
           },
         }),
-        invalidatesTags: ['Feedback', 'Stats'],
+        invalidatesTags: ['Feedback', 'Stats', 'Analytics'],
         transformResponse: r => (r as FeedbackResponse).feedback,
         onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
           await queryFulfilled;
@@ -168,6 +168,17 @@ const trackApi = api
         }),
         providesTags: ['Favourites'],
         transformResponse: r => (r as FavouritesResponse).favourites,
+      }),
+      getFavouriteDetails: builder.query<
+        { id: string; type: string; title: string; shortDescription?: string; heroImageUrl?: string; thumbnailImageUrl?: string }[] | null,
+        void
+      >({
+        query: () => ({
+          url: '/api/favourites/details',
+          method: 'get',
+        }),
+        providesTags: ['Favourites'],
+        transformResponse: r => (r as { favourites: any[] }).favourites,
       }),
       createFavourite: builder.mutation<
         FavouriteResult,
@@ -214,6 +225,7 @@ export const {
   useUpdateFeedbackMutation,
   useGetFeedbacksForFrameworkQuery,
   useGetFavouritesQuery,
+  useGetFavouriteDetailsQuery,
   useCreateFavouriteMutation,
   useDeleteFavouriteMutation,
   useGetStatsQuery,

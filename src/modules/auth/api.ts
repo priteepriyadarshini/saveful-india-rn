@@ -129,29 +129,32 @@ const currentUserApi = api
             : undefined,
         }),
         providesTags: ['CurrentUser'],
-        keepUnusedDataFor: 3600, // Cache for 1 hour
+        keepUnusedDataFor: 3600, 
         transformResponse: (r: any) => {
-          // Transform backend response to match CurrentUser model
-          console.log('getCurrentUser response:', r);
           if (!r) return null;
-          return {
-            id: r.id,
+          const normalizedId = r?._id ?? r?.id;
+          const user: CurrentUser = {
+            // Spread original object first
+            ...r,
+            // Then normalize and map fields to our model
+            id: normalizedId as string,
             email: r.email,
             first_name: r.name || r.first_name || '',
             name: r.name,
             country: r.country,
             stateCode: r.stateCode,
-            vegType: r.vegType,
-            dairyFree: r.dairyFree,
-            nutFree: r.nutFree,
-            glutenFree: r.glutenFree,
-            hasDiabetes: r.hasDiabetes,
-            otherAllergies: r.otherAllergies,
-            noOfAdults: r.noOfAdults,
-            noOfChildren: r.noOfChildren,
-            tastePreference: r.tastePreference,
-            ...r,
-          } as CurrentUser;
+            // Prefer flat fields, fallback to nested dietaryProfile
+            vegType: r.vegType ?? r.dietaryProfile?.vegType,
+            dairyFree: r.dairyFree ?? r.dietaryProfile?.dairyFree,
+            nutFree: r.nutFree ?? r.dietaryProfile?.nutFree,
+            glutenFree: r.glutenFree ?? r.dietaryProfile?.glutenFree,
+            hasDiabetes: r.hasDiabetes ?? r.dietaryProfile?.hasDiabetes,
+            otherAllergies: r.otherAllergies ?? r.dietaryProfile?.otherAllergies,
+            noOfAdults: r.noOfAdults ?? r.dietaryProfile?.noOfAdults,
+            noOfChildren: r.noOfChildren ?? r.dietaryProfile?.noOfChildren,
+            tastePreference: r.tastePreference ?? r.dietaryProfile?.tastePrefrence,
+          };
+          return user;
         },
       }),
 

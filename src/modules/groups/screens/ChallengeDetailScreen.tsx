@@ -8,9 +8,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { Feather } from '@expo/vector-icons';
 import tw from '../../../common/tailwind';
 import PrimaryButton from '../../../common/components/ThemeButtons/PrimaryButton';
 import OutlineButton from '../../../common/components/ThemeButtons/OutlineButton';
+import DebouncedPressable from '../../../common/components/DebouncePressable';
 import {
   useGetGroupChallengeQuery,
   useJoinGroupChallengeMutation,
@@ -115,12 +117,30 @@ export default function ChallengeDetailScreen() {
 
   const startDate = new Date(challenge.startDate);
   const endDate = new Date(challenge.endDate);
-  const isActive = challenge.isActive;
+  const now = new Date();
+  const isActive = challenge.isActive || (challenge.status && startDate <= now && endDate >= now);
+  const isParticipant = challenge.isParticipant || false;
+  const progressPercentage = Math.min(
+    ((challenge.totalFoodSaved || 0) / challenge.challengeGoal) * 100,
+    100,
+  );
 
   return (
     <SafeAreaView style={tw.style('flex-1 bg-creme')}>
+      {/* Header */}
+      <View style={tw.style('mb-4 flex-row items-center justify-between px-5 pt-2')}>
+        <DebouncedPressable 
+          onPress={() => navigation.goBack()} 
+          style={tw.style('h-10 w-10 items-center justify-center')}
+        >
+          <Feather name="arrow-left" size={24} color="#1F1F1F" />
+        </DebouncedPressable>
+        <Text style={tw.style(h6TextStyle, 'text-darkgray')}>Challenge Details</Text>
+        <View style={tw.style('w-10')} />
+      </View>
+
       <ScrollView
-        contentContainerStyle={tw.style('p-5')}
+        contentContainerStyle={tw.style('px-5 pb-10')}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -142,128 +162,163 @@ export default function ChallengeDetailScreen() {
         {/* Challenge Details */}
         <View
           style={tw.style(
-            'mb-6 rounded-lg border border-strokecream bg-white p-4',
+            'mb-6 rounded-2xl border border-strokecream bg-white p-5',
             cardDrop,
           )}
         >
-          <View style={tw.style('mb-3 flex-row items-center justify-between')}>
-            <Text style={tw.style(bodySmallRegular, 'text-midgray')}>
-              Goal
-            </Text>
-            <Text style={tw.style(bodyLargeBold, 'text-darkgray')}>
-              {challenge.challengeGoal} meals
-            </Text>
-          </View>
+          <Text style={tw.style(h6TextStyle, 'mb-3 text-darkgray')}>
+            About This Challenge
+          </Text>
+          
+          <View style={tw.style('gap-3')}>
+            <View style={tw.style('flex-row items-start')}>
+              <Feather name="calendar" size={18} color={tw.color('midgray')} style={tw.style('mt-0.5')} />
+              <View style={tw.style('ml-3 flex-1')}>
+                <Text style={tw.style(bodySmallRegular, 'text-midgray')}>Duration</Text>
+                <Text style={tw.style(bodySmallRegular, 'mt-0.5 text-darkgray')}>
+                  {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
+                </Text>
+              </View>
+            </View>
 
-          <View style={tw.style('mb-3 flex-row items-center justify-between')}>
-            <Text style={tw.style(bodySmallRegular, 'text-midgray')}>
-              Participants
-            </Text>
-            <Text style={tw.style(bodyLargeBold, 'text-darkgray')}>
-              {challenge.memberCount}
-            </Text>
-          </View>
-
-          <View style={tw.style('mb-3 flex-row items-center justify-between')}>
-            <Text style={tw.style(bodySmallRegular, 'text-midgray')}>
-              Food Saved
-            </Text>
-            <Text style={tw.style(bodyLargeBold, 'text-darkgray')}>
-              {challenge.totalFoodSaved || 0}g
-            </Text>
-          </View>
-
-          <View style={tw.style('mb-3 flex-row items-center justify-between')}>
-            <Text style={tw.style(bodySmallRegular, 'text-midgray')}>
-              Start Date
-            </Text>
-            <Text style={tw.style(bodySmallRegular, 'text-darkgray')}>
-              {startDate.toLocaleDateString()}
-            </Text>
-          </View>
-
-          <View style={tw.style('flex-row items-center justify-between')}>
-            <Text style={tw.style(bodySmallRegular, 'text-midgray')}>
-              End Date
-            </Text>
-            <Text style={tw.style(bodySmallRegular, 'text-darkgray')}>
-              {endDate.toLocaleDateString()}
-            </Text>
+            <View style={tw.style('flex-row items-start')}>
+              <Feather name="info" size={18} color={tw.color('midgray')} style={tw.style('mt-0.5')} />
+              <View style={tw.style('ml-3 flex-1')}>
+                <Text style={tw.style(bodySmallRegular, 'text-midgray')}>Description</Text>
+                <Text style={tw.style(bodySmallRegular, 'mt-0.5 text-darkgray')}>
+                  {challenge.description}
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
 
+        {/* Motivational Message */}
+        {challenge.memberCount === 1 && (
+          <View style={tw.style('mb-6 rounded-2xl bg-eggplant-light p-4')}>
+            <Text style={tw.style(bodySmallRegular, 'text-center text-darkgray')}>
+              🎯 You're the first member! Invite others to join and make a bigger impact together.
+            </Text>
+          </View>
+        )}
+
         {/* Status Badge */}
-        <View style={tw.style('mb-6 items-center')}>
+        <View style={tw.style('mb-4 items-center')}>
           <View
             style={tw.style(
-              'rounded-full px-4 py-2',
-              isActive ? 'bg-green-100' : 'bg-gray-100',
+              'rounded-full px-6 py-2',
+              isActive ? 'bg-green-100' : 'bg-gray-200',
             )}
           >
             <Text
               style={tw.style(
                 bodySmallRegular,
-                isActive ? 'text-green-700' : 'text-gray-700',
+                'font-saveful-bold',
+                isActive ? 'text-green-700' : 'text-gray-600',
               )}
             >
               {isActive ? '● Active' : '● Inactive'}
             </Text>
           </View>
+          {!isActive && startDate > now && (
+            <Text style={tw.style(bodySmallRegular, 'mt-2 text-center text-midgray')}>
+              Starts {startDate.toLocaleDateString()}
+            </Text>
+          )}
+          {!isActive && endDate < now && (
+            <Text style={tw.style(bodySmallRegular, 'mt-2 text-center text-midgray')}>
+              Ended {endDate.toLocaleDateString()}
+            </Text>
+          )}
         </View>
 
         {/* Progress Section */}
         <View
           style={tw.style(
-            'mb-6 rounded-lg border border-strokecream bg-white p-4',
+            'mb-6 rounded-2xl border border-strokecream bg-white p-5',
             cardDrop,
           )}
         >
-          <Text style={tw.style(h6TextStyle, 'mb-3 text-darkgray')}>
-            Progress
+          <Text style={tw.style(h6TextStyle, 'mb-4 text-darkgray')}>
+            Challenge Progress
           </Text>
-          <View style={tw.style('h-4 overflow-hidden rounded-full bg-gray-200')}>
-            <View
+          
+          {/* Progress Bar */}
+          <View style={tw.style('mb-3')}>
+            <View style={tw.style('mb-2 h-6 overflow-hidden rounded-full bg-gray-200')}>
+              <View
+                style={[
+                  tw.style('h-full bg-eggplant'),
+                  { width: `${progressPercentage}%` }
+                ]}
+              />
+            </View>
+            <Text
               style={tw.style(
-                'h-full bg-eggplant',
-                `w-[${Math.min(
-                  ((challenge.totalFoodSaved || 0) / challenge.challengeGoal) *
-                    100,
-                  100,
-                )}%]`,
+                bodySmallRegular,
+                'text-center text-darkgray',
+                'font-saveful-bold',
               )}
-            />
+            >
+              {progressPercentage.toFixed(1)}% Complete
+            </Text>
           </View>
-          <Text
-            style={tw.style(
-              bodySmallRegular,
-              'mt-2 text-center text-midgray',
-            )}
-          >
-            {((challenge.totalFoodSaved || 0) / challenge.challengeGoal * 100).toFixed(1)}% Complete
-          </Text>
+
+          {/* Stats Grid */}
+          <View style={tw.style('mt-4 flex-row justify-between')}>
+            <View style={tw.style('flex-1 items-center')}>
+              <Text style={tw.style(bodySmallRegular, 'text-midgray')}>Food Saved</Text>
+              <Text style={tw.style(bodyLargeBold, 'mt-1 text-darkgray')}>
+                {challenge.totalFoodSaved || 0}g
+              </Text>
+            </View>
+            <View style={tw.style('w-px bg-strokecream')} />
+            <View style={tw.style('flex-1 items-center')}>
+              <Text style={tw.style(bodySmallRegular, 'text-midgray')}>Goal</Text>
+              <Text style={tw.style(bodyLargeBold, 'mt-1 text-darkgray')}>
+                {challenge.challengeGoal}g
+              </Text>
+            </View>
+            <View style={tw.style('w-px bg-strokecream')} />
+            <View style={tw.style('flex-1 items-center')}>
+              <Text style={tw.style(bodySmallRegular, 'text-midgray')}>Members</Text>
+              <Text style={tw.style(bodyLargeBold, 'mt-1 text-darkgray')}>
+                {challenge.memberCount}
+              </Text>
+            </View>
+          </View>
         </View>
 
         {/* Action Buttons */}
-        <View style={tw.style('gap-2')}>
-          {isActive && (
-            <>
-              <PrimaryButton
-                onPress={handleJoinChallenge}
-                disabled={isJoining}
-              >
-                {isJoining ? 'Joining...' : 'Join Challenge'}
-              </PrimaryButton>
-              <OutlineButton
-                onPress={handleLeaveChallenge}
-                disabled={isLeaving}
-              >
-                {isLeaving ? 'Leaving...' : 'Leave Challenge'}
-              </OutlineButton>
-            </>
+        <View style={tw.style('gap-3')}>
+          {isActive && !isParticipant && (
+            <PrimaryButton
+              onPress={handleJoinChallenge}
+              disabled={isJoining}
+              width="full"
+              buttonSize="large"
+              variant="solid-black"
+            >
+              {isJoining ? 'Joining...' : 'Join Challenge'}
+            </PrimaryButton>
           )}
-          <OutlineButton onPress={() => navigation.goBack()}>
-            Back to Group
-          </OutlineButton>
+          {isActive && isParticipant && (
+            <OutlineButton
+              onPress={handleLeaveChallenge}
+              disabled={isLeaving}
+            >
+              {isLeaving ? 'Leaving...' : 'Leave Challenge'}
+            </OutlineButton>
+          )}
+          {!isActive && (
+            <View style={tw.style('rounded-2xl border border-strokecream bg-white p-4')}>
+              <Text style={tw.style(bodySmallRegular, 'text-center text-midgray')}>
+                {startDate > now 
+                  ? 'This challenge hasn\'t started yet' 
+                  : 'This challenge has ended'}
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

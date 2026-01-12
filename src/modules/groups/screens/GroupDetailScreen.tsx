@@ -23,6 +23,7 @@ import {
   useTransferGroupOwnershipMutation,
   useLeaveGroupMutation,
 } from '../../../modules/groups/api/api';
+import { useGetCurrentUserQuery } from '../../../modules/auth/api';
 import { bodyLargeBold, bodySmallRegular, h6TextStyle, subheadSmallUppercase } from '../../../theme/typography';
 import { cardDrop } from '../../../theme/shadow';
 import DebouncedPressable from '../../../common/components/DebouncePressable';
@@ -37,6 +38,7 @@ export default function GroupDetailScreen() {
   const route = useRoute();
   const { id } = route.params as { id: string };
 
+  const { data: currentUser } = useGetCurrentUserQuery();
   const { data, isLoading, refetch } = useGetUserGroupQuery({ id });
   const { data: challengesData } = useGetGroupChallengesQuery({ communityId: id });
   const [deleteGroup, { isLoading: isDeleting }] = useDeleteUserGroupMutation();
@@ -171,7 +173,26 @@ export default function GroupDetailScreen() {
   }
 
   const { group, members } = data;
-  const isOwner = typeof group.ownerId === 'object' ? true : false; // If populated, user is owner
+  
+  const toId = (val: any): string | undefined => {
+    if (!val) return undefined;
+    if (typeof val === 'string') return val;
+    if (typeof val === 'object') {
+      return val._id ?? val.id ?? undefined;
+    }
+    return undefined;
+  };
+
+  const ownerIdValue = toId(group.ownerId);
+  const currentUserId = currentUser?.id;
+  const isOwnerByOwnerId = !!(ownerIdValue && currentUserId && ownerIdValue === currentUserId);
+  const isOwnerByMemberRole = !!members?.some(member => {
+    const userId = toId(member.userId);
+    return !!(userId && currentUserId && userId === currentUserId && member.role === 'OWNER');
+  });
+  const isOwner = isOwnerByOwnerId || isOwnerByMemberRole;
+
+  
   const bannerImage = group.profilePhotoUrl ? { uri: group.profilePhotoUrl } : getGroupImage(group._id || group.name);
   const savedKg = ((group.totalFoodSaved || 0) / 1000).toFixed(3);
 
@@ -324,11 +345,6 @@ export default function GroupDetailScreen() {
             <PrimaryButton width="full" buttonSize="large" variant="solid-black" onPress={handleShareCode}>
               Invite people to this group
             </PrimaryButton>
-            {!isOwner && (
-              <SecondaryButton width="full" buttonSize="large" onPress={handleLeaveGroup}>
-                Leave group
-              </SecondaryButton>
-            )}
           </View>
         )}
 

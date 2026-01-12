@@ -183,7 +183,7 @@ export default function MakeItCarousel({
         />
       ) : ( */}
       <CompletedCookModal
-        mealsCookedCount={cookedRecipesData?.cookedRecipes?.length ?? 0}
+        mealsCookedCount={cookedRecipesData?.numberOfMealsCooked ?? 0}
         isModalVisible={isModalVisible}
         toggleModal={toggleModal}
       />

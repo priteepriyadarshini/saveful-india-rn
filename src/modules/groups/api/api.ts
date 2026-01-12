@@ -235,7 +235,12 @@ const groupsApi = api
         query: params => ({
           url: '/api/community-groups/challenges',
           method: 'POST',
-          body: params,
+          body: {
+            ...params,
+            // Ensure dates are serialized consistently
+            startDate: new Date(params.startDate).toISOString(),
+            endDate: new Date(params.endDate).toISOString(),
+          },
         }),
         invalidatesTags: ['Groups', 'GroupChallenges'],
       }),

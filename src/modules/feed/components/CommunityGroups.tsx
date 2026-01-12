@@ -12,6 +12,7 @@ import { Dimensions, Image, Text, View } from 'react-native';
 import { cardDrop } from '../../../theme/shadow';
 import { bodyLargeBold, bodySmallRegular, h6TextStyle } from '../../../theme/typography';
 import { FeedStackParamList } from '../navigation/FeedNavigation';
+ 
 
 const screenWidth = Dimensions.get('screen').width;
 const itemLength = screenWidth - 40;
@@ -44,7 +45,7 @@ export default function CommunityGroups() {
               scrollEnabled={true}
               itemLength={itemLength + 8}
               renderItem={({ item }: { item: any }) => (
-                <View style={tw`mr-2`} key={item._id}>
+                <View style={tw`mr-2 w-85`} key={item._id}>
                   <GroupCard group={item as any} />
                 </View>
               )}

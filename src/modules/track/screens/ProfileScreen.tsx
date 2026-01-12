@@ -17,7 +17,7 @@ import { filterAllergiesByUserPreferences } from '../../../common/helpers/filter
 import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
 import { useGetUserOnboardingQuery } from '../../../modules/intro/api/api';
-import { useGetCookedRecipesQuery } from '../../../modules/analytics/api/api';
+import { useGetCookedRecipesDetailsQuery } from '../../../modules/analytics/api/api';
 import { IFramework } from '../../../models/craft';
 import { mixpanelEventName } from '../../analytics/analytics';
 import { useCurentRoute } from '../../route/context/CurrentRouteContext';
@@ -55,8 +55,8 @@ export default function ProfileScreen() {
     [navigation],
   );
 
-  const { data: cookedRecipesData } = useGetCookedRecipesQuery();
-  const userMeals = cookedRecipesData?.cookedRecipes || [];
+  const { data: cookedRecipesDetails } = useGetCookedRecipesDetailsQuery();
+  const recentCooked = cookedRecipesDetails?.cookedRecipes || [];
 
   const { sendAnalyticsEvent } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
@@ -88,11 +88,16 @@ export default function ProfileScreen() {
     return null;
   }
 
-  // TODO: Uncomment when userMeals is available
-  const recentlyCooked = frameworks.filter(
-    framework =>
-      userMeals?.slice(0, 3).some(meal => `${meal.framework_id}` === framework.id),
-  );
+  // Get recently cooked recipes - userMeals is now an array of framework_ids
+  // Use cooked recipe details from API; fallback to frameworks if needed
+  const recentlyCooked = recentCooked.length > 0
+    ? recentCooked.map(rc => ({
+        id: rc.id,
+        title: rc.title,
+        heroImage: [{ url: rc.heroImageUrl || '' }] as any,
+        variantTags: [] as any,
+      }))
+    : [];
 
   return (
     <View style={tw`flex-1 bg-creme`}>

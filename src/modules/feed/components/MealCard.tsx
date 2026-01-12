@@ -42,9 +42,28 @@ export default function MealCard({
   const navigation = useNavigation<InitialNav>();
 
   const onPress = async () => {
+    try {
+      // Prefer direct recipe API
+      const { recipeApiService } = await import('../../recipe/api/recipeApiService');
+      const recipe = await recipeApiService.getRecipeById(id);
+      if (recipe) {
+        const slug = recipe.title.toLowerCase().replace(/\s+/g, '-');
+        navigation.navigate('Root', {
+          screen: 'Make',
+          params: {
+            screen: 'PrepDetail',
+            params: { slug },
+          },
+        });
+        return;
+      }
+    } catch (error) {
+      // fallback to craft framework slug if needed
+      console.error('Error fetching recipe, falling back to framework:', error);
+    }
+
     const framework = await getFramework(id);
     if (framework) {
-      // Navigate directly to Make tab → PrepDetail screen
       navigation.navigate('Root', {
         screen: 'Make',
         params: {

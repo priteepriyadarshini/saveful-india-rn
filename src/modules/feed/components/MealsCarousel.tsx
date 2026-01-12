@@ -5,7 +5,7 @@ import {
 import Pill from '../../../common/components/Pill';
 import SkeletonLoader from '../../../common/components/SkeletonLoader';
 import { filterAllergiesByUserPreferences } from '../../../common/helpers/filterIngredients';
-import useContent from '../../../common/hooks/useContent';
+// Removed Craft CMS content; using API services only
 import tw from '../../../common/tailwind';
 import { IFramework } from '../../../models/craft';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
@@ -13,10 +13,8 @@ import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
 import MealCard from '../../../modules/feed/components/MealCard';
 import { useGetUserOnboardingQuery } from '../../../modules/intro/api/api';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
-import {
-  useGetFavouritesQuery,
-} from '../../../modules/track/api/api';
-import { useGetCookedRecipesQuery } from '../../../modules/analytics/api/api';
+import { useGetFavouriteDetailsQuery } from '../../../modules/track/api/api';
+import { useGetCookedRecipesDetailsQuery, useGetTrendingRecipesQuery } from '../../../modules/analytics/api/api';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, ImageBackground, Text, View } from 'react-native';
 import { h6TextStyle } from '../../../theme/typography';
@@ -30,10 +28,12 @@ export default function MealsCarousel() {
     return mealType === value;
   };
 
-  const { getFrameworks } = useContent();
-  const { data: cookedRecipesData } = useGetCookedRecipesQuery();
-  const cookedMeals = cookedRecipesData?.cookedRecipes || [];
-  const { data: savedMeals } = useGetFavouritesQuery();
+  const { data: cookedRecipesDetails } = useGetCookedRecipesDetailsQuery();
+  const cookedItems = cookedRecipesDetails?.cookedRecipes || [];
+  const { data: favouriteDetails } = useGetFavouriteDetailsQuery();
+  const favItems = favouriteDetails || [];
+  const { data: trendingData } = useGetTrendingRecipesQuery();
+  const trendingItems = trendingData?.trending || [];
   const { data: userOnboarding } = useGetUserOnboardingQuery();
 
   const MEAL_TYPES = [
@@ -42,7 +42,7 @@ export default function MealsCarousel() {
       name: 'Trending',
     },
     // Only add cooked option if user has cooked meals
-    ...(cookedMeals?.length
+    ...(cookedItems?.length
       ? [
           {
             id: 2,
@@ -51,7 +51,7 @@ export default function MealsCarousel() {
         ]
       : []),
     // Only add saved option if user has saved meals
-    ...(savedMeals?.length
+    ...(favItems?.some(i => i.type === 'framework')
       ? [
           {
             id: 3,
@@ -69,7 +69,6 @@ export default function MealsCarousel() {
 
   const [maxHeight, setMaxHeight] = useState<number>(0);
 
-  const [frameworks, setFrameworks] = React.useState<IFramework[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const flatListRef = React.useRef<any>(null); // Reference to the FlatList component
@@ -81,36 +80,34 @@ export default function MealsCarousel() {
     }
   };
 
-  const getFrameworksData = async () => {
-    setIsLoading(true);
-    const data = await getFrameworks();
-
-    if (data) {
-      setFrameworks(
-        filterAllergiesByUserPreferences(data, userOnboarding?.allergies),
-      );
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    getFrameworksData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // Loading state based on API data readiness
+    setIsLoading(false);
+  }, [cookedItems, favItems, trendingItems]);
 
-  const carouselItems = frameworks.filter((framework, index) => {
-    if (mealType === 'Cooked') {
-      return cookedMeals?.some(meal => meal.framework_id === framework.id);
-    } else if (mealType === 'Saved') {
-      return savedMeals?.some(meal => `${meal.framework_id}` === framework.id);
-    } else {
-      if (index < 5) {
-        return true;
-      }
-    }
-
-    return false;
-  });
+  const carouselItems =
+    mealType === 'Cooked'
+      ? cookedItems.map(ci => ({
+          id: ci.id,
+          title: ci.title,
+          heroImage: [{ url: ci.heroImageUrl || '' }] as any,
+          variantTags: [] as any,
+        }))
+      : mealType === 'Saved'
+      ? favItems
+          .filter(i => i.type === 'framework')
+          .map(fr => ({
+            id: fr.id,
+            title: fr.title,
+            heroImage: [{ url: fr.heroImageUrl || '' }] as any,
+            variantTags: [] as any,
+          }))
+      : trendingItems.map(t => ({
+          id: t.id,
+          title: t.title,
+          heroImage: [{ url: t.heroImageUrl || '' }] as any,
+          variantTags: [] as any,
+        }));
 
   const skeletonStyles = [
     `mb-3 h-[311px] w-[${itemLength}px] overflow-hidden rounded`,

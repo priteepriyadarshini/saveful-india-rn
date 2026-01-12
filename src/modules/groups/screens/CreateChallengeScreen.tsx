@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import DebouncedPressable from '../../../common/components/DebouncePressable';
+import { Feather } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import tw from '../../../common/tailwind';
 import PrimaryButton from '../../../common/components/ThemeButtons/PrimaryButton';
@@ -47,7 +49,7 @@ export default function CreateChallengeScreen() {
 
     const goalsNumber = parseInt(challengeGoals);
     if (!challengeGoals.trim() || isNaN(goalsNumber) || goalsNumber <= 0) {
-      Alert.alert('Error', 'Please enter a valid goal (number of meals)');
+      Alert.alert('Error', 'Please enter a valid goal (Grams of Food to be Saved)');
       return;
     }
 
@@ -90,9 +92,14 @@ export default function CreateChallengeScreen() {
           contentContainerStyle={tw.style('p-5')}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={tw.style(h5TextStyle, 'mb-6 text-center text-darkgray')}>
-            Create a Challenge
-          </Text>
+          {/* Header */}
+          <View style={tw.style('mb-4 flex-row items-center justify-between')}>
+            <DebouncedPressable onPress={() => navigation.goBack()} style={tw.style('w-10 h-10 items-center justify-center')}>
+              <Feather name="arrow-left" size={24} color="#1F1F1F" />
+            </DebouncedPressable>
+            <Text style={tw.style(h5TextStyle, 'text-darkgray')}>Create a Challenge</Text>
+            <View style={tw.style('w-10')} />
+          </View>
 
           {/* Challenge Name */}
           <View style={tw.style('mb-4')}>
@@ -140,7 +147,7 @@ export default function CreateChallengeScreen() {
           {/* Goal */}
           <View style={tw.style('mb-4')}>
             <Text style={tw.style(bodySmallRegular, 'mb-2 text-darkgray')}>
-              Goal (Number of Meals) *
+              Goal (Grams of Food to be Saved) *
             </Text>
             <TextInput
               style={tw.style(
