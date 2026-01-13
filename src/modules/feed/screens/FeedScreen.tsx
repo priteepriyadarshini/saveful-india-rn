@@ -5,9 +5,11 @@ import {
   NativeScrollEvent, 
   NativeSyntheticEvent, 
   ScrollView, 
-  View 
+  View,
+  Pressable 
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from '@expo/vector-icons';
 import tw from "../../../common/tailwind";
 import { useLinkTo, useNavigation } from "@react-navigation/native";
 import useAnalytics from "../../analytics/hooks/useAnalytics";
@@ -22,6 +24,7 @@ import FeedSaved from "../components/FeedSaved";
 import IngredientsCarousel from "../components/IngredientsCarousel";
 import MealsCarousel from "../components/MealsCarousel";
 import { IngredientsStackScreenProps } from "../../ingredients/navigation/IngredientsNavigator";
+import { FeedStackScreenProps } from "../navigation/FeedNavigation";
 
 
 const screenWidth = Dimensions.get('window').width;
@@ -29,7 +32,7 @@ const heroImageHeight = (Dimensions.get('screen').width * 400) / 374;
 
 export default function FeedScreen() {
   //const linkTo = useLinkTo();
-  const navigation = useNavigation<IngredientsStackScreenProps<'IngredientsHome'>['navigation']>();
+  const navigation = useNavigation<FeedStackScreenProps<'FeedHome'>['navigation']>();
   const {
     sendAnalyticsEvent,
     sendScrollEventInitiation,
@@ -37,16 +40,30 @@ export default function FeedScreen() {
   } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
 
-
+  const onSearchTapped = useCallback(() => {
     sendAnalyticsEvent({
       event: mixpanelEventName.actionClicked,
       properties: {
         location: newCurrentRoute,
         action: mixpanelEventName.searchbarPressed,
       },
-    });  const onSearchTapped = useCallback(() => {
+    });
     //linkTo('/Ingredients');
-    navigation.navigate('Ingredients');
+    navigation.navigate('Ingredients', {
+      screen: 'IngredientsHome',
+      params: undefined,
+    });
+  }, [navigation, newCurrentRoute, sendAnalyticsEvent]);
+
+  const onLeaderboardTapped = useCallback(() => {
+    sendAnalyticsEvent({
+      event: mixpanelEventName.actionClicked,
+      properties: {
+        location: newCurrentRoute,
+        action: 'leaderboard_icon_pressed',
+      },
+    });
+    navigation.navigate('Leaderboard');
   }, [navigation, newCurrentRoute, sendAnalyticsEvent]);
 
   const [_isNotification, setIsNotification] = useState<boolean>(false);
@@ -73,6 +90,18 @@ export default function FeedScreen() {
         showsVerticalScrollIndicator={false}
       >
         <SafeAreaView style={tw`z-10 pt-[30px]`}>
+          {/* Leaderboard Icon - Top Right */}
+          <View style={tw`items-end px-5 mb-3`}>
+            <Pressable
+              onPress={onLeaderboardTapped}
+              style={tw`h-10 w-10 items-center justify-center rounded-full bg-white shadow-lg`}
+              accessibilityRole="button"
+              accessibilityLabel="Open leaderboard"
+            >
+              <Ionicons name="trophy" size={20} color={tw.color('eggplant')} />
+            </Pressable>
+          </View>
+
           <FeedSearchBarHeader
             onPress={onSearchTapped}
             title="What are you cooking with?"

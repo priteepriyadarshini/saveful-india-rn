@@ -9,6 +9,7 @@ import RateRecipeModal from '../../../modules/make/components/RateRecipeModal';
 import MakeItCarouselItem from '../../../modules/make/components/MakeItCarouselItem';
 import { MixPanelContext } from '../../../modules/mixpanel/context/MixpanelContext';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
+import { useBadgeChecker } from '../../../modules/badges/hooks/useBadgeChecker';
 // Removed Craft CMS dependencies 
 import React, { useContext, useRef, useState } from 'react';
 import {
@@ -18,13 +19,12 @@ import {
   NativeSyntheticEvent,
   View,
 } from 'react-native';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { RootStackParamList } from '../../navigation/navigator/root/types';
 import { useCreateFeedbackMutation } from '../../../modules/track/api/api';
 import { useGetCookedRecipesQuery } from '../../../modules/analytics/api/api';
 import axios from 'axios';
 import EnvironmentManager from '../../environment/environmentManager';
 import useAccessToken from '../../auth/hooks/useSessionToken';
+import { InitialNavigationStackParams } from '../../navigation/navigator/InitialNavigator';
 
 const screenWidth = Dimensions.get('screen').width;
 
@@ -57,11 +57,11 @@ export default function MakeItCarousel({
   completedSteps: () => void;
 }) {
   //const linkTo = useLinkTo();
-  type RootTabNavigationProp = BottomTabNavigationProp<RootStackParamList, 'Make'>;
-  const navigation = useNavigation<RootTabNavigationProp>();
+  const navigation = useNavigation<InitialNavigationStackParams<'MakeIt'>['navigation']>();
 
   const { sendAnalyticsEvent, sendFailedEventAnalytics } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
+  const { checkMilestonesNow } = useBadgeChecker();
   const accessToken = useAccessToken();
   // const { scheduleNotification } = useNotifications();
 
@@ -138,6 +138,9 @@ export default function MakeItCarousel({
         }).unwrap();
         // Ensure cooked count reflects this completion
         await refetchCookedRecipes();
+        
+        // Check milestones after completing a meal - this will auto-show badge notifications
+        await checkMilestonesNow();
       }
 
       setModalVisible(true);
@@ -147,7 +150,7 @@ export default function MakeItCarousel({
       //   delayInSeconds: 30 * 60, // 30 minutes
       //   url: `/survey/postmake/${result.id}`,
       // });
-      
+
     } catch (error: unknown) {
       sendFailedEventAnalytics(error);
       Alert.alert('User update error', JSON.stringify(error));
@@ -205,8 +208,9 @@ export default function MakeItCarousel({
           if (!alreadyRated) {
             setRatingModalVisible(true);
           } else {
-            navigation.navigate('Make', {
-              screen: 'MakeHome',
+            navigation.navigate('Root', {
+              screen: 'Make',
+              params: { screen: 'MakeHome' },
             });
           }
         }}

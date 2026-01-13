@@ -313,6 +313,19 @@ const groupsApi = api
         invalidatesTags: ['Groups', 'GroupChallenges'],
       }),
 
+      // Auto finalize expired challenges and award badges (server-side)
+      autoFinalizeGroupChallenges: builder.mutation<
+        { message: string; finalized: number },
+        { topWinnersCount?: number }
+      >({
+        query: params => ({
+          url: '/api/community-groups/challenges/auto-finalize',
+          method: 'POST',
+          body: params || {},
+        }),
+        invalidatesTags: ['GroupChallenges', 'Challenges'],
+      }),
+
       leaveGroup: builder.mutation<
         { message: string },
         { groupId: string }
@@ -345,4 +358,5 @@ export const {
   useUpdateGroupChallengeMutation,
   useDeleteGroupChallengeMutation,
   useLeaveGroupMutation,
+  useAutoFinalizeGroupChallengesMutation,
 } = groupsApi;

@@ -8,6 +8,7 @@ import FeedScreen from '../screens/FeedScreen';
 import PartnersScreen from '../screens/PartnersScreen';
 import IngredientsStackNavigator, { IngredientsStackParamList } from '../../ingredients/navigation/IngredientsNavigator';
 import GroupsStackNavigator, { GroupsStackParamList } from '../../groups/navigation/GroupsNavigator';
+import LeaderboardScreen from '../../badges/screens/LeaderboardScreen';
 import { CompositeScreenProps, NavigatorScreenParams } from '@react-navigation/native';
 import { RootNavigationStackParams } from '../../navigation/navigator/root/RootNavigator';
 
@@ -15,6 +16,7 @@ import { RootNavigationStackParams } from '../../navigation/navigator/root/RootN
 export type FeedStackParamList = {
   FeedHome: undefined;
   Partners: undefined;
+  Leaderboard: undefined;
   Ingredients: NavigatorScreenParams<IngredientsStackParamList>;
   Groups: NavigatorScreenParams<GroupsStackParamList>;
 };
@@ -44,6 +46,12 @@ export default function FeedStackNavigator() {
         name="Partners"
         component={PartnersScreen}
         options={{ title: 'Partners', headerShown: false }}
+      />
+
+      <NavigationStack.Screen
+        name="Leaderboard"
+        component={LeaderboardScreen}
+        options={{ title: 'Leaderboard', headerShown: false }}
       />
 
       <NavigationStack.Screen

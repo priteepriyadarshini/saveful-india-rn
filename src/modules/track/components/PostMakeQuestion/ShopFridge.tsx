@@ -4,12 +4,13 @@ import tw from "../../../../common/tailwind";
 import React from "react";
 import { Image, ScrollView, Text, View } from "react-native";
 import { bodyMediumRegular, h6TextStyle } from "../../../../theme/typography";
-import { RootNavigationStackParams } from "../../../navigation/navigator/root/RootNavigator";
+import { InitialStackParamList } from "../../../navigation/navigator/InitialNavigator";
+import type { NavigationProp } from "@react-navigation/native";
 
 export default function ShopFridge() {
   //const linkTo = useLinkTo();
   const navigation =
-    useNavigation<RootNavigationStackParams<"Make">["navigation"]>();
+    useNavigation<NavigationProp<InitialStackParamList>>();
 
   return (
     <View style={tw`h-full w-full justify-between`}>
@@ -40,8 +41,9 @@ So, well done waste warrior. `}
           buttonSize="large"
           onPress={() => {
             // linkTo('/make');
-            navigation.navigate("Make", {
-              screen: "MakeHome",
+            navigation.navigate("Root", {
+              screen: "Make",
+              params: { screen: "MakeHome" },
             });
           }}
         >

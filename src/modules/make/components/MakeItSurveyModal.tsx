@@ -118,25 +118,8 @@ export default function MakeItSurveyModal({
     }
 
     try {
-      await createFeedback({
-        frameworkId,
-        prompted: false, // Use it to still show feedback
-        foodSaved: totalWeightOfSelectedIngredients / 1000,
-        mealId,
-      }).unwrap();
-
-      if (currentUserChallenge) {
-        await updateUserChallenge({
-          slug: currentUserChallenge.slug,
-          data: {
-            ...currentUserChallenge.data,
-            foodSaved:
-              currentUserChallenge.data.foodSaved +
-              totalWeightOfSelectedIngredients,
-            noOfCooks: currentUserChallenge.data.noOfCooks + 1,
-          },
-        }).unwrap();
-      }
+      // Do not create feedback at start to avoid duplicate analytics.
+      // Feedback (and food saved) is recorded on completion in MakeItCarousel.
 
       sendAnalyticsEvent({
         event: mixpanelEventName.actionClicked,

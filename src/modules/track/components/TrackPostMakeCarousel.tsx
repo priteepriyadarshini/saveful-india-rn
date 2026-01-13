@@ -5,6 +5,7 @@ import { IFramework } from '../../../models/craft';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
 import { useSaveFoodAnalyticsMutation } from '../../../modules/analytics/api/api';
+import { useBadgeChecker } from '../../../modules/badges/hooks/useBadgeChecker';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
 import {
   useCreateFeedbackMutation,
@@ -73,6 +74,7 @@ export default function TrackPostMakeCarousel({
 
   const { sendAnalyticsEvent, sendFailedEventAnalytics } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
+  const { checkMilestonesNow } = useBadgeChecker();
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [didYouLikeIt, setDidYouLikeIt] = useState<boolean>(false);
   const [isAnyLeftovers, setIsAnyLeftovers] = useState<string>('');
@@ -127,6 +129,7 @@ export default function TrackPostMakeCarousel({
     useUpdateFeedbackMutation();
   // Meals update was removed; keep UI consistent by setting loading to false
   const isUpdateUserMealLoading = false;
+  const [saveFoodAnalytics] = useSaveFoodAnalyticsMutation();
 
   const onFeedbackComplete = async () => {
     if (isCreateFeedbackLoading || isUpdateFeedbackLoading) {
@@ -151,6 +154,22 @@ export default function TrackPostMakeCarousel({
           mealId,
         }).unwrap();
       }
+
+      // Only emit analytics if we just created NEW feedback (user skipped MakeItSurveyModal)
+      // If feedback already existed, analytics were already tracked in MakeItSurveyModal
+      // This prevents double-counting while ensuring skipped surveys still get counted
+      if (!feedback) {
+        try {
+          const ingredientIds = (selectedIngredients || []).map((i) => i.id);
+          await saveFoodAnalytics({ ingredientIds, frameworkId: framework.id }).unwrap();
+        } catch (e) {
+          // Non-blocking: continue even if analytics call fails
+        }
+      }
+
+      // Force-check milestones so users immediately receive badges if thresholds met
+      // This will trigger badge notifications automatically via useBadgeChecker hook
+      await checkMilestonesNow();
 
       sendAnalyticsEvent({
         event: mixpanelEventName.actionClicked,

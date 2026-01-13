@@ -55,7 +55,7 @@ export default function ChallengeDetailScreen() {
   const leaderboardByGrams = useMemo(() => {
     return [...participants]
       .filter(p => p.isActive)
-      .sort((a, b) => (b.totalFoodSaved || 0) - (a.totalFoodSaved || 0))
+      .sort((a, b) => (b.foodSaved || 0) - (a.foodSaved || 0))
       .slice(0, 5);
   }, [participants]);
 
@@ -369,7 +369,7 @@ export default function ChallengeDetailScreen() {
                     {getParticipantName(currentLeader)}
                   </Text>
                   <Text style={tw.style(bodySmallRegular, 'mt-1 text-midgray')}>
-                    {(currentLeader.totalMealsCompleted || 0)} meals · {(currentLeader.totalFoodSaved || 0)}g saved
+                    {(currentLeader.totalMealsCompleted || 0)} meals · {(currentLeader.foodSaved || 0)}g saved
                   </Text>
                 </View>
               )}
@@ -382,7 +382,7 @@ export default function ChallengeDetailScreen() {
                     <Text style={tw.style(bodySmallRegular, 'text-darkgray')}>#{idx + 1}</Text>
                     <View style={tw.style('flex-1 px-3')}>
                       <Text style={tw.style(bodySmallRegular, 'text-darkgray')}>{getParticipantName(p)}</Text>
-                      <Text style={tw.style(bodySmallRegular, 'text-midgray')}>{(p.totalFoodSaved || 0)}g · {(p.totalMealsCompleted || 0)} meals</Text>
+                      <Text style={tw.style(bodySmallRegular, 'text-midgray')}>{(p.foodSaved || 0)}g · {(p.totalMealsCompleted || 0)} meals</Text>
                     </View>
                   </View>
                 ))}

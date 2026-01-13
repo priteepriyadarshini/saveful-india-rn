@@ -30,6 +30,7 @@ import { OneSignal } from 'react-native-onesignal';
 import OtherLaunchTasksHandler from './common/providers/OtherLaunchTasksHandler';
 import { MixPanelContextProvider } from './modules/mixpanel/context/MixpanelContext';
 import { NotificationsProvider } from './modules/notifications/context/NotificationsContext';
+import { BadgeNotificationProvider } from './modules/badges/context/BadgeNotificationContext';
 import { View, Text } from 'react-native';
 
 export default function App() {
@@ -53,11 +54,13 @@ export default function App() {
                 <ActionSheetProvider>
                   <PortalProvider>
                     <NotificationsProvider>
-                      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-                        <OtherLaunchTasksHandler />
-                        <AppNavigation />
-                        {/* <View><Text> Hello</Text></View> */}
-                      </SafeAreaProvider>
+                      <BadgeNotificationProvider>
+                        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+                          <OtherLaunchTasksHandler />
+                          <AppNavigation />
+                          {/* <View><Text> Hello</Text></View> */}
+                        </SafeAreaProvider>
+                      </BadgeNotificationProvider>
                     </NotificationsProvider>
                   </PortalProvider>
                 </ActionSheetProvider>
