@@ -8,6 +8,7 @@ import tw from '../../../common/tailwind';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
 import HackOrTip from '../../../modules/prep/components/HackOrTip';
+import RecipeRatingCard from '../../../modules/prep/components/RecipeRatingCard';
 import { IDescription } from '../../../modules/prep/types';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
 import React, { Fragment, useCallback, useState } from 'react';
@@ -126,6 +127,12 @@ export default function PrepCarousel({
         },
       ],
     },
+    {
+      id: 3,
+      title: 'RECIPE RATINGS',
+      type: 'rating',
+      recipeId: frameworkId,
+    },
   ];
 
   return (
@@ -141,6 +148,20 @@ export default function PrepCarousel({
                 <Animated.View style={[tw.style(`mr-2`)]}>
                   <HackOrTip
                     id={item.id}
+                    maxHeight={maxHeight}
+                    setMaxHeight={setMaxHeight}
+                  />
+                </Animated.View>
+              </View>
+            );
+          }
+
+          if (item.type === 'rating') {
+            return (
+              <View style={{ width: itemLength }}>
+                <Animated.View style={[tw.style(`mr-2`)]}>
+                  <RecipeRatingCard
+                    recipeId={item.recipeId}
                     maxHeight={maxHeight}
                     setMaxHeight={setMaxHeight}
                   />

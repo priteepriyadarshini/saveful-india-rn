@@ -11,10 +11,12 @@ export default function CompletedCookModal({
   isModalVisible,
   mealsCookedCount,
   toggleModal,
+  onRequestRating,
 }: {
   mealsCookedCount?: number | null;
   isModalVisible: boolean;
   toggleModal: () => void;
+  onRequestRating?: () => void;
 }) {
 
   type InitialNav = NativeStackNavigationProp<InitialStackParamList, 'Root'>;
@@ -24,11 +26,16 @@ const navigation = useNavigation<InitialNav>();
 
   const handleClose = () => {
     toggleModal(); // close modal
-    // navigate back to Make tab root (MakeHome)
-    navigation.navigate('Root', {
-      screen: 'Make',
-      params: { screen: 'MakeHome' },
-    } as const);
+    // Show rating modal if callback provided
+    if (onRequestRating) {
+      onRequestRating();
+    } else {
+      // Otherwise navigate back to Make tab root (MakeHome)
+      navigation.navigate('Root', {
+        screen: 'Make',
+        params: { screen: 'MakeHome' },
+      } as const);
+    }
   };
   
   return (

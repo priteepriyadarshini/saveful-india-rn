@@ -342,8 +342,9 @@ export default function MakeItScreen({
               />
 
               <MakeItCarousel
-                frameworkId={id}
-                title={framework?.title}
+                frameworkId={framework?.id || id}
+                recipeName={framework?.title}
+                recipeImage={framework?.heroImage?.[0]?.url}
                 data={makeItSteps}
                 totalWeightOfSelectedIngredients={
                   totalWeightOfSelectedIngredients

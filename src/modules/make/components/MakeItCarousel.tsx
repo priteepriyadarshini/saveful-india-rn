@@ -5,6 +5,7 @@ import { IFrameworkComponentStep } from '../../../models/craft';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
 import CompletedCookModal from '../../../modules/make/components/CompletedCookModal';
+import RateRecipeModal from '../../../modules/make/components/RateRecipeModal';
 import MakeItCarouselItem from '../../../modules/make/components/MakeItCarouselItem';
 import { MixPanelContext } from '../../../modules/mixpanel/context/MixpanelContext';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
@@ -21,6 +22,9 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootStackParamList } from '../../navigation/navigator/root/types';
 import { useCreateFeedbackMutation } from '../../../modules/track/api/api';
 import { useGetCookedRecipesQuery } from '../../../modules/analytics/api/api';
+import axios from 'axios';
+import EnvironmentManager from '../../environment/environmentManager';
+import useAccessToken from '../../auth/hooks/useSessionToken';
 
 const screenWidth = Dimensions.get('screen').width;
 
@@ -35,7 +39,8 @@ interface ICarouselItem extends IFrameworkComponentStep {
 
 export default function MakeItCarousel({
   frameworkId,
-  // title,
+  recipeName,
+  recipeImage,
   data,
   totalWeightOfSelectedIngredients,
   mealId,
@@ -43,7 +48,8 @@ export default function MakeItCarousel({
   completedSteps,
 }: {
   frameworkId: string;
-  title?: string;
+  recipeName?: string;
+  recipeImage?: string;
   data: ICarouselItem[];
   totalWeightOfSelectedIngredients: number;
   mealId: string;
@@ -56,6 +62,7 @@ export default function MakeItCarousel({
 
   const { sendAnalyticsEvent, sendFailedEventAnalytics } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
+  const accessToken = useAccessToken();
   // const { scheduleNotification } = useNotifications();
 
   const flashListRef = useRef<FlashListRef<ICarouselItem>>(null);
@@ -63,6 +70,8 @@ export default function MakeItCarousel({
   const [mixpanel] = useContext(MixPanelContext);
 
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isRatingModalVisible, setRatingModalVisible] = useState<boolean>(false);
+  const [hasUserRated, setHasUserRated] = useState<boolean>(false);
   const [createFeedback, { isLoading: isCreateFeedbackLoading }] =
     useCreateFeedbackMutation();
   const {
@@ -87,22 +96,26 @@ export default function MakeItCarousel({
     // Only toggle visibility; navigation handled by modal's close
     setModalVisible(!isModalVisible);
   };
-  // Removed Craft CMS meal tracking
 
-  
-  // DEMO CODE fallback for userMeals
-  // TODO: Replace with useGetUserMealsQuery() from modules/track/api/api
-  // const userMeals: any[] = []; // Simulated empty meal list
-  // const isGetUserMealsLoading = false;
-
-  // // DEMO fallback for updateUserMeal mutation
-  // // TODO: Replace with useUpdateUserMealMutation() from modules/track/api/api
-  // const updateUserMeal = async (payload: any) => {
-  //   console.log('Simulated updateUserMeal:', payload);
-  //   return { id: mealId }; // Simulated response
-  // };
-  // const isUpdateUserMealLoading = false;
-  //--DEMO CODE--
+  const checkUserRating = async () => {
+    try {
+      const baseUrl = EnvironmentManager.shared.apiUrl();
+      const response = await axios.get(
+        `${baseUrl}/api/recipe-ratings/check?recipeId=${frameworkId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      // If response has data, user has already rated
+      setHasUserRated(!!response.data);
+      return !!response.data;
+    } catch (error) {
+      setHasUserRated(false);
+      return false;
+    }
+  };
 
   const onCompleteCook = async () => {
     try {
@@ -186,8 +199,25 @@ export default function MakeItCarousel({
         mealsCookedCount={cookedRecipesData?.numberOfMealsCooked ?? 0}
         isModalVisible={isModalVisible}
         toggleModal={toggleModal}
+        onRequestRating={async () => {
+          const alreadyRated = await checkUserRating();
+          if (!alreadyRated) {
+            setRatingModalVisible(true);
+          } else {
+            navigation.navigate('Make', {
+              screen: 'MakeHome',
+            });
+          }
+        }}
       />
       {/* )} */}
+      <RateRecipeModal
+        isVisible={isRatingModalVisible}
+        recipeId={frameworkId}
+        recipeName={recipeName || 'this recipe'}
+        recipeImage={recipeImage}
+        onClose={() => setRatingModalVisible(false)}
+      />
     </View>
   );
 }
