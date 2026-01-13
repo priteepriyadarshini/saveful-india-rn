@@ -49,6 +49,7 @@ export default function GroupDetailScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'food' | 'challenges' | 'members'>('food');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [pendingOwnerId, setPendingOwnerId] = useState<string | null>(null);
 
   const onRefresh = async () => {
@@ -342,13 +343,47 @@ export default function GroupDetailScreen() {
         {/* Invite Button (not shown on Challenges tab) */}
         {activeTab !== 'challenges' && (
           <View style={tw.style('mx-5 mt-6 gap-3')}>
-            <PrimaryButton width="full" buttonSize="large" variant="solid-black" onPress={handleShareCode}>
+            <PrimaryButton width="full" buttonSize="large" variant="solid-black" onPress={() => setIsInviteModalOpen(true)}>
               Invite people to this group
             </PrimaryButton>
           </View>
         )}
 
         {/* Owner actions moved to settings modal */}
+
+        {/* Invite Modal */}
+        <ModalComponent
+          heading="INVITE PEOPLE TO YOUR GROUP"
+          isModalVisible={isInviteModalOpen}
+          setIsModalVisible={setIsInviteModalOpen}
+          horizontalPadding
+        >
+          <View style={tw.style('gap-6')}>
+            <Text style={tw.style(bodySmallRegular, 'text-center text-darkgray')}>
+              To join your group, people need your unique group code. Copy your code and share it with people from this community.
+            </Text>
+
+            <View style={tw.style('gap-3')}>
+              <Text style={tw.style(subheadSmallUppercase, 'text-center text-darkgray')}>
+                YOUR GROUP CODE IS
+              </Text>
+              <View style={tw.style('rounded-2xl bg-[#E6D4F5] px-6 py-8')}>
+                <Text style={tw.style('text-center text-5xl font-bold text-eggplant')}>
+                  {data?.group?.joinCode || ''}
+                </Text>
+              </View>
+            </View>
+
+            <View style={tw.style('gap-3')}>
+              <PrimaryButton width="full" buttonSize="large" variant="outline-black" onPress={handleCopyCode}>
+                Copy code
+              </PrimaryButton>
+              <SecondaryButton width="full" buttonSize="large" onPress={handleShareCode}>
+                Share code
+              </SecondaryButton>
+            </View>
+          </View>
+        </ModalComponent>
 
         {/* Settings Modal */}
         <ModalComponent
