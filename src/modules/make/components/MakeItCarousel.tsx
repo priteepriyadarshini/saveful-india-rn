@@ -147,6 +147,7 @@ export default function MakeItCarousel({
       //   delayInSeconds: 30 * 60, // 30 minutes
       //   url: `/survey/postmake/${result.id}`,
       // });
+      
     } catch (error: unknown) {
       sendFailedEventAnalytics(error);
       Alert.alert('User update error', JSON.stringify(error));

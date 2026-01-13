@@ -200,6 +200,7 @@ const groupsApi = api
             closed: GroupChallenge[];
             cancelled: GroupChallenge[];
           };
+          userParticipation: { challengeId: string; totalMealsCompleted: number }[];
         },
         { communityId: string }
       >({

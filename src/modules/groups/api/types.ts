@@ -60,7 +60,7 @@ interface GroupsResponse {
 
 interface GroupChallengeParticipant {
   _id: string;
-  userId: string;
+  userId: string | { _id: string; name: string; email?: string };
   communityId: string;
   challengeId: string;
   isActive: boolean;
@@ -80,9 +80,12 @@ interface GroupChallenge {
   challengeGoal: number;
   memberCount: number;
   totalFoodSaved?: number;
+  totalMealsCompleted?: number;
   isActive: boolean;
   status?: boolean;
   isParticipant?: boolean;
+  // Optional: backend may include participants in challenge payload
+  participants?: GroupChallengeParticipant[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -93,6 +96,7 @@ interface GroupChallengeResponse {
 
 interface GroupChallengesResponse {
   challenges: GroupChallenge[] | null;
+  userParticipation?: { challengeId: string; totalMealsCompleted: number }[];
 }
 
 export {

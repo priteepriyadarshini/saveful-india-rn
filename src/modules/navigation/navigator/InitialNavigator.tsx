@@ -104,12 +104,6 @@ function InitialNavigator() {
     };
 
     const targetRoute = determineRoute();
-    console.log('Auth state changed, navigating to:', targetRoute, { 
-      accessToken: !!accessToken, 
-      hasCompletedOnboarding,
-      userCountry: currentUser?.country,
-      userName: currentUser?.name || currentUser?.first_name
-    });
     
     // Reset navigation stack to the appropriate route
     navigation.reset({

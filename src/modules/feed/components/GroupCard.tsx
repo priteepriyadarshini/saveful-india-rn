@@ -3,6 +3,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import DebouncedPressable from '../../../common/components/DebouncePressable';
 import tw from '../../../common/tailwind';
 import { Group } from '../../../modules/groups/api/types';
+import { useGetGroupChallengesQuery } from '../../../modules/groups/api/api';
+import { bodySmallRegular } from '../../../theme/typography';
 import { Image, Text, View } from 'react-native';
 import { cardDrop } from '../../../theme/shadow';
 import { bodyLargeBold, subheadSmallUppercase } from '../../../theme/typography';
@@ -18,6 +20,22 @@ export default function GroupCard({ group }: GroupCardProps) {
 
   const localRandomImage = getGroupImage(group._id || group.name);
   const memberCount = typeof (group as any).memberCount === 'number' ? (group as any).memberCount : 0;
+  const { data: challengesData } = useGetGroupChallengesQuery({ communityId: group._id });
+
+  // Determine user's highest cooked active challenge (by meals) if available
+  const userParticipation = challengesData?.userParticipation || [];
+  const challenges = challengesData?.challenges || [];
+  const highest = userParticipation.reduce<{ challengeId?: string; totalMealsCompleted: number }>((acc, cur) => {
+    if (!acc.challengeId || cur.totalMealsCompleted > acc.totalMealsCompleted) {
+      return { challengeId: cur.challengeId, totalMealsCompleted: cur.totalMealsCompleted };
+    }
+    return acc;
+  }, { challengeId: undefined, totalMealsCompleted: 0 });
+
+  const topChallenge = highest.challengeId ? challenges.find(c => c._id === highest.challengeId) : undefined;
+  const mealsGoal = topChallenge?.challengeGoal || 0;
+  const mealsDone = highest.totalMealsCompleted || 0;
+  const progressPct = mealsGoal > 0 ? Math.min((mealsDone / mealsGoal) * 100, 100) : 0;
 
   return (
     <DebouncedPressable
@@ -39,6 +57,19 @@ export default function GroupCard({ group }: GroupCardProps) {
           <Text style={tw.style(subheadSmallUppercase, 'text-midgray mt-1')}>
             {memberCount} {memberCount === 1 ? 'Member' : 'Members'}
           </Text>
+          {topChallenge && (
+            <View style={tw.style('mt-3')}>
+              <Text style={tw.style(bodySmallRegular, 'text-midgray')}>
+                {topChallenge.challengeName}
+              </Text>
+              <View style={tw.style('mt-1 h-2 w-full overflow-hidden rounded-full bg-strokecream')}>
+                <View style={[tw.style('h-full bg-eggplant'), { width: `${progressPct}%` }]} />
+              </View>
+              <Text style={tw.style(bodySmallRegular, 'mt-1 text-darkgray')}>
+                {mealsDone}/{mealsGoal} meals
+              </Text>
+            </View>
+          )}
         </View>
       </View>
     </DebouncedPressable>

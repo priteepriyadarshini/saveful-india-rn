@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Alert,
   RefreshControl,
@@ -20,6 +20,8 @@ import {
 } from '../../../modules/groups/api/api';
 import { bodyLargeBold, bodySmallRegular, h5TextStyle, h6TextStyle } from '../../../theme/typography';
 import { cardDrop } from '../../../theme/shadow';
+import { useGetCookedRecipesQuery } from '../../analytics/api/api';
+import { GroupChallengeParticipant } from '../api/types';
 
 export default function ChallengeDetailScreen() {
   const navigation = useNavigation();
@@ -39,6 +41,30 @@ export default function ChallengeDetailScreen() {
     useLeaveGroupChallengeMutation();
 
   const [refreshing, setRefreshing] = useState(false);
+  const { data: cookedSummary } = useGetCookedRecipesQuery();
+
+  // Prepare participants list BEFORE any early returns (hooks must be unconditional)
+  const participants: GroupChallengeParticipant[] = useMemo(() => {
+    if (!challenge) return [];
+    const anyChallenge: any = challenge as any;
+    return Array.isArray(anyChallenge?.participants)
+      ? (anyChallenge.participants as GroupChallengeParticipant[])
+      : [];
+  }, [challenge]);
+
+  const leaderboardByGrams = useMemo(() => {
+    return [...participants]
+      .filter(p => p.isActive)
+      .sort((a, b) => (b.totalFoodSaved || 0) - (a.totalFoodSaved || 0))
+      .slice(0, 5);
+  }, [participants]);
+
+  const leaderboardByMeals = useMemo(() => {
+    return [...participants]
+      .filter(p => p.isActive)
+      .sort((a, b) => (b.totalMealsCompleted || 0) - (a.totalMealsCompleted || 0))
+      .slice(0, 5);
+  }, [participants]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -121,9 +147,20 @@ export default function ChallengeDetailScreen() {
   const isActive = challenge.isActive || (challenge.status && startDate <= now && endDate >= now);
   const isParticipant = challenge.isParticipant || false;
   const progressPercentage = Math.min(
-    ((challenge.totalFoodSaved || 0) / challenge.challengeGoal) * 100,
+    ((challenge.totalMealsCompleted || 0) / challenge.challengeGoal) * 100,
     100,
   );
+
+  const getParticipantName = (p: GroupChallengeParticipant) => {
+    const u: any = p.userId as any;
+    if (typeof u === 'object') {
+      return u?.name || u?._id || 'Member';
+    }
+    return u;
+  };
+
+  const challengeCompleted = (challenge.totalMealsCompleted || 0) >= challenge.challengeGoal;
+  const currentLeader = leaderboardByMeals[0] || leaderboardByGrams[0];
 
   return (
     <SafeAreaView style={tw.style('flex-1 bg-creme')}>
@@ -274,9 +311,9 @@ export default function ChallengeDetailScreen() {
             </View>
             <View style={tw.style('w-px bg-strokecream')} />
             <View style={tw.style('flex-1 items-center')}>
-              <Text style={tw.style(bodySmallRegular, 'text-midgray')}>Goal</Text>
+              <Text style={tw.style(bodySmallRegular, 'text-midgray')}>Meals Goal</Text>
               <Text style={tw.style(bodyLargeBold, 'mt-1 text-darkgray')}>
-                {challenge.challengeGoal}g
+                {challenge.challengeGoal}
               </Text>
             </View>
             <View style={tw.style('w-px bg-strokecream')} />
@@ -287,6 +324,85 @@ export default function ChallengeDetailScreen() {
               </Text>
             </View>
           </View>
+          {/* Meals Completed Metrics */}
+          <View style={tw.style('mt-5 flex-row justify-between')}>
+            <View style={tw.style('flex-1 items-center')}>
+              <Text style={tw.style(bodySmallRegular, 'text-midgray')}>Meals Completed</Text>
+              <Text style={tw.style(bodyLargeBold, 'mt-1 text-darkgray')}>
+                {challenge.totalMealsCompleted || 0}
+              </Text>
+            </View>
+            <View style={tw.style('w-px bg-strokecream')} />
+            <View style={tw.style('flex-1 items-center')}>
+              <Text style={tw.style(bodySmallRegular, 'text-midgray')}>Your meals cooked</Text>
+              <Text style={tw.style(bodyLargeBold, 'mt-1 text-darkgray')}>
+                {cookedSummary?.numberOfMealsCooked ?? 0}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Competition / Leaderboard */}
+        <View
+          style={tw.style(
+            'mb-6 rounded-2xl border border-strokecream bg-white p-5',
+            cardDrop,
+          )}
+        >
+          <Text style={tw.style(h6TextStyle, 'mb-4 text-darkgray')}>
+            Leaderboard
+          </Text>
+
+          {participants.length === 0 ? (
+            <Text style={tw.style(bodySmallRegular, 'text-midgray')}>
+              Leaderboard will appear as members start cooking. Join and contribute!
+            </Text>
+          ) : (
+            <>
+              {/* Current leader and status */}
+              {currentLeader && (
+                <View style={tw.style('mb-4 rounded-xl bg-eggplant-light p-3')}>
+                  <Text style={tw.style(bodySmallRegular, 'text-darkgray')}>
+                    {challengeCompleted ? 'Winner (by meals cooked):' : 'Current leader (meals):'}
+                  </Text>
+                  <Text style={tw.style(bodyLargeBold, 'mt-1 text-darkgray')}>
+                    {getParticipantName(currentLeader)}
+                  </Text>
+                  <Text style={tw.style(bodySmallRegular, 'mt-1 text-midgray')}>
+                    {(currentLeader.totalMealsCompleted || 0)} meals · {(currentLeader.totalFoodSaved || 0)}g saved
+                  </Text>
+                </View>
+              )}
+
+              {/* Top by grams */}
+              <Text style={tw.style(bodySmallRegular, 'mb-2 text-darkgray')}>Top by grams</Text>
+              <View style={tw.style('mb-4 gap-2')}>
+                {leaderboardByGrams.map((p, idx) => (
+                  <View key={`${p._id}-g`} style={tw.style('flex-row items-center justify-between rounded-xl border border-strokecream p-3')}>
+                    <Text style={tw.style(bodySmallRegular, 'text-darkgray')}>#{idx + 1}</Text>
+                    <View style={tw.style('flex-1 px-3')}>
+                      <Text style={tw.style(bodySmallRegular, 'text-darkgray')}>{getParticipantName(p)}</Text>
+                      <Text style={tw.style(bodySmallRegular, 'text-midgray')}>{(p.totalFoodSaved || 0)}g · {(p.totalMealsCompleted || 0)} meals</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+
+              {/* Top by meals */}
+              <Text style={tw.style(bodySmallRegular, 'mb-2 text-darkgray')}>Top by meals</Text>
+              <View style={tw.style('gap-2')}>
+                {leaderboardByMeals.map((p, idx) => (
+                  <View key={`${p._id}-m`} style={tw.style('flex-row items-center justify-between rounded-xl border border-strokecream p-3')}>
+                    <Text style={tw.style(bodySmallRegular, 'text-darkgray')}>#{idx + 1}</Text>
+                    <View style={tw.style('flex-1 px-3')}>
+                      <Text style={tw.style(bodySmallRegular, 'text-darkgray')}>{getParticipantName(p)}</Text>
+                      <Text style={tw.style(bodySmallRegular, 'text-midgray')}>{(p.totalMealsCompleted || 0)} meals · {(p.totalFoodSaved || 0)}g</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
         </View>
 
         {/* Action Buttons */}

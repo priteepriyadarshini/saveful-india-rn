@@ -103,11 +103,8 @@ export default function IngredientsCarousel() {
 
   useEffect(() => {
     if (apiIngredients) {
-      console.log('API Ingredients loaded:', apiIngredients.length);
-      
       // Use API data only
       const transformedData = transformIngredientsToLegacyFormat(apiIngredients);
-      console.log('Transformed ingredients:', transformedData.length);
       
       const filteredData = transformedData
         .filter(x => {
@@ -115,8 +112,6 @@ export default function IngredientsCarousel() {
           const originalIngredient = apiIngredients.find(i => i._id === x.id);
           const hasPage = originalIngredient?.hasPage;
           const inSeason = isCurrentlyInSeason(originalIngredient?.inSeason || null);
-          
-          console.log(`Ingredient ${x.title}: hasPage=${hasPage}, inSeason=${inSeason}, months=${JSON.stringify(originalIngredient?.inSeason)}`);
           
           return hasPage && inSeason;
         })
@@ -134,7 +129,6 @@ export default function IngredientsCarousel() {
           return a.title.localeCompare(b.title);
         });
       
-      console.log('Final filtered ingredients for carousel:', filteredData.length);
       setIngredients(filteredData);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

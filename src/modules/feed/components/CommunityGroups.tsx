@@ -41,12 +41,14 @@ export default function CommunityGroups() {
           <View style={tw.style('w-full')}>
             <GenericCarouselFlatlist
               data={groups}
-              contentContainerStyle={tw`pl-5 pr-3`}
+              contentContainerStyle={tw.style('px-5')}
               scrollEnabled={true}
-              itemLength={itemLength + 8}
+              itemLength={itemLength}
               renderItem={({ item }: { item: any }) => (
-                <View style={tw`mr-2 w-85`} key={item._id}>
-                  <GroupCard group={item as any} />
+                <View style={tw.style('mr-2', { width: itemLength })} key={item._id}>
+                  <View style={tw.style('mx-auto w-85')}>
+                    <GroupCard group={item as any} />
+                  </View>
                 </View>
               )}
             />

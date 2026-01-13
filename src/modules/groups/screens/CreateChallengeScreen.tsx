@@ -18,6 +18,7 @@ import PrimaryButton from '../../../common/components/ThemeButtons/PrimaryButton
 import OutlineButton from '../../../common/components/ThemeButtons/OutlineButton';
 import { useCreateGroupChallengeMutation } from '../../../modules/groups/api/api';
 import { bodySmallRegular, h5TextStyle } from '../../../theme/typography';
+import { useGetCookedRecipesQuery } from '../../analytics/api/api';
 
 export default function CreateChallengeScreen() {
   const navigation = useNavigation();
@@ -35,6 +36,7 @@ export default function CreateChallengeScreen() {
   const [showEndPicker, setShowEndPicker] = useState(false);
 
   const [createChallenge, { isLoading }] = useCreateGroupChallengeMutation();
+  const { data: cookedSummary } = useGetCookedRecipesQuery();
 
   const handleCreateChallenge = async () => {
     if (!challengeName.trim()) {
@@ -49,7 +51,7 @@ export default function CreateChallengeScreen() {
 
     const goalsNumber = parseInt(challengeGoals);
     if (!challengeGoals.trim() || isNaN(goalsNumber) || goalsNumber <= 0) {
-      Alert.alert('Error', 'Please enter a valid goal (Grams of Food to be Saved)');
+      Alert.alert('Error', 'Please enter a valid goal (Meals to be cooked)');
       return;
     }
 
@@ -101,6 +103,14 @@ export default function CreateChallengeScreen() {
             <View style={tw.style('w-10')} />
           </View>
 
+          {/* Your Meals Cooked (context) */}
+          <View style={tw.style('mb-4 rounded-2xl border border-strokecream bg-white p-4')}>            
+            <Text style={tw.style(bodySmallRegular, 'text-midgray')}>Your meals cooked</Text>
+            <Text style={tw.style('mt-1 font-saveful-bold text-darkgray') as any}>
+              {cookedSummary?.numberOfMealsCooked ?? 0}
+            </Text>
+          </View>
+
           {/* Challenge Name */}
           <View style={tw.style('mb-4')}>
             <Text style={tw.style(bodySmallRegular, 'mb-2 text-darkgray')}>
@@ -144,20 +154,23 @@ export default function CreateChallengeScreen() {
             </Text>
           </View>
 
-          {/* Goal */}
+          {/* Goal (Meals) */}
           <View style={tw.style('mb-4')}>
             <Text style={tw.style(bodySmallRegular, 'mb-2 text-darkgray')}>
-              Goal (Grams of Food to be Saved) *
+              Goal (Meals to be cooked) *
             </Text>
             <TextInput
               style={tw.style(
                 'rounded-lg border border-strokecream bg-white px-4 py-3 font-saveful text-base text-darkgray',
               )}
-              placeholder="e.g., 50"
+              placeholder="e.g., 20"
               value={challengeGoals}
               onChangeText={setChallengeGoals}
               keyboardType="numeric"
             />
+            <Text style={tw.style(bodySmallRegular, 'mt-1 text-midgray')}>
+              Tip: Challenge goal counts number of meals. Grams saved will still be tracked and shown.
+            </Text>
           </View>
 
           {/* Start Date */}
