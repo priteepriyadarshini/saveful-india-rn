@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
-import { useLinkTo, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import {
   Animated,
   Dimensions,
@@ -13,12 +13,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
-import { filterAllergiesByUserPreferences } from '../../../common/helpers/filterIngredients';
-import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
-import { useGetUserOnboardingQuery } from '../../../modules/intro/api/api';
 import { useGetCookedRecipesDetailsQuery } from '../../../modules/analytics/api/api';
-import { IFramework } from '../../../models/craft';
 import { mixpanelEventName } from '../../analytics/analytics';
 import { useCurentRoute } from '../../route/context/CurrentRouteContext';
 import { ProfileInfo } from '../components/ProfileInfo';
@@ -34,7 +30,6 @@ const data = [
 ];
 
 export default function ProfileScreen() {
-  //const linkTo = useLinkTo();
   const navigation = useNavigation<TrackStackScreenProps<'TrackHome'>['navigation']>();
 
   const offset = useRef(new Animated.Value(0)).current;
@@ -49,7 +44,6 @@ export default function ProfileScreen() {
           type: id,
         },
       });
-      //linkTo(`/track/history/${id}`);
       navigation.navigate('ProfileHistory', { id });
     },
     [navigation],
@@ -61,43 +55,13 @@ export default function ProfileScreen() {
   const { sendAnalyticsEvent } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
 
-  const { getFrameworks } = useContent();
-  const { data: userOnboarding } = useGetUserOnboardingQuery();
-  const [frameworks, setFrameworks] = useState<IFramework[]>([]);
-
-  const getFrameworksData = async () => {
-    const data = await getFrameworks();
-
-    if (data) {
-      // TODO: Use allergy filtering when userOnboarding is available
-      setFrameworks(
-        filterAllergiesByUserPreferences(data, userOnboarding?.allergies)
-      );
-      // setFrameworks(data); // Using raw data for now
-    }
-  };
-
-  useEffect(() => {
-    getFrameworksData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  
-
-  if (frameworks.length === 0) {
-    return null;
-  }
-
-  // Get recently cooked recipes - userMeals is now an array of framework_ids
-  // Use cooked recipe details from API; fallback to frameworks if needed
-  const recentlyCooked = recentCooked.length > 0
-    ? recentCooked.map(rc => ({
-        id: rc.id,
-        title: rc.title,
-        heroImage: [{ url: rc.heroImageUrl || '' }] as any,
-        variantTags: [] as any,
-      }))
-    : [];
+  // Get recently cooked recipes from API - map to minimal structure MealCard needs
+  const recentlyCooked = recentCooked.map(rc => ({
+    id: rc.id,
+    title: rc.title,
+    heroImage: [{ url: rc.heroImageUrl || '' }],
+    variantTags: [],
+  })) as any; // MealCarousel expects IFramework but only uses these fields
 
   return (
     <View style={tw`flex-1 bg-creme`}>
@@ -122,8 +86,7 @@ export default function ProfileScreen() {
           </View>
         </SafeAreaView>
 
-        {/* TODO: Uncomment when recentlyCooked is available */}
-        {recentlyCooked && recentlyCooked.length > 0 && (
+        {recentlyCooked.length > 0 && (
           <View style={tw.style('flex-1 bg-creme')}>
             <View style={tw.style(`items-start pt-8`)}>
               <Text

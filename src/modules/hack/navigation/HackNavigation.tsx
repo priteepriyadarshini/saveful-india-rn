@@ -14,7 +14,7 @@ import HackVideoScreen from '../screens/HackVideoScreen';
 export type HackStackParamList = {
   HackHome: undefined;
   HackCategory: { id: string };
-  HackDetail: { categoryId: string; id: string };
+  HackDetail: { categoryId?: string; id: string };
   HackVideo: { videoString: string };
 };
 

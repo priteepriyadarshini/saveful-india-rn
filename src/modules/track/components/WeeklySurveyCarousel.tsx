@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { useLinkTo, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import {
   GenericCarouselFlatlist,
   GenericCarouselWrapper,
@@ -165,7 +165,6 @@ function FirstSurveyDate({ nextSurveyDate }: SurveyDateProps) {
 }
 
 export default function WeeklySurveyCarousel() {
-  //const linkTo = useLinkTo();
   const navigation = useNavigation<NativeStackNavigationProp<SurveyStackParamList>>();
 
   const { data: userSurveys } = useGetUserTrackSurveysQuery();
@@ -217,9 +216,9 @@ export default function WeeklySurveyCarousel() {
   }
 
   const data = WEEKLYSURVEY({
-    co2Savings: userSurveys[0].co2_savings,
-    costSavings: userSurveys[0].cost_savings,
-    foodSaved: userSurveys[0].food_saved,
+    co2Savings: userSurveys[0].co2_savings.toString(),
+    costSavings: userSurveys[0].cost_savings.toString(),
+    foodSaved: userSurveys[0].food_saved.toString(),
   });
 
   const isEligible = eligibilityData.eligible;

@@ -14,74 +14,11 @@ import {
 
 const trackApi = api
   .enhanceEndpoints({
-    addTagTypes: ['Surveys', 'Feedback', 'UserMeals', 'Favourites', 'Stats'],
+    addTagTypes: ['Feedback', 'UserMeals', 'Favourites', 'Stats'],
   })
   .injectEndpoints({
     overrideExisting: true,
     endpoints: builder => ({
-      getUserTrackSurveys: builder.query<SurveyResult[] | null, void>({
-        query: () => ({
-          url: '/api/surveys',
-          method: 'get',
-        }),
-        providesTags: ['Surveys'],
-        transformResponse: r => (r as UserSurveysResponse).track_surveys,
-      }),
-      createUserTrackSurvey: builder.mutation<
-        SurveyResult,
-        {
-          cookingFrequency: number;
-          scraps: number;
-          uneatenLeftovers: number;
-          binnedFruit: number;
-          binnedVeggies: number;
-          binnedDairy: number;
-          binnedBread: number;
-          binnedMeat: number;
-          binnedHerbs: number;
-          preferredIngredients: (string | undefined)[];
-          noOfCooks: number;
-          promptAt?: string;
-        }
-      >({
-        query: params => ({
-          url: '/api/surveys',
-          method: 'POST',
-          body: {
-            cooking_frequency: params.cookingFrequency,
-            scraps: params.scraps,
-            uneaten_leftovers: params.uneatenLeftovers,
-            binned_items: {
-              fruit: params.binnedFruit,
-              veggies: params.binnedVeggies,
-              dairy: params.binnedDairy,
-              bread: params.binnedBread,
-              meat: params.binnedMeat,
-              herbs: params.binnedHerbs,
-            },
-            preferred_ingredients: params.preferredIngredients,
-            no_of_cooks: params.noOfCooks,
-            prompt_at: params.promptAt,
-          },
-        }),
-        invalidatesTags: ['Surveys', 'Stats'],
-        transformResponse: r => (r as SurveyResponse).track_survey,
-        onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
-          await queryFulfilled;
-          //dispatch(qantasApi.util.invalidateTags(['Qantas']));  //Uncomment if Qantas page is created
-        },
-      }),
-      getUserTrackSurveyEligibility: builder.query<
-        SurveyEligibilityResponse | null,
-        void
-      >({
-        query: () => ({
-          url: '/api/surveys/eligibility',
-          method: 'get',
-        }),
-        providesTags: ['Surveys'],
-        transformResponse: r => r as SurveyEligibilityResponse,
-      }),
       createFeedback: builder.mutation<
         FeedbackResult,
         {
@@ -109,7 +46,7 @@ const trackApi = api
             },
           },
         }),
-        invalidatesTags: ['Feedback', 'Stats', 'Analytics'],
+        invalidatesTags: ['Feedback', 'Stats'],
         transformResponse: r => (r as FeedbackResponse).feedback,
         onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
           await queryFulfilled;
@@ -148,7 +85,7 @@ const trackApi = api
             },
           },
         }),
-        invalidatesTags: ['Feedback', 'Stats', 'Analytics'],
+        invalidatesTags: ['Feedback', 'Stats'],
         transformResponse: r => (r as FeedbackResponse).feedback,
         onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
           await queryFulfilled;
@@ -264,8 +201,19 @@ export const {
 } = trackApi;
 
 // Stubs for removed surveys - return empty/default data
-export const useGetUserTrackSurveysQuery = () => ({ data: [] });
-export const useGetUserTrackSurveyEligibilityQuery = () => ({ data: false });
+export const useGetUserTrackSurveysQuery = () => ({ 
+  data: [] as Array<{
+    co2_savings: number;
+    cost_savings: number;
+    food_saved: number;
+  }>
+});
+export const useGetUserTrackSurveyEligibilityQuery = () => ({ 
+  data: {
+    eligible: false,
+    next_survey_date: new Date().toISOString(),
+  }
+});
 
 // Temporary stubs for removed meals endpoints to avoid runtime errors in UI components
 export const useGetUserMealsQuery = () => ({ data: [] as any[] });

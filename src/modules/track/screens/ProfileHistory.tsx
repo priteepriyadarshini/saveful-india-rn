@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { useLinkTo, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
 import { filterAllergiesByUserPreferences } from '../../../common/helpers/filterIngredients';
@@ -55,7 +55,6 @@ export default function ProfileHistoryScreen({
   const [frameworks, setFrameworks] = React.useState<IFramework[]>([]);
   const [mealType] = React.useState<string>(type);
 
-  const linkTo = useLinkTo();
   const navigation =
     useNavigation<NativeStackNavigationProp<HackStackParamList>>();
 
@@ -79,11 +78,41 @@ export default function ProfileHistoryScreen({
       ? cookedItems.map(ci => ({
           id: ci.id,
           title: ci.title,
-          heroImageUrl: ci.heroImageUrl,
+          slug: ci.id,
+          heroImage: [{ url: ci.heroImageUrl || '', title: ci.title }],
+          variantTags: [],
+          components: [],
+          shortDescription: '',
+          description: '',
+          featuredImage: [],
+          youtubeURL: '',
+          recipeTags: [],
+          includedInCollections: [],
+          difficulty: '',
+          serves: '',
+          cookingTime: '',
+          preparationTime: '',
         }))
       : mealType === 'Hacks'
       ? favItems.filter(item => item.type === 'hack')
-      : favItems.filter(item => item.type === 'framework');
+      : favItems.filter(item => item.type === 'framework').map(fi => ({
+          id: fi.id,
+          title: fi.title,
+          slug: fi.id,
+          heroImage: [{ url: fi.heroImageUrl || '', title: fi.title }],
+          variantTags: [],
+          components: [],
+          shortDescription: fi.shortDescription || '',
+          description: '',
+          featuredImage: [],
+          youtubeURL: '',
+          recipeTags: [],
+          includedInCollections: [],
+          difficulty: '',
+          serves: '',
+          cookingTime: '',
+          preparationTime: '',
+        }));
 
   return (
     <View style={tw`flex-1 bg-creme`}>
@@ -239,10 +268,7 @@ export default function ProfileHistoryScreen({
                     return (
                       <MealCard
                         key={item.id}
-                        id={item.id}
-                        title={item.title}
-                        heroImage={[{ url: item.heroImageUrl || '' }] as any}
-                        variantTags={[] as any}
+                        {...item}
                       />
                     );
                   })}

@@ -1,9 +1,10 @@
-import { JsonMap } from '@segment/analytics-react-native';
 import removeNullProperties, { 
   User, 
   AnalyticsData, 
   mixpanelEventName 
 } from '../analytics';
+
+type JsonMap = { [key: string]: any };
 import EnvironmentManager from '../../environment/environmentManager';
 import { MixPanelContext } from '../../mixpanel/context/MixpanelContext';
 import { useCurentRoute } from '../../route/context/CurrentRouteContext';
