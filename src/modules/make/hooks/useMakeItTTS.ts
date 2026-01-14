@@ -29,6 +29,8 @@ export function useMakeItTTS(
   const [isSpeaking, setIsSpeaking] = useState(false);
   const previousIndexRef = useRef<number>(-1);
   const previousEnabledRef = useRef<boolean>(false);
+  const previousTitleRef = useRef<string>('');
+  const previousIngredientsRef = useRef<string>('');
 
   // Extract clean text from HTML
   const stripHTML = useCallback((html: string): string => {
@@ -45,13 +47,13 @@ export function useMakeItTTS(
   }, []);
 
   // Extract text content from the current step
-  const extractStepText = useCallback((step: MakeItStep): string => {
+  const extractStepText = useCallback((step: MakeItStep, includeSectionTitle: boolean, includeIngredients: boolean): string => {
     if (!step) return '';
 
     let text = '';
 
-    // Add step title
-    if (step.title) {
+    // Only add section/component title if it changed from previous step
+    if (includeSectionTitle && step.title) {
       text += `${step.title}. `;
     }
 
@@ -61,8 +63,8 @@ export function useMakeItTTS(
       text += `${cleanInstructions}. `;
     }
 
-    // Add ingredients if present
-    if (step.ingredients && step.ingredients.length > 0) {
+    // Add ingredients only if they changed from previous step
+    if (includeIngredients && step.ingredients && step.ingredients.length > 0) {
       text += 'Ingredients needed: ';
       step.ingredients.forEach((ingredient, idx) => {
         text += `${ingredient.quantity ? ingredient.quantity + ' of ' : ''}${ingredient.title}`;
@@ -128,12 +130,29 @@ export function useMakeItTTS(
     const hasEnabledChanged = isEnabled !== previousEnabledRef.current;
     const justEnabled = isEnabled && hasEnabledChanged;
     
+    const currentStep = steps && steps[currentIndex];
+    const currentTitle = currentStep?.title || '';
+    const titleChanged = currentTitle !== previousTitleRef.current;
+    
+    // Create a string representation of ingredients for comparison
+    const currentIngredientsKey = currentStep?.ingredients
+      ?.map(ing => `${ing.id}-${ing.quantity}`)
+      .sort()
+      .join('|') || '';
+    const ingredientsChanged = currentIngredientsKey !== previousIngredientsRef.current;
+    
     previousIndexRef.current = currentIndex;
     previousEnabledRef.current = isEnabled;
+    previousTitleRef.current = currentTitle;
+    previousIngredientsRef.current = currentIngredientsKey;
 
     // Speak if: (1) just enabled TTS, or (2) already enabled and swiped to new page
-    if (isEnabled && (justEnabled || hasIndexChanged) && steps && steps[currentIndex]) {
-      const stepText = extractStepText(steps[currentIndex]);
+    if (isEnabled && (justEnabled || hasIndexChanged) && currentStep) {
+      // Only include section title if it changed or TTS was just enabled
+      const includeSectionTitle = justEnabled || titleChanged;
+      // Only include ingredients if they changed or TTS was just enabled
+      const includeIngredients = justEnabled || ingredientsChanged;
+      const stepText = extractStepText(currentStep, includeSectionTitle, includeIngredients);
       speak(stepText);
     } else if (!isEnabled) {
       stopSpeaking();
