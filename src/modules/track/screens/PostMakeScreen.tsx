@@ -2,16 +2,12 @@ import { Feather } from '@expo/vector-icons';
 import { useLinkTo, useNavigation } from '@react-navigation/native';
 import { skipToken } from '@reduxjs/toolkit/query';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
-import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
 import { IFramework } from '../../../models/craft';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
-import {
-  useGetFeedbacksForFrameworkQuery,
-  useGetUserMealQuery,
-} from '../../../modules/track/api/api';
+import { useGetFeedbacksForFrameworkQuery } from '../../../modules/track/api/api';
 import { FeedbackResult } from '../../../modules/track/api/types';
 import TrackPostMakeCarousel from '../../../modules/track/components/TrackPostMakeCarousel';
 import { ITrackPostMakeIngredient } from '../../../modules/track/components/TrackPostMakeIngredients';
@@ -26,33 +22,22 @@ import { RootNavigationStackParams } from '../../navigation/navigator/root/RootN
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootStackParamList } from '../../navigation/navigator/root/types';
 
-export default function PostMakeScreen({
-  route: {
-    params: { id },
-  },
-}: SurveyStackScreenProps<'PostMake'>) {
+export default function PostMakeScreen({ route: { params } }: any) {
+  const { id, title: routeTitle, heroImageUrl } = params || {};
   //const linkTo = useLinkTo();
   type RootTabNavigation = BottomTabNavigationProp<RootStackParamList>;
   const navigation = useNavigation<RootTabNavigation>();
 
-  const {
-    data: meal,
-    isLoading: isGetUserMealLoading,
-    isError: isGetUserMealError,
-  } = useGetUserMealQuery({
-    id,
-  });
-
-  const { getFramework } = useContent();
-  const [framework, setFramework] = React.useState<IFramework>();
-
-  const getFrameworksData = async (frameworkId: string) => {
-    const data = await getFramework(frameworkId);
-
-    if (data) {
-      setFramework(data);
-    }
-  };
+  // Build lightweight framework from route params (no CraftCMS)
+  const framework = React.useMemo(() => {
+    const f: any = {
+      id,
+      title: routeTitle || 'Meal',
+      featuredImage: heroImageUrl,
+      heroImage: heroImageUrl ? [{ url: heroImageUrl }] : [],
+    };
+    return f as IFramework;
+  }, [id, routeTitle, heroImageUrl]);
 
   // Fetch feedbacks for framework to check if the survey has been completed
   const { data: feedbacks, isLoading: isGetFeedbacksForFrameworkLoading } =
@@ -81,12 +66,7 @@ export default function PostMakeScreen({
 
   const [feedback, setFeedback] = useState<FeedbackResult | undefined>();
 
-  useEffect(() => {
-    if (meal && meal.framework_id) {
-      getFrameworksData(meal?.framework_id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [meal]);
+  // No CraftCMS fetch required
 
   useEffect(() => {
     // TODO: Show already completed message
@@ -107,14 +87,14 @@ export default function PostMakeScreen({
 
   if (
     !framework ||
-    isGetUserMealLoading ||
     isGetFeedbacksForFrameworkLoading ||
     (feedbackForMeal && feedbackForMeal.prompted && !isStarted)
   ) {
     return null;
   }
 
-  if (isGetUserMealError) {
+  // Basic error state if framework failed to load
+  if (!framework) {
     return (
       <View style={tw`flex-1 bg-eggplant`}>
         <ImageBackground
@@ -205,7 +185,7 @@ export default function PostMakeScreen({
                 });
                 navigation.goBack();
               }}
-              usedIngredients={meal?.data?.ingredients.flatMap(i => i)}
+              usedIngredients={[]}
               selectedIngredients={selectedIngredients}
               setSelectedIngredients={setSelectedIngredients}
               setIsIngredient={(value: boolean) => {

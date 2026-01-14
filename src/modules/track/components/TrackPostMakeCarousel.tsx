@@ -17,6 +17,7 @@ import PostMakeQ1 from '../../../modules/track/components/PostMakeQuestion/PostM
 import PostMakeQ3 from '../../../modules/track/components/PostMakeQuestion/PostMakeQ3';
 import ShopFridge from '../../../modules/track/components/PostMakeQuestion/ShopFridge';
 import { ITrackPostMakeIngredient } from '../../../modules/track/components/TrackPostMakeIngredients';
+import PostMakeRecipeSurveyModal from '../../make/components/PostMakeRecipeSurveyModal';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
@@ -79,6 +80,9 @@ export default function TrackPostMakeCarousel({
   const [didYouLikeIt, setDidYouLikeIt] = useState<boolean>(false);
   const [isAnyLeftovers, setIsAnyLeftovers] = useState<string>('');
   const [dislikeStatus, setDislikeStatus] = useState<string>('');
+  const [showRatingModal, setShowRatingModal] = useState<boolean>(!isStarted && !feedback); // Show at start if not started yet
+  const [ratingData, setRatingData] = useState<{ rating: number; review: string } | null>(null);
+  
   const onScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       const currentSlideSize =
@@ -131,27 +135,42 @@ export default function TrackPostMakeCarousel({
   const isUpdateUserMealLoading = false;
   const [saveFoodAnalytics] = useSaveFoodAnalyticsMutation();
 
+  // Show rating modal at the start of the survey
+  useEffect(() => {
+    if (!isStarted && !feedback) {
+      setShowRatingModal(true);
+    }
+  }, [isStarted, feedback]);
+
   const onFeedbackComplete = async () => {
     if (isCreateFeedbackLoading || isUpdateFeedbackLoading) {
       return;
     }
 
+    console.log('[TrackPostMakeCarousel] Completing feedback with ratingData:', ratingData);
+
     try {
       if (!feedback) {
+        console.log('[TrackPostMakeCarousel] Creating new feedback');
         await createFeedback({
           frameworkId: framework.id,
           prompted: true,
           didYouLikeIt,
           foodSaved: totalWeightOfSelectedIngredients / 1000,
           mealId,
+          rating: ratingData?.rating,
+          review: ratingData?.review || undefined,
         }).unwrap();
       } else {
+        console.log('[TrackPostMakeCarousel] Updating existing feedback ID:', feedback.id);
         await updateFeedback({
           id: feedback.id,
           prompted: true,
           didYouLikeIt,
           foodSaved: feedback.data.food_saved,
           mealId,
+          rating: ratingData?.rating,
+          review: ratingData?.review || undefined,
         }).unwrap();
       }
 
@@ -183,8 +202,13 @@ export default function TrackPostMakeCarousel({
           food_saved: `${totalWeightOfSelectedIngredients / 1000}Kg`,
           number_of_selected_ingredients: selectedIngredients.length,
           selected_ingredients: selectedIngredients,
+          rating: ratingData?.rating,
+          has_review: !!ratingData?.review,
+          rating_skipped: !ratingData,
         },
       });
+
+      handlePresentModalDismiss();
     } catch (error: unknown) {
       // Whoopss.
       sendFailedEventAnalytics(error);
@@ -193,6 +217,22 @@ export default function TrackPostMakeCarousel({
         JSON.stringify(error),
       );
     }
+  };
+
+  const handleRatingSubmit = (rating: number, review: string) => {
+    console.log('[TrackPostMakeCarousel] Rating submitted:', { rating, review });
+    // Store rating data to be saved later with the survey answers
+    setRatingData({ rating, review });
+    setShowRatingModal(false);
+    setIsStarted(true);
+  };
+
+  const handleRatingSkip = () => {
+    console.log('[TrackPostMakeCarousel] Rating skipped');
+    // User skipped rating - continue to survey without rating data
+    setRatingData(null);
+    setShowRatingModal(false);
+    setIsStarted(true);
   };
 
   // const emptyIngredients = () => {
@@ -267,7 +307,9 @@ export default function TrackPostMakeCarousel({
               )}
               {isIngredient &&
                 isAnyLeftovers &&
-                selectedIngredients.length === 0 && <ShopFridge />}
+                selectedIngredients.length === 0 && (
+                  <ShopFridge onDone={onFeedbackComplete} />
+                )}
             </View>
           );
         }}
@@ -295,6 +337,16 @@ export default function TrackPostMakeCarousel({
         activeDotColor="radish"
         inactiveDotColor="radish/60"
         currentIndex={currentIndex}
+      />
+      
+      {/* Recipe Rating Modal - Shows after survey completion */}
+      <PostMakeRecipeSurveyModal
+        isVisible={showRatingModal}
+        recipeId={framework.id}
+        recipeName={framework.title}
+        recipeImage={framework.featuredImage}
+        onClose={handleRatingSkip}
+        onSubmit={handleRatingSubmit}
       />
     </View>
   );

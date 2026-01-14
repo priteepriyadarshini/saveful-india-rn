@@ -63,7 +63,7 @@ export default function AccordionFramework({ item }: { item: any }) {
                 resizeMode="cover"
                 style={tw`h-[235px] w-full rounded-md`}
                 source={bundledSource(
-                  framework?.heroImage[0].url,
+                  framework?.heroImage?.[0]?.url,
                   env.useBundledContent
                 )}
                 accessibilityIgnoresInvertColors

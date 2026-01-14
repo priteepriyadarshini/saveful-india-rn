@@ -115,7 +115,7 @@ export default function TrackTabNav() {
                       style={tw`m-h-[226px] w-full rounded`}
                       resizeMode="cover"
                       source={bundledSource(
-                        framework.heroImage[0].url,
+                        framework.heroImage?.[0]?.url,
                         env.useBundledContent,
                       )}
                       accessibilityIgnoresInvertColors

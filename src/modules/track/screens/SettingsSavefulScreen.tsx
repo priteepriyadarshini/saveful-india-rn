@@ -184,8 +184,8 @@ export default function SettingsSavefulScreen() {
     if (userOnboarding) {
       setValue('postcode', userOnboarding.postcode);
       setValue('suburb', userOnboarding.suburb);
-      setValue('noOfAdults', userOnboarding.no_of_people.adults);
-      setValue('noOfChildren', userOnboarding.no_of_people.children);
+      setValue('noOfAdults', userOnboarding.no_of_people?.adults || 0);
+      setValue('noOfChildren', userOnboarding.no_of_people?.children || 0);
       setValue('trackSurveyDay', userOnboarding.track_survey_day);
 
       //MockValue

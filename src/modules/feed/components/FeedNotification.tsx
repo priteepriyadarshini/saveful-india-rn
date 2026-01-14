@@ -1,6 +1,5 @@
 import { useLinkTo, useNavigation } from '@react-navigation/native';
 import { bundledSource } from '../../../common/helpers/uriHelpers';
-import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
 import { IFramework } from '../../../models/craft';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
@@ -8,10 +7,10 @@ import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
 import useEnvironment from '../../../modules/environment/hooks/useEnvironment';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
 import {
-  useGetUserMealsQuery,
-  useUpdateUserMealMutation,
+  useGetFeedbacksQuery,
 } from '../../../modules/track/api/api';
-import React, { useEffect } from 'react';
+import { useGetCookedRecipesDetailsQuery } from '../../../modules/analytics/api/api';
+import React, { useEffect, useMemo } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import {
   bodyMediumBold,
@@ -21,41 +20,41 @@ import {
 import { TrackStackScreenProps } from '../../track/navigation/TrackNavigation';
 
 export default function FeedNotification({
-  // id,
-  // isNotification,
   setIsNotification,
 }: {
-  // id?: string;
-  // isNotification: boolean;
   setIsNotification: (isNotification: boolean) => void;
 }) {
-  //const linkTo = useLinkTo();
   const navigation = useNavigation<TrackStackScreenProps<'TrackHome'>['navigation']>();
   const { sendAnalyticsEvent } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
-
-  // const { data: meal } = useGetUserMealQuery({ id });
-  const { data: cookedRecipesData } = useGetCookedRecipesQuery();
-  const cookedMeals = cookedRecipesData?.cookedRecipes || [];
-  const meal = cookedMeals ? cookedMeals?.filter(m => m.saved)[0] : null;
-
-  const [updateUserMeal, { isLoading }] = useUpdateUserMealMutation();
-
   const env = useEnvironment();
-  const { getFramework } = useContent();
-  const [framework, setFramework] = React.useState<IFramework>();
 
-  const getFrameworksData = async (id: string) => {
-    const data = await getFramework(id);
+  // Get all cooked recipes with details
+  const { data: cookedData } = useGetCookedRecipesDetailsQuery();
+  const cookedRecipes = cookedData?.cookedRecipes || [];
 
-    if (data) {
-      setFramework(data);
-      setIsNotification(true);
-    }
-  };
+  // Get all feedbacks
+  const { data: feedbacks } = useGetFeedbacksQuery();
 
-  // Update meal to be saved:false
-  const onDismissNotification = async () => {
+  // Find the first cooked recipe that doesn't have a prompted feedback
+  const pendingRecipe = useMemo(() => {
+    if (!cookedRecipes.length || !feedbacks) return null;
+    
+    // Get all recipe IDs that have prompted feedback
+    const recipesWithSurvey = new Set(
+      feedbacks
+        .filter(f => f.prompted && f.data.meal_id)
+        .map(f => f.data.meal_id)
+    );
+
+    // Find first cooked recipe without survey
+    return cookedRecipes.find(recipe => !recipesWithSurvey.has(recipe.id)) || null;
+  }, [cookedRecipes, feedbacks]);
+
+  // We can render directly from cooked recipe details; no need to fetch Craft content
+  const [showCard, setShowCard] = React.useState<boolean>(false);
+
+  const onDismissNotification = () => {
     sendAnalyticsEvent({
       event: mixpanelEventName.actionClicked,
       properties: {
@@ -64,29 +63,21 @@ export default function FeedNotification({
       },
     });
 
-    setFramework(undefined);
     setIsNotification(false);
-
-    try {
-      if (meal?.id && !isLoading) {
-        await updateUserMeal({
-          id: meal?.id,
-          saved: false,
-        });
-      }
-    } catch (e) {
-      console.error('Error updating user meal', e);
-    }
   };
 
   useEffect(() => {
-    if (meal && meal.framework_id) {
-      getFrameworksData(meal?.framework_id);
+    if (pendingRecipe?.id) {
+      setShowCard(true);
+      setIsNotification(true);
+    } else {
+      setShowCard(false);
+      setIsNotification(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [meal]);
+  }, [pendingRecipe?.id]);
 
-  if (!meal || !framework) {
+  if (!pendingRecipe || !showCard) {
     return <View style={tw`mb-0 hidden flex-1 px-4`} />;
   }
 
@@ -107,26 +98,23 @@ export default function FeedNotification({
             properties: {
               location: newCurrentRoute,
               action: mixpanelEventName.triggerNotification,
+              recipe_id: pendingRecipe.id,
             },
           });
-          //linkTo(`/survey/postmake/${meal.id}`);
-          navigation.navigate('Survey', {
+          (navigation as any).navigate('Survey', {
            screen: 'PostMake',
-           params: { id: meal.id },
-          });
+           params: { id: pendingRecipe.id, title: pendingRecipe.title, heroImageUrl: pendingRecipe.heroImageUrl } as any,
+          } as any);
         }}
       >
-        {framework?.heroImage && (
+        {pendingRecipe?.heroImageUrl ? (
           <Image
-            resizeMode="contain"
+            resizeMode="cover"
             style={tw`mr-2.5 h-[66px] w-[71px] rounded-2lg`}
-            source={bundledSource(
-              framework?.heroImage[0].url,
-              env.useBundledContent,
-            )}
+            source={{ uri: pendingRecipe.heroImageUrl }}
             accessibilityIgnoresInvertColors
           />
-        )}
+        ) : null}
         <View style={tw.style('shrink justify-center')}>
           <Text style={tw.style(bodyMediumBold, 'mb-1.5')}>
             How was your meal?
@@ -134,7 +122,7 @@ export default function FeedNotification({
           <Text style={tw.style(bodySmallRegular, 'text-midgray')}>
             Let us know what you thought of your{' '}
             <Text style={tw.style(bodySmallBold, 'text-midgray')}>
-              {`${framework?.title}`}.
+              {`${pendingRecipe?.title ?? 'meal'}`}.
             </Text>
           </Text>
         </View>

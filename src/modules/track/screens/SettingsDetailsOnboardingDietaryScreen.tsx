@@ -78,8 +78,8 @@ export default function SettingsDetailsOnboardingDietaryScreen() {
       // Update onboarding data (dietary requirements and allergies)
       await updateUserOnboarding({
         ...data,
-        noOfAdults: userOnboarding.no_of_people.adults,
-        noOfChildren: userOnboarding.no_of_people.children,
+        noOfAdults: userOnboarding.no_of_people?.adults || 0,
+        noOfChildren: userOnboarding.no_of_people?.children || 0,
       }).unwrap();
       
       // Update dietary profile (veg type and restrictions)
@@ -140,10 +140,10 @@ export default function SettingsDetailsOnboardingDietaryScreen() {
 
   useEffect(() => {
     if (userOnboarding) {
-      setValue('dietaryRequirements', userOnboarding.dietary_requirements);
-      setDietaryRequirements(userOnboarding.dietary_requirements);
-      setValue('allergies', userOnboarding.allergies);
-      setAllergies(userOnboarding.allergies);
+      setValue('dietaryRequirements', userOnboarding.dietary_requirements || []);
+      setDietaryRequirements(userOnboarding.dietary_requirements || []);
+      setValue('allergies', userOnboarding.allergies || []);
+      setAllergies(userOnboarding.allergies || []);
     }
   }, [setValue, userOnboarding]);
   

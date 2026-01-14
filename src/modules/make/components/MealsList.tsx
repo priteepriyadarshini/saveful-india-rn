@@ -93,7 +93,7 @@ export default function MealsList({ filters }: { filters: string[] }) {
             } else {
               // Final client-side fallback against already loaded frameworks
               const clientFiltered = allFrameworks.filter(framework =>
-                framework.frameworkCategories.some(category => {
+                framework.frameworkCategories?.some(category => {
                   const categoryId = extractCategoryId(category);
                   return filters.includes(categoryId);
                 })
@@ -102,7 +102,7 @@ export default function MealsList({ filters }: { filters: string[] }) {
             }
           } catch (e) {
             const clientFiltered = allFrameworks.filter(framework =>
-              framework.frameworkCategories.some(category => {
+              framework.frameworkCategories?.some(category => {
                 const categoryId = extractCategoryId(category);
                 return filters.includes(categoryId);
               })
@@ -115,7 +115,7 @@ export default function MealsList({ filters }: { filters: string[] }) {
       } catch (err) {
         // Fallback to client-side filtering if API fails
         const clientFiltered = allFrameworks.filter(framework =>
-          framework.frameworkCategories.some(category => {
+          framework.frameworkCategories?.some(category => {
             const categoryId = extractCategoryId(category);
             return filters.includes(categoryId);
           })

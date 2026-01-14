@@ -100,12 +100,14 @@ export default function RecipeCard({
           }
         }}
       >
-        <Image
-          style={[tw`h-[262px] w-full overflow-hidden rounded`]}
-          resizeMode="cover"
-          source={bundledSource(heroImage[0].url, env.useBundledContent)}
-          accessibilityIgnoresInvertColors
-        />
+        {heroImage?.[0]?.url && (
+          <Image
+            style={[tw`h-[262px] w-full overflow-hidden rounded`]}
+            resizeMode="cover"
+            source={bundledSource(heroImage[0].url, env.useBundledContent)}
+            accessibilityIgnoresInvertColors
+          />
+        )}
 
         {variantTags.length > 0 && (
           <View style={tw`mt-3`}>

@@ -58,6 +58,7 @@ export default function PostMakeQ3({
                       } else {
                         setIsIngredient(true);
                       }
+                      // Do NOT complete feedback yet; user will proceed to storage tips then finish.
                     } else {
                       setIsAnyLeftovers('no');
                       if (selectedIngredients.length > 0) {
@@ -66,8 +67,9 @@ export default function PostMakeQ3({
                       } else {
                         setIsIngredient(true);
                       }
+                      // For 'No' leftovers, complete feedback now.
+                      onFeedbackComplete();
                     }
-                    onFeedbackComplete();
                   }}
                   loading={isLoading}
                 >

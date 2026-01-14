@@ -7,7 +7,7 @@ import { bodyMediumRegular, h6TextStyle } from "../../../../theme/typography";
 import { InitialStackParamList } from "../../../navigation/navigator/InitialNavigator";
 import type { NavigationProp } from "@react-navigation/native";
 
-export default function ShopFridge() {
+export default function ShopFridge({ onDone }: { onDone?: () => void }) {
   //const linkTo = useLinkTo();
   const navigation =
     useNavigation<NavigationProp<InitialStackParamList>>();
@@ -40,6 +40,12 @@ So, well done waste warrior. `}
           style={tw.style("mt-4.5 mb-2")}
           buttonSize="large"
           onPress={() => {
+            // Complete feedback before leaving, if provided
+            try {
+              onDone && onDone();
+            } catch (e) {
+              // non-blocking
+            }
             // linkTo('/make');
             navigation.navigate("Root", {
               screen: "Make",

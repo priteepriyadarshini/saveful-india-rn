@@ -38,7 +38,7 @@ export default function TrackPostMakeLeftovers({
   }
 
   const leftoverMeals = frameworks.filter(item =>
-    meals.some(meal => meal.id === item.id),
+    meals?.some(meal => meal.id === item.id),
   );
 
   if (leftoverMeals.length === 0) {

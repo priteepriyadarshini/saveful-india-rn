@@ -1,26 +1,23 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, Modal, Pressable, TextInput, ScrollView, Alert } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import * as Animatable from 'react-native-animatable';
 import tw from '../../../common/tailwind';
 import SecondaryButton from '../../../common/components/ThemeButtons/SecondaryButton';
-import { h7TextStyle, bodyMediumRegular, subheadMediumUppercase, bodySmallRegular } from '../../../theme/typography';
+import { h7TextStyle, bodyMediumRegular, subheadMediumUppercase } from '../../../theme/typography';
 import { bundledSource } from '../../../common/helpers/uriHelpers';
 import useEnvironment from '../../environment/hooks/useEnvironment';
-import { useCreateFeedbackMutation, useGetFeedbacksForFrameworkQuery, useUpdateFeedbackMutation } from '../../track/api/api';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { InitialStackParamList } from '../../navigation/navigator/InitialNavigator';
 
-interface RateRecipeModalProps {
+interface PostMakeRecipeSurveyModalProps {
   isVisible: boolean;
-  recipeId: string;
+  recipeId: string; // This is the framework_id / meal_id
   recipeName: string;
   recipeImage?: string;
-  mealId?: string; 
   onClose: () => void;
+  onSubmit: (rating: number, review: string) => void;
 }
 
+// Carrot Icon Component
 const CarrotIcon = ({ size = 24, filled = false }: { size?: number; filled?: boolean }) => (
   <Svg width={size} height={size} viewBox="0 0 504.123 504.123">
     <Path d="M331.232,154.963c0,43.725-35.446,349.16-79.171,349.16s-79.171-305.436-79.171-349.16s35.446-62.929,79.171-62.929C295.786,92.034,331.232,111.238,331.232,154.963z" fill={filled ? '#FF860D' : '#D1D5DB'} />
@@ -57,72 +54,29 @@ const CarrotIcon = ({ size = 24, filled = false }: { size?: number; filled?: boo
   </Svg>
 );
 
-export default function RateRecipeModal({
+export default function PostMakeRecipeSurveyModal({
   isVisible,
   recipeId,
   recipeName,
   recipeImage,
-  mealId,
   onClose,
-}: RateRecipeModalProps) {
+  onSubmit,
+}: PostMakeRecipeSurveyModalProps) {
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [review, setReview] = useState('');
   const env = useEnvironment();
-  const navigation = useNavigation<NativeStackNavigationProp<InitialStackParamList>>();
-  const [createFeedback, { isLoading: isCreateLoading }] = useCreateFeedbackMutation();
-  const [updateFeedback, { isLoading: isUpdateLoading }] = useUpdateFeedbackMutation();
-  const { data: existingFeedbacks } = useGetFeedbacksForFrameworkQuery(
-    { id: recipeId },
-    { skip: !isVisible }
-  );
 
-  const effectiveMealId = useMemo(() => mealId ?? recipeId, [mealId, recipeId]);
-  const isLoading = isCreateLoading || isUpdateLoading;
-
-  const handleSubmitRating = async () => {
+  const handleSubmitSurvey = () => {
     if (!selectedRating) {
       Alert.alert('Please select a rating', 'Choose how many carrots you\'d give this recipe');
       return;
     }
 
-    try {
-      const existingForMeal = existingFeedbacks?.find(f => f.data?.meal_id === effectiveMealId);
-
-      console.log('[RateRecipeModal] Submitting rating:', {
-        existingForMeal,
-        selectedRating,
-        review,
-        effectiveMealId,
-      });
-
-      if (existingForMeal) {
-        console.log('[RateRecipeModal] Updating existing feedback with ID:', existingForMeal.id);
-        await updateFeedback({
-          id: existingForMeal.id?.toString() || existingForMeal.id,
-          rating: selectedRating,
-          review: review.trim() || undefined,
-          didYouLikeIt: selectedRating >= 4,
-          mealId: effectiveMealId,
-        }).unwrap();
-      } else {
-        console.log('[RateRecipeModal] Creating new feedback');
-        await createFeedback({
-          frameworkId: recipeId,
-          prompted: false,
-          didYouLikeIt: selectedRating >= 4,
-          foodSaved: 0,
-          mealId: effectiveMealId,
-          rating: selectedRating,
-          review: review.trim() || undefined,
-        }).unwrap();
-      }
-
-      Alert.alert('Thanks!', 'Your rating has been submitted');
-      handleClose();
-    } catch (error: any) {
-      console.error('[RateRecipeModal] Error submitting rating:', error);
-      Alert.alert('Error', 'Failed to submit rating. Please try again.');
-    }
+    // Submit rating to parent and let parent control visibility.
+    // Do not call onClose here, as some parents use onClose to indicate skip.
+    onSubmit(selectedRating, review.trim());
+    setSelectedRating(null);
+    setReview('');
   };
 
   const handleSkip = () => {
@@ -130,19 +84,13 @@ export default function RateRecipeModal({
   };
 
   const handleClose = () => {
-    // Reset state
     setSelectedRating(null);
     setReview('');
     onClose();
-    // Navigate to Make home
-    navigation.navigate('Root', {
-      screen: 'Make',
-      params: { screen: 'MakeHome' },
-    } as const);
   };
 
   const ratingDescriptions = [
-    '', 
+    '', // 0 - no rating
     'Not Good',
     'Could Be Better',
     'Good',
@@ -235,11 +183,10 @@ export default function RateRecipeModal({
             <View style={tw`pt-2`}>
               <SecondaryButton
                 style={tw`rounded-full`}
-                onPress={handleSubmitRating}
-                loading={isLoading}
-                disabled={!selectedRating || isLoading}
+                onPress={handleSubmitSurvey}
+                disabled={!selectedRating}
               >
-                Submit Rating
+                Continue
               </SecondaryButton>
               <Pressable onPress={handleSkip} style={tw`mt-3 py-2`}>
                 <Text style={tw`text-center text-sm text-midgray underline`}>

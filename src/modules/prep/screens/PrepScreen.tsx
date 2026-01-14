@@ -144,7 +144,7 @@ export default function PrepScreen({
     setAllRequiredIngredients.set(
       data.components
         .filter(component =>
-          component.includedInVariants.some(
+          component.includedInVariants?.some(
             variant => variant.id === selectedFlavor,
           ),
         )
@@ -461,7 +461,7 @@ export default function PrepScreen({
           {/* Filter the components based on the selectedFlavour id being one of the includedInVariants */}
           {framework.components
             .filter(component => {
-              const hasMatch = component.includedInVariants.some(
+              const hasMatch = component.includedInVariants?.some(
                 variant => variant.id === selectedFlavor,
               );
               return hasMatch;

@@ -103,7 +103,7 @@ export default function MealCard({
         }
       }}
     >
-      {sticker && sticker.length > 0 && (
+      {sticker && sticker.length > 0 && sticker[0]?.image?.[0]?.url && (
         <Image
           style={tw`absolute left-6 top-4 z-10 h-[120px] w-[109px] overflow-hidden`}
           resizeMode="contain"
@@ -111,14 +111,16 @@ export default function MealCard({
           accessibilityIgnoresInvertColors
         />
       )}
-      <Image
-        style={tw`h-[${
-          ((Dimensions.get('screen').width - 80) * 262) / 305
-        }px] w-full overflow-hidden rounded`}
-        resizeMode="cover"
-        source={bundledSource(heroImage[0].url, env.useBundledContent)}
-        accessibilityIgnoresInvertColors
-      />
+      {heroImage?.[0]?.url && (
+        <Image
+          style={tw`h-[${
+            ((Dimensions.get('screen').width - 80) * 262) / 305
+          }px] w-full overflow-hidden rounded`}
+          resizeMode="cover"
+          source={bundledSource(heroImage[0].url, env.useBundledContent)}
+          accessibilityIgnoresInvertColors
+        />
+      )}
 
       <View style={tw`w-full items-center gap-2`}>
         <Text

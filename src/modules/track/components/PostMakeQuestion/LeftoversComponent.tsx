@@ -21,6 +21,8 @@ import type { NavigationProp } from '@react-navigation/native';
 export default function LeftoversComponent({
   framework,
   isLoading,
+  setIsIngredient,
+  onFeedbackComplete,
 }: {
   framework: IFramework;
   setIsIngredient: (value: boolean) => void;
@@ -89,19 +91,17 @@ export default function LeftoversComponent({
         <SecondaryButton
           style={tw.style('mt-4.5 mx-5 mb-2')}
           onPress={() => {
-            // if (selectedIngredients.length > 0) {
-            //   setIsCompleted(true);
-            //   onFeedbackComplete();
-            // }
-            // setIsIngredient(true);
-
-
-            //linkTo('/make');
-            navigation.navigate('Root', {
-              screen: 'Make',
-              params: { screen: 'MakeHome' },
-            });
+            // Close survey by completing feedback now
+            console.log('[LeftoversComponent] Next pressed. Completing feedback.');
+            try {
+              // Let parent handle dismiss (handlePresentModalDismiss) after submit
+              // This also ensures rating/review are included
+              (typeof onFeedbackComplete === 'function') && onFeedbackComplete();
+            } catch (_e) {
+              // Non-blocking; parent will still manage navigation if needed
+            }
           }}
+          disabled={isLoading}
           loading={isLoading}
         >
           Next

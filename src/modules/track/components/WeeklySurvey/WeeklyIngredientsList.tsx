@@ -76,7 +76,7 @@ export default function WeeklyIngredientsList<T extends FieldValues>(
     const matchInput = item.title
       .toLowerCase()
       .includes(searchInput.toLowerCase());
-    const activeIngredients = selectedIngredients.some(
+    const activeIngredients = selectedIngredients?.some(
       selectedIngredient => selectedIngredient.id === item.id,
     );
     return activeIngredients || matchInput;

@@ -33,6 +33,11 @@ const filterAllergiesByUserPreferences = (
   frameworks: IFramework[],
   allergies?: string[],
 ) => {
+  // Early return if no allergies or empty array
+  if (!allergies || allergies.length === 0) {
+    return frameworks;
+  }
+
   const result = frameworks.filter(item => {
     // const excludeOptional = !item.components.some(dishes =>
     //   dishes.optionalIngredients.some(ingredients =>

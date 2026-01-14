@@ -88,12 +88,14 @@ export default function MealCard({
         }
       }}
     >
-      <Image
-        style={tw`h-[221px] w-full overflow-hidden rounded`}
-        resizeMode="cover"
-        source={bundledSource(heroImage[0].url, env.useBundledContent)}
-        accessibilityIgnoresInvertColors
-      />
+      {heroImage?.[0]?.url && (
+        <Image
+          style={tw`h-[140px] w-full overflow-hidden rounded`}
+          resizeMode="cover"
+          source={bundledSource(heroImage[0].url, env.useBundledContent)}
+          accessibilityIgnoresInvertColors
+        />
+      )}
 
       <View style={tw`w-full content-center items-center gap-1 pb-2.5`}>
         <Text

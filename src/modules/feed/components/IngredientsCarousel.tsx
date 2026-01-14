@@ -115,7 +115,7 @@ export default function IngredientsCarousel() {
           
           return hasPage && inSeason;
         })
-        .filter(x => !userOnboarding?.allergies.some(f => f === x.id))
+        .filter(x => !(userOnboarding?.allergies?.some(f => f === x.id)))
         .sort((a, b) => {
           // Sort by order first, then by title
           const ingredientA = apiIngredients.find(i => i._id === a.id);

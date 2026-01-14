@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
-import Svg, { Circle, G } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 import tw from '../../../common/tailwind';
 import {
   bodySmallRegular,
   h7TextStyle,
-  subheadMediumUppercase,
 } from '../../../theme/typography';
 import {
   recipeRatingApiService,
   RecipeRatingStats,
-  RatingTag,
 } from '../../recipeRating/api/recipeRatingApiService';
 
 interface RecipeRatingCardProps {
@@ -19,24 +17,42 @@ interface RecipeRatingCardProps {
   setMaxHeight?: (height: number) => void;
 }
 
-// Dynamic color palette for rating tags
-const COLOR_PALETTE = [
-  '#F87171', // Red/Pink
-  '#FBBF24', // Yellow
-  '#10B981', // Green
-  '#8B5CF6', // Purple
-  '#3B82F6', // Blue
-  '#EC4899', // Pink
-  '#F59E0B', // Orange
-  '#14B8A6', // Teal
-  '#6366F1', // Indigo
-  '#EF4444', // Red
-];
-
-// Generate color based on tag index for consistency
-const getRatingColor = (index: number): string => {
-  return COLOR_PALETTE[index % COLOR_PALETTE.length];
-};
+// Carrot Icon Component
+const CarrotIcon = ({ size = 20, filled = false }: { size?: number; filled?: boolean }) => (
+  <Svg width={size} height={size} viewBox="0 0 504.123 504.123">
+    <Path d="M331.232,154.963c0,43.725-35.446,349.16-79.171,349.16s-79.171-305.436-79.171-349.16s35.446-62.929,79.171-62.929C295.786,92.034,331.232,111.238,331.232,154.963z" fill={filled ? '#FF860D' : '#D1D5DB'} />
+    <Path d="M296.724,154.963c0,43.725-20,349.16-44.662,349.16s-44.662-305.436-44.662-349.16s20-62.929,44.662-62.929S296.724,111.238,296.724,154.963z" fill={filled ? '#E56107' : '#D1D5DB'} />
+    <Path d="M221.964,152.6c0,2.426-1.969,4.403-4.411,4.403h-18.251c-2.434,0-4.411-1.977-4.411-4.403l0,0c0-2.434,1.977-4.403,4.411-4.403h18.251C219.995,148.196,221.964,150.166,221.964,152.6L221.964,152.6z" fill={filled ? '#E56107' : '#D1D5DB'} />
+    <Path d="M245.634,181.689c0,2.434-1.961,4.403-4.403,4.403H222.98c-2.442,0-4.411-1.969-4.411-4.403l0,0c0-2.426,1.969-4.403,4.411-4.403h18.251C243.673,177.294,245.634,179.271,245.634,181.689L245.634,181.689z" fill={filled ? '#FF860D' : '#D1D5DB'} />
+    <Path d="M221.964,216.544c0,2.426-1.969,4.403-4.411,4.403h-18.251c-2.434,0-4.411-1.977-4.411-4.403l0,0c0-2.434,1.977-4.403,4.411-4.403h18.251C219.995,212.149,221.964,214.118,221.964,216.544L221.964,216.544z" fill={filled ? '#E56107' : '#D1D5DB'} />
+    <Path d="M245.634,245.642c0,2.426-1.961,4.395-4.403,4.395H222.98c-2.442,0-4.411-1.969-4.411-4.395l0,0c0-2.426,1.969-4.403,4.411-4.403h18.251C243.673,241.239,245.634,243.216,245.634,245.642L245.634,245.642z" fill={filled ? '#FF860D' : '#D1D5DB'} />
+    <Path d="M221.964,280.489c0,2.418-1.969,4.403-4.411,4.403h-18.251c-2.434,0-4.411-1.985-4.411-4.403l0,0c0-2.434,1.977-4.403,4.411-4.403h18.251C219.995,276.094,221.964,278.063,221.964,280.489L221.964,280.489z" fill={filled ? '#E56107' : '#D1D5DB'} />
+    <Path d="M245.634,309.587c0,2.418-1.961,4.403-4.403,4.403H222.98c-2.442,0-4.411-1.985-4.411-4.403l0,0c0-2.434,1.969-4.403,4.411-4.403h18.251C243.673,305.184,245.634,307.153,245.634,309.587L245.634,309.587z" fill={filled ? '#FF860D' : '#D1D5DB'} />
+    <Path d="M230.888,349.326c0,2.135-1.733,3.875-3.875,3.875h-16.077c-2.127,0-3.868-1.741-3.868-3.875l0,0c0-2.135,1.749-3.875,3.868-3.875h16.077C229.163,345.442,230.888,347.183,230.888,349.326L230.888,349.326z" fill={filled ? '#E56107' : '#D1D5DB'} />
+    <Path d="M233.968,374.926c0,2.127-1.733,3.86-3.868,3.86h-16.085c-2.127,0-3.868-1.741-3.868-3.86l0,0c0-2.135,1.749-3.875,3.868-3.875h16.085C232.235,371.042,233.968,372.783,233.968,374.926L233.968,374.926z" fill={filled ? '#FF860D' : '#D1D5DB'} />
+    <Path d="M232.968,412.058c0,1.725-1.386,3.119-3.111,3.119h-12.918c-1.709,0-3.111-1.402-3.111-3.119l0,0c0-1.709,1.402-3.111,3.111-3.111h12.918C231.582,408.954,232.968,410.356,232.968,412.058L232.968,412.058z" fill={filled ? '#E56107' : '#D1D5DB'} />
+    <Path d="M249.698,432.632c0,1.709-1.386,3.111-3.111,3.111h-12.918c-1.709,0-3.111-1.402-3.111-3.111l0,0c0-1.725,1.402-3.111,3.111-3.111h12.918C248.312,429.521,249.698,430.907,249.698,432.632L249.698,432.632z" fill={filled ? '#FF860D' : '#D1D5DB'} />
+    <Path d="M282.151,152.6c0,2.426,1.969,4.403,4.419,4.403h18.251c2.434,0,4.411-1.977,4.411-4.403l0,0c0-2.434-1.977-4.403-4.411-4.403H286.57C284.121,148.196,282.151,150.166,282.151,152.6L282.151,152.6z" fill={filled ? '#E56107' : '#D1D5DB'} />
+    <Path d="M258.481,181.689c0,2.434,1.969,4.403,4.411,4.403h18.251c2.434,0,4.411-1.969,4.411-4.403l0,0c0-2.426-1.977-4.403-4.411-4.403h-18.251C260.45,177.294,258.481,179.271,258.481,181.689L258.481,181.689z" fill={filled ? '#FF860D' : '#D1D5DB'} />
+    <Path d="M282.151,216.544c0,2.426,1.969,4.403,4.419,4.403h18.251c2.434,0,4.411-1.977,4.411-4.403l0,0c0-2.434-1.977-4.403-4.411-4.403H286.57C284.121,212.149,282.151,214.118,282.151,216.544L282.151,216.544z" fill={filled ? '#E56107' : '#D1D5DB'} />
+    <Path d="M258.481,245.642c0,2.426,1.969,4.395,4.411,4.395h18.251c2.434,0,4.411-1.969,4.411-4.395l0,0c0-2.426-1.977-4.403-4.411-4.403h-18.251C260.45,241.239,258.481,243.216,258.481,245.642L258.481,245.642z" fill={filled ? '#FF860D' : '#D1D5DB'} />
+    <Path d="M282.151,280.489c0,2.418,1.969,4.403,4.419,4.403h18.251c2.434,0,4.411-1.985,4.411-4.403l0,0c0-2.434-1.977-4.403-4.411-4.403H286.57C284.121,276.094,282.151,278.063,282.151,280.489L282.151,280.489z" fill={filled ? '#E56107' : '#D1D5DB'} />
+    <Path d="M258.481,309.587c0,2.418,1.969,4.403,4.411,4.403h18.251c2.434,0,4.411-1.985,4.411-4.403l0,0c0-2.434-1.977-4.403-4.411-4.403h-18.251C260.45,305.184,258.481,307.153,258.481,309.587L258.481,309.587z" fill={filled ? '#FF860D' : '#D1D5DB'} />
+    <Path d="M273.235,349.326c0,2.135,1.733,3.875,3.868,3.875h16.085c2.127,0,3.868-1.741,3.868-3.875l0,0c0-2.135-1.749-3.875-3.868-3.875h-16.085C274.96,345.442,273.235,347.183,273.235,349.326L273.235,349.326z" fill={filled ? '#E56107' : '#D1D5DB'} />
+    <Path d="M268.635,374.926c0,2.127,1.733,3.86,3.875,3.86h16.077c2.127,0,3.868-1.741,3.868-3.86l0,0c0-2.135-1.749-3.875-3.868-3.875H272.51C270.36,371.042,268.635,372.783,268.635,374.926L268.635,374.926z" fill={filled ? '#FF860D' : '#D1D5DB'} />
+    <Path d="M271.155,412.058c0,1.725,1.386,3.119,3.111,3.119h12.918c1.709,0,3.104-1.402,3.104-3.119l0,0c0-1.709-1.394-3.111-3.104-3.111h-12.918C272.542,408.954,271.155,410.356,271.155,412.058L271.155,412.058z" fill={filled ? '#E56107' : '#D1D5DB'} />
+    <Path d="M254.417,432.632c0,1.709,1.394,3.111,3.119,3.111h12.918c1.709,0,3.111-1.402,3.111-3.111l0,0c0-1.725-1.402-3.111-3.111-3.111h-12.918C255.811,429.521,254.417,430.907,254.417,432.632L254.417,432.632z" fill={filled ? '#FF860D' : '#D1D5DB'} />
+    <Path d="M319.835,118.603c-13.855-18.18-38.975-26.569-67.773-26.569s-53.918,8.389-67.773,26.569c4.001,15.699,32.784,10.862,67.773,10.862C287.035,129.465,315.833,134.302,319.835,118.603z" fill={filled ? '#FFAF10' : '#D1D5DB'} />
+    <Path d="M252.062,129.465c15.848,0,30.381,0.985,41.96,0.614c-6.207-26.167-22.638-38.046-41.96-38.046c-19.33,0-35.753,11.878-41.96,38.046C221.68,130.45,236.213,129.465,252.062,129.465z" fill={filled ? '#FF860D' : '#D1D5DB'} />
+    <Path d="M214.693,32.855c3.891,5.467,43.827,70.955,38.361,74.854c-5.467,3.899-54.304-55.257-58.21-60.723c-3.899-5.474-2.631-13.084,2.851-16.983C203.177,26.096,210.786,27.38,214.693,32.855z" fill={filled ? '#68AD27' : '#D1D5DB'} />
+    <Path d="M206.281,61.07c4.049,3.135,47.474,42.157,44.339,46.19c-3.135,4.049-51.688-28.412-55.721-31.555c-4.041-3.143-4.781-8.964-1.631-13.013C196.387,58.652,202.232,57.927,206.281,61.07z" fill={filled ? '#5C8729' : '#D1D5DB'} />
+    <Path d="M237.214,25.726c2.158,6.372,21.48,80.597,15.1,82.755c-6.372,2.15-36.013-68.592-38.179-74.965c-2.143-6.365,1.268-13.28,7.648-15.439C228.147,15.927,235.071,19.346,237.214,25.726z" fill={filled ? '#7FCC2E' : '#D1D5DB'} />
+    <Path d="M289.43,32.855c-3.899,5.467-43.835,70.955-38.361,74.854c5.467,3.899,54.303-55.257,58.21-60.723c3.899-5.474,2.623-13.084-2.844-16.983C300.946,26.096,293.337,27.38,289.43,32.855z" fill={filled ? '#68AD27' : '#D1D5DB'} />
+    <Path d="M297.842,61.07c-4.049,3.135-47.482,42.157-44.339,46.19c3.135,4.049,51.688-28.412,55.721-31.555c4.033-3.143,4.773-8.964,1.631-13.013C307.728,58.652,301.891,57.927,297.842,61.07z" fill={filled ? '#5C8729' : '#D1D5DB'} />
+    <Path d="M266.91,25.726c-2.15,6.372-21.48,80.597-15.108,82.755c6.388,2.15,36.021-68.592,38.187-74.965c2.135-6.365-1.276-13.28-7.648-15.439C275.976,15.927,269.052,19.346,266.91,25.726z" fill={filled ? '#7FCC2E' : '#D1D5DB'} />
+    <Path d="M265.255,13.194c0,7.294-5.908,95.752-13.194,95.752s-13.194-88.458-13.194-95.752C238.868,5.908,244.775,0,252.062,0S265.255,5.908,265.255,13.194z" fill={filled ? '#5C8729' : '#D1D5DB'} />
+  </Svg>
+);
 
 const RecipeRatingCard: React.FC<RecipeRatingCardProps> = ({
   recipeId,
@@ -44,26 +60,17 @@ const RecipeRatingCard: React.FC<RecipeRatingCardProps> = ({
   setMaxHeight,
 }) => {
   const [stats, setStats] = useState<RecipeRatingStats | null>(null);
-  const [allTags, setAllTags] = useState<RatingTag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchRatingData = async () => {
       try {
         setIsLoading(true);
-        
-        // Fetch both active tags and rating stats in parallel
-        const [tags, ratingStats] = await Promise.all([
-          recipeRatingApiService.getActiveTags(),
-          recipeRatingApiService.getRecipeRatingStats(recipeId),
-        ]);
-        
-        setAllTags(tags);
+        const ratingStats = await recipeRatingApiService.getRecipeRatingStats(recipeId);
         setStats(ratingStats);
       } catch (error) {
         console.error('[RecipeRatingCard] Error fetching rating data:', error);
         setStats(null);
-        setAllTags([]);
       } finally {
         setIsLoading(false);
       }
@@ -86,82 +93,13 @@ const RecipeRatingCard: React.FC<RecipeRatingCardProps> = ({
           }
         }}
       >
-        <ActivityIndicator size="small" color="#000" />
+        <ActivityIndicator size="small" color="#FF6B35" />
       </View>
     );
   }
 
-  // Merge all tags with stats to show all tags even if they have 0 votes
-  const allTagsWithStats = allTags.map(tag => {
-    const existingStat = stats?.ratingBreakdown.find(rb => rb.tagName === tag.name);
-    return {
-      tagName: tag.name,
-      count: existingStat?.count || 0,
-      order: tag.order,
-      percentage: stats && stats.totalRatings > 0 
-        ? Math.round(((existingStat?.count || 0) / stats.totalRatings) * 100)
-        : 0,
-    };
-  });
-
-  // If no tags at all, show error state
-  if (allTags.length === 0) {
-    return (
-      <View
-        style={tw`rounded-lg border border-strokecream bg-white px-4.5 py-6`}
-        onLayout={(event) => {
-          const height = event.nativeEvent.layout.height;
-          if (setMaxHeight && height > maxHeight) {
-            setMaxHeight(height);
-          }
-        }}
-      >
-        <Text style={tw.style('text-center', h7TextStyle)}>WHAT PEOPLE SAY</Text>
-        <View style={tw.style('border-b border-strokecream pt-2.5')} />
-        <View style={tw`items-center justify-center py-8`}>
-          <Text style={tw.style(bodySmallRegular, 'text-center text-stone')}>
-            Rating tags not available
-          </Text>
-        </View>
-      </View>
-    );
-  }
-
-  // Find the highest rating percentage for the gauge
-  const highestRating = allTagsWithStats.reduce(
-    (max, rating) => (rating.percentage > max.percentage ? rating : max),
-    allTagsWithStats[0]
-  );
-
-  // SVG Semi-Circle parameters
-  const size = 200;
-  const strokeWidth = 20;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = Math.PI * radius; // Half circle
-
-  // Calculate the stroke segments for each rating (semi-circle)
-  // Only include tags that have votes for the visual segments
-  const createSegments = () => {
-    let currentOffset = 0;
-    let visualIndex = 0;
-    return allTagsWithStats
-      .filter(rating => rating.count > 0) // Only show segments for tags with votes
-      .map((rating) => {
-        const tagIndex = allTagsWithStats.findIndex(t => t.tagName === rating.tagName);
-        const dashLength = (rating.percentage / 100) * circumference;
-        const segment = {
-          ...rating,
-          strokeDasharray: `${dashLength} ${circumference}`,
-          strokeDashoffset: -currentOffset,
-          color: getRatingColor(tagIndex),
-        };
-        currentOffset += dashLength;
-        visualIndex++;
-        return segment;
-      });
-  };
-
-  const segments = createSegments();
+  const hasRatings = stats && stats.totalRatings > 0;
+  const averageRating = stats?.averageRating || 0;
 
   return (
     <View
@@ -173,73 +111,80 @@ const RecipeRatingCard: React.FC<RecipeRatingCardProps> = ({
         }
       }}
     >
-      <Text style={tw.style('text-center', h7TextStyle)}>WHAT PEOPLE SAY</Text>
-      <View style={tw.style('border-b border-strokecream pt-2.5')} />
-
-      {/* Semi-Circular Gauge */}
-      <View style={tw`items-center justify-center pt-6 pb-2`}>
-        <View style={tw`relative items-center`}>
-          <Svg width={size} height={size / 2 + 20} viewBox={`0 0 ${size} ${size / 2 + 20}`}>
-            <G rotation="-180" origin={`${size / 2}, ${size / 2}`}>
-              {/* Background semi-circle */}
-              <Circle
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                stroke="#F3F4F6"
-                strokeWidth={strokeWidth}
-                fill="none"
-                strokeDasharray={`${circumference} ${circumference}`}
-                strokeLinecap="round"
-              />
-              {/* Rating segments */}
-              {segments.map((segment, index) => (
-                <Circle
-                  key={index}
-                  cx={size / 2}
-                  cy={size / 2}
-                  r={radius}
-                  stroke={segment.color}
-                  strokeWidth={strokeWidth}
-                  fill="none"
-                  strokeDasharray={segment.strokeDasharray}
-                  strokeDashoffset={segment.strokeDashoffset}
-                  strokeLinecap="round"
-                />
-              ))}
-            </G>
-          </Svg>
-          {/* Center text - positioned at bottom of semi-circle */}
-          <View style={tw`absolute bottom-0 items-center`}>
-            <Text style={[tw`font-sans-bold text-3xl`, { color: getRatingColor(allTagsWithStats.findIndex(t => t.tagName === highestRating.tagName)) }]}>
-              {highestRating.percentage}%
+      {/* Header */}
+      <Text style={tw.style(h7TextStyle, 'text-center text-eggplant pb-3')}>
+        CARROT RATING
+      </Text>
+      
+      {hasRatings ? (
+        <>
+          {/* Average Rating Display */}
+          <View style={tw`items-center justify-center pb-5 pt-2`}>
+            <View style={tw`flex-row items-center gap-2 pb-3`}>
+              {[1, 2, 3, 4, 5].map((rating) => {
+                const isFilled = rating <= Math.round(averageRating);
+                return <CarrotIcon key={rating} size={28} filled={isFilled} />;
+              })}
+            </View>
+            <Text style={tw.style('font-sans-bold text-4xl text-carrot pb-1')}>
+              {averageRating.toFixed(1)}
             </Text>
-            <Text style={tw.style(bodySmallRegular, 'text-stone pt-1')}>
-              {stats?.totalRatings || 0}/{stats?.totalRatings || 0} Votes
+            <Text style={tw.style(bodySmallRegular, 'text-midgray')}>
+              Based on {stats.totalRatings} {stats.totalRatings === 1 ? 'rating' : 'ratings'}
             </Text>
           </View>
+
+          {/* Divider */}
+          <View style={tw`border-t border-strokecream mb-4`} />
+
+          {/* Rating Distribution */}
+          <View style={tw`gap-2.5`}>
+            {stats.ratingDistribution
+              .sort((a, b) => b.rating - a.rating)
+              .map((dist) => {
+                const widthPercentage = Math.max(dist.percentage, 0);
+                return (
+                  <View key={dist.rating} style={tw`flex-row items-center gap-2.5`}>
+                    <View style={tw`flex-row items-center gap-1 w-10`}>
+                      <Text style={tw.style(bodySmallRegular, 'font-sans-bold text-eggplant')}>
+                        {dist.rating}
+                      </Text>
+                      <CarrotIcon size={14} filled={true} />
+                    </View>
+
+                    {/* Progress Bar Container */}
+                    <View style={tw`flex-1`}>
+                      <View style={tw`h-2 bg-strokecream rounded-full overflow-hidden`}>
+                        <View
+                          style={{
+                            height: '100%',
+                            width: `${widthPercentage}%`,
+                            backgroundColor: '#FF6B35',
+                            borderRadius: 9999,
+                          }}
+                        />
+                      </View>
+                    </View>
+
+                    {/* Count */}
+                    <Text style={tw.style(bodySmallRegular, 'text-midgray w-8 text-right')}>
+                      {dist.count}
+                    </Text>
+                  </View>
+                );
+              })}
+          </View>
+        </>
+      ) : (
+        <View style={tw`items-center justify-center py-8`}>
+          <View style={tw`pb-3`}>
+            <CarrotIcon size={48} filled={false} />
+          </View>
+          <Text style={tw.style(bodySmallRegular, 'text-center text-midgray')}>
+            No ratings yet.{'\n'}Be the first to rate!
+          </Text>
         </View>
-      </View>
-
-      {/* Spacing between gauge and rating breakdown */}
-      <View style={tw`h-4`} />
-
-      {/* Rating breakdown legend - shows all tags even if 0% */}
-      <View style={tw`flex-row flex-wrap justify-center gap-x-5 gap-y-2.5 px-2`}>
-        {allTagsWithStats.map((rating, index) => (
-          <View key={index} style={tw`flex-row items-center`}>
-            <View
-              style={[
-                tw`mr-2 h-3 w-3 rounded-full`,
-                { backgroundColor: getRatingColor(index) },
-              ]}
-            />
-            <Text style={tw.style(bodySmallRegular, 'text-gray-700')}>
-              {rating.tagName} {rating.percentage}%
-            </Text>
-          </View>
-        ))}
-      </View>
+      )}
     </View>
   );
 };

@@ -120,7 +120,7 @@ export default function PostMakeQ1({
                 ]}
                 resizeMode="cover"
                 source={bundledSource(
-                  framework.heroImage[0].url,
+                  framework.heroImage?.[0]?.url,
                   env.useBundledContent,
                 )}
               />

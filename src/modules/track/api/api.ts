@@ -90,6 +90,8 @@ const trackApi = api
           didYouLikeIt?: boolean;
           foodSaved: number;
           mealId: string;
+          rating?: number; // 1-5 carrot rating
+          review?: string; // Optional review text
         }
       >({
         query: params => ({
@@ -102,6 +104,8 @@ const trackApi = api
               did_you_like_it: params.didYouLikeIt,
               food_saved: params.foodSaved,
               meal_id: params.mealId,
+              ...(params.rating !== undefined ? { rating: params.rating } : {}),
+              ...(params.review !== undefined ? { review: params.review } : {}),
             },
           },
         }),
@@ -122,6 +126,8 @@ const trackApi = api
           didYouLikeIt?: boolean;
           foodSaved?: number;
           mealId?: string;
+          rating?: number; // 1-5 carrot rating
+          review?: string; // Optional review text
         }
       >({
         query: params => ({
@@ -137,6 +143,8 @@ const trackApi = api
                   }
                 : {}),
               meal_id: params.mealId,
+              ...(params.rating !== undefined ? { rating: params.rating } : {}),
+              ...(params.review !== undefined ? { review: params.review } : {}),
             },
           },
         }),
@@ -158,8 +166,31 @@ const trackApi = api
           method: 'get',
         }),
         providesTags: ['Feedback'],
-        transformResponse: r =>
-          (r as FeedbacksForFrameworkResponse).feedback_list,
+        transformResponse: r => {
+          const anyR = r as any;
+          const feedbacks = anyR?.feedback_list || anyR?.feedbacks || [];
+          // Map _id to id and ensure it's a string
+          return feedbacks.map((f: any) => ({
+            ...f,
+            id: f.id?.toString() || f._id?.toString() || f.id || f._id,
+          }));
+        },
+      }),
+      getFeedbacks: builder.query<FeedbackResult[], void>({
+        query: () => ({
+          url: '/api/feedback',
+          method: 'get',
+        }),
+        providesTags: ['Feedback'],
+        // Backend returns { feedbacks: FeedbackResult[] }
+        transformResponse: r => {
+          const feedbacks = (r as any).feedbacks || [];
+          // Map _id to id and ensure it's a string
+          return feedbacks.map((f: any) => ({
+            ...f,
+            id: f.id?.toString() || f._id?.toString() || f.id || f._id,
+          }));
+        },
       }),
       getFavourites: builder.query<Favourite[] | null, void>({
         query: () => ({
@@ -224,6 +255,7 @@ export const {
   useCreateFeedbackMutation,
   useUpdateFeedbackMutation,
   useGetFeedbacksForFrameworkQuery,
+  useGetFeedbacksQuery,
   useGetFavouritesQuery,
   useGetFavouriteDetailsQuery,
   useCreateFavouriteMutation,
@@ -240,4 +272,19 @@ export const useGetUserMealsQuery = () => ({ data: [] as any[] });
 export const useUpdateUserMealMutation = () => {
   const mutate = async (_params: any) => Promise.resolve();
   return [mutate, { isLoading: false }] as const;
+};
+
+// Temporary stub for single meal fetch used by PostMakeScreen
+export const useGetUserMealQuery = (params?: { id: string }) => {
+  const id = params?.id;
+  const meal = id
+    ? {
+        id,
+        framework_id: id,
+        data: {
+          ingredients: [],
+        },
+      }
+    : undefined;
+  return { data: meal as any, isLoading: false, isError: false } as const;
 };

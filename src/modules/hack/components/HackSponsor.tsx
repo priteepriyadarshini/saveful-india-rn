@@ -12,7 +12,7 @@ export default function HackSponsor({
 }) {
   const env = useEnvironment();
 
-  if (!sponsorLogo[0].url) {
+  if (!sponsorLogo || sponsorLogo.length === 0 || !sponsorLogo[0]?.url) {
     return null;
   }
 
@@ -28,7 +28,7 @@ export default function HackSponsor({
       <Image
         resizeMode="contain"
         style={tw`mr-2.5 h-[32px] w-[61px] rounded-2lg`}
-        source={bundledSource(sponsorLogo[0].url, env.useBundledContent)}
+        source={bundledSource(sponsorLogo[0]?.url as string, env.useBundledContent)}
         accessibilityIgnoresInvertColors
       />
     </View>

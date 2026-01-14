@@ -17,6 +17,7 @@ import { mixpanelEventName } from "../../analytics/analytics";
 import { useCurentRoute } from "../../route/context/CurrentRouteContext";
 import FocusAwareStatusBar from "../../../common/components/FocusAwareStatusBar";
 import FeedSearchBarHeader from "../components/FeedSearchBarHeader";
+import FeedNotification from "../components/FeedNotification";
 import CommunityGroups from "../components/CommunityGroups";
 import Staples from "../components/Staples";
 import Partners from "../components/Partners";
@@ -90,6 +91,9 @@ export default function FeedScreen() {
         showsVerticalScrollIndicator={false}
       >
         <SafeAreaView style={tw`z-10 pt-[30px]`}>
+          {/* Survey Notification - appears when there are pending surveys */}
+         
+          
           {/* Leaderboard Icon - Top Right */}
           <View style={tw`items-end px-5 mb-3`}>
             <Pressable
@@ -106,7 +110,7 @@ export default function FeedScreen() {
             onPress={onSearchTapped}
             title="What are you cooking with?"
           />
-
+ <FeedNotification setIsNotification={setIsNotification} />
           <View style={tw`-mb-12 mt-10`}>
             <FeedSaved
             />

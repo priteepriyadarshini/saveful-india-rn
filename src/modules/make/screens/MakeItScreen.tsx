@@ -215,7 +215,7 @@ export default function MakeItScreen({
 
   const makeItSteps = framework.components
     .filter(component =>
-      component.includedInVariants.some(item => item.id === variant),
+      component.includedInVariants?.some(item => item.id === variant),
     )
     .flatMap(component =>
       component.componentSteps.map(step => ({
@@ -244,7 +244,7 @@ export default function MakeItScreen({
         return true;
       }
 
-      return item.ingredients.some(
+      return item.ingredients?.some(
         ingredient =>
           item.relevantIngredients.findIndex(
             item => item.title === ingredient.title,
