@@ -48,11 +48,10 @@ class TokenManager extends EventEmitter {
       });
       Notifications.setNotificationHandler({
         handleNotification: async () => ({
-          shouldShowAlert: true,
           shouldPlaySound: true,
           shouldSetBadge: true,
-          shouldShowBanner: true, 
-          shouldShowList: true, 
+          shouldShowBanner: true,
+          shouldShowList: true,
           priority: AndroidNotificationPriority.DEFAULT,
         }),
       });
