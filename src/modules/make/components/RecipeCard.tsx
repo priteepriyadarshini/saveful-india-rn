@@ -109,9 +109,15 @@ export default function RecipeCard({
           />
         )}
 
-        {variantTags.length > 0 && (
-          <View style={tw`mt-3`}>
-            <Text style={tw.style(h5TextStyle, 'text-center')}>{title}</Text>
+        <View style={tw`mt-3`}>
+          <Text 
+            style={tw.style(h5TextStyle, 'text-center')}
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          >
+            {title}
+          </Text>
+          {variantTags.length > 0 && (
             <Text
               style={tw.style(
                 subheadMediumUppercase,
@@ -121,8 +127,8 @@ export default function RecipeCard({
               {variantTags.length} flavour{' '}
               {variantTags.length === 1 ? 'guide' : 'guides'}
             </Text>
-          </View>
-        )}
+          )}
+        </View>
 
         <View style={tw`mt-3 border-t border-strokecream pt-3.5`}>
           <Text

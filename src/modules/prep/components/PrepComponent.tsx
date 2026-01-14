@@ -166,7 +166,7 @@ export default function PrepComponent({
             {requiredIngredients.map((item, index) => {
               return (
                 <RequiredIngredient
-                  key={item.id}
+                  key={`${id}-req-${index}`}
                   id={item.id}
                   index={index}
                   recommendedIngredient={item.recommendedIngredient}
@@ -217,7 +217,7 @@ export default function PrepComponent({
 
                   return (
                     <OptionalIngredient
-                      key={optionalIngredient.id}
+                      key={`${id}-opt-${index}`}
                       ingredient={optionalIngredient}
                       index={index}
                       onIngredientChecked={onOptionalIngredientChecked}

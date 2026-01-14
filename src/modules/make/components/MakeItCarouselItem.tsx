@@ -42,15 +42,19 @@ export default function MakeItCarouselItem({
   const contentWidth = useMemo(() => Dimensions.get('window').width - 40, []);
   const tagsStyles = useMemo(
     () => ({
-      p: tw.style('text-white'),
-      strong: tw.style('text-lemon'),
+      body: tw.style('text-white font-sans-semibold text-3.5xl leading-tightest'),
+      p: tw.style('text-white font-sans-semibold text-3.5xl leading-tightest mb-4'),
+      div: tw.style('text-white font-sans-semibold text-3.5xl leading-tightest'),
+      span: tw.style('text-white font-sans-semibold'),
+      strong: tw.style('text-lemon font-sans-bold text-3.5xl leading-tightest'),
+      b: tw.style('text-lemon font-sans-bold text-3.5xl leading-tightest'),
     }),
     [],
   );
   const defaultViewProps = useMemo(() => ({ style: tw`m-0 p-0` }), []);
   const defaultTextProps = useMemo(
     () => ({
-      style: tw.style('mb-4 font-sans-semibold text-3.5xl leading-tightest'),
+      style: tw.style('text-white font-sans-semibold text-3.5xl leading-tightest mb-4'),
       maxFontSizeMultiplier: 1 as const,
     }),
     [],
@@ -62,7 +66,7 @@ export default function MakeItCarouselItem({
     () => ({
       strong: HTMLElementModel.fromCustomModel({
         tagName: 'strong',
-        mixedUAStyles: tw.style('text-lemon'),
+        mixedUAStyles: tw.style('text-lemon font-sans-bold'),
         contentModel: HTMLContentModel.textual,
         reactNativeProps: {
           native: {
@@ -86,7 +90,11 @@ export default function MakeItCarouselItem({
         showsVerticalScrollIndicator={false}
       >
         <RenderHTML
-          source={{ html: item.stepInstructions || '' }}
+          source={{ 
+            html: item.stepInstructions?.trim().startsWith('<') 
+              ? item.stepInstructions 
+              : `<p>${item.stepInstructions || ''}</p>` 
+          }}
           contentWidth={contentWidth}
           tagsStyles={tagsStyles}
           defaultViewProps={defaultViewProps}
