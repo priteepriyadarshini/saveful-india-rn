@@ -144,7 +144,6 @@ export default function IngredientDetailScreen({
 
   const { sendScrollEventInitiation } = useAnalytics();
 
-  // Try to use the new API first, fallback to old content service if it fails
   const { data: apiIngredient, isLoading: isApiLoading, error: apiError } = useGetIngredientByIdQuery(id);
   const { getIngredient } = useContent();
   const [ingredient, setIngredient] = React.useState<IIngredient>();

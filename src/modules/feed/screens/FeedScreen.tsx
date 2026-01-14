@@ -67,6 +67,17 @@ export default function FeedScreen() {
     navigation.navigate('Leaderboard');
   }, [navigation, newCurrentRoute, sendAnalyticsEvent]);
 
+  const onShoppingListTapped = useCallback(() => {
+    sendAnalyticsEvent({
+      event: mixpanelEventName.actionClicked,
+      properties: {
+        location: newCurrentRoute,
+        action: 'shopping_list_icon_pressed',
+      },
+    });
+    navigation.navigate('ShoppingList');
+  }, [navigation, newCurrentRoute, sendAnalyticsEvent]);
+
   const [_isNotification, setIsNotification] = useState<boolean>(false);
 
 
@@ -94,8 +105,17 @@ export default function FeedScreen() {
           {/* Survey Notification - appears when there are pending surveys */}
          
           
-          {/* Leaderboard Icon - Top Right */}
-          <View style={tw`items-end px-5 mb-3`}>
+          {/* Icons - Top Right */}
+          <View style={tw`flex-row items-center justify-end px-5 mb-3`}>
+            <Pressable
+              onPress={onShoppingListTapped}
+              style={tw`h-10 w-10 items-center justify-center rounded-full bg-white shadow-lg mr-3`}
+              accessibilityRole="button"
+              accessibilityLabel="Open shopping list"
+            >
+              <Ionicons name="list" size={20} color={tw.color('eggplant')} />
+            </Pressable>
+            
             <Pressable
               onPress={onLeaderboardTapped}
               style={tw`h-10 w-10 items-center justify-center rounded-full bg-white shadow-lg`}

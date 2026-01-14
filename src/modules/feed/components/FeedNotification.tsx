@@ -63,6 +63,7 @@ export default function FeedNotification({
       },
     });
 
+    setShowCard(false);
     setIsNotification(false);
   };
 

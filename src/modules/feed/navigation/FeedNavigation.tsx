@@ -9,6 +9,7 @@ import PartnersScreen from '../screens/PartnersScreen';
 import IngredientsStackNavigator, { IngredientsStackParamList } from '../../ingredients/navigation/IngredientsNavigator';
 import GroupsStackNavigator, { GroupsStackParamList } from '../../groups/navigation/GroupsNavigator';
 import LeaderboardScreen from '../../badges/screens/LeaderboardScreen';
+import ShoppingListScreen from '../../shoppingList/screens/ShoppingListScreen';
 import { CompositeScreenProps, NavigatorScreenParams } from '@react-navigation/native';
 import { RootNavigationStackParams } from '../../navigation/navigator/root/RootNavigator';
 
@@ -17,6 +18,7 @@ export type FeedStackParamList = {
   FeedHome: undefined;
   Partners: undefined;
   Leaderboard: undefined;
+  ShoppingList: undefined;
   Ingredients: NavigatorScreenParams<IngredientsStackParamList>;
   Groups: NavigatorScreenParams<GroupsStackParamList>;
 };
@@ -52,6 +54,12 @@ export default function FeedStackNavigator() {
         name="Leaderboard"
         component={LeaderboardScreen}
         options={{ title: 'Leaderboard', headerShown: false }}
+      />
+
+      <NavigationStack.Screen
+        name="ShoppingList"
+        component={ShoppingListScreen}
+        options={{ title: 'Shopping List', headerShown: false }}
       />
 
       <NavigationStack.Screen

@@ -5,6 +5,7 @@ import { IFrameworkComponentStep } from '../../../models/craft';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
 import CompletedCookModal from '../../../modules/make/components/CompletedCookModal';
+import ShoppingListIngredientsModal from '../../../modules/make/components/ShoppingListIngredientsModal';
 import MakeItCarouselItem from '../../../modules/make/components/MakeItCarouselItem';
 import { MixPanelContext } from '../../../modules/mixpanel/context/MixpanelContext';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
@@ -63,6 +64,9 @@ export default function MakeItCarousel({
   const [mixpanel] = useContext(MixPanelContext);
 
   const [isModalVisible, setModalVisible] = useState(false);
+  const [showShoppingListModal, setShowShoppingListModal] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [optimisticMealsCooked, setOptimisticMealsCooked] = useState<number | null>(null);
   const [createFeedback, { isLoading: isCreateFeedbackLoading }] =
     useCreateFeedbackMutation();
   const {
@@ -88,8 +92,30 @@ export default function MakeItCarousel({
     setModalVisible(!isModalVisible);
   };
 
+  const handleCompletedModalClose = () => {
+    // Close the completed cook modal
+    setModalVisible(false);
+    // Show the shopping list modal
+    setShowShoppingListModal(true);
+  };
+
+  const handleShoppingListModalClose = () => {
+    setShowShoppingListModal(false);
+    // Navigate back to Make tab root (MakeHome) after shopping list modal closes
+    navigation.navigate('Root', {
+      screen: 'Make',
+      params: { screen: 'MakeHome' },
+    } as const);
+  };
+
   const onCompleteCook = async () => {
     try {
+      // Prevent duplicate submissions while in-flight
+      if (isCompleting || isCreateFeedbackLoading) {
+        return;
+      }
+
+      setIsCompleting(true);
       completedSteps();
       sendAnalyticsEvent({
         event: mixpanelEventName.actionClicked,
@@ -100,19 +126,21 @@ export default function MakeItCarousel({
         },
       });
       // Create feedback so stats/groups update. Use computed foodSaved if available
-      if (!isCreateFeedbackLoading) {
-        await createFeedback({
-          frameworkId,
-          prompted: false,
-          foodSaved: (totalWeightOfSelectedIngredients || 0) / 1000,
-          mealId,
-        }).unwrap();
-        // Ensure cooked count reflects this completion
-        await refetchCookedRecipes();
-        
-        // Check milestones after completing a meal - this will auto-show badge notifications
-        await checkMilestonesNow();
-      }
+      await createFeedback({
+        frameworkId,
+        prompted: false,
+        foodSaved: (totalWeightOfSelectedIngredients || 0) / 1000,
+        mealId,
+      }).unwrap();
+
+      // Optimistically bump the cooked count for immediate UI feedback
+      setOptimisticMealsCooked((cookedRecipesData?.numberOfMealsCooked ?? 0) + 1);
+
+      // Ensure cooked count and stats reflect this completion from server
+      await refetchCookedRecipes();
+      
+      // Check milestones after completing a meal - this will auto-show badge notifications
+      await checkMilestonesNow();
 
       setModalVisible(true);
 
@@ -125,6 +153,8 @@ export default function MakeItCarousel({
     } catch (error: unknown) {
       sendFailedEventAnalytics(error);
       Alert.alert('User update error', JSON.stringify(error));
+    } finally {
+      setIsCompleting(false);
     }
   };
 
@@ -146,7 +176,7 @@ export default function MakeItCarousel({
               item={item}
               index={index}
               noOfItems={data.length}
-              isLoading={false}
+              isLoading={isCompleting || isCreateFeedbackLoading}
               onCompleteCook={onCompleteCook}
               scrollToItem={scrollToItem}
             />
@@ -171,9 +201,20 @@ export default function MakeItCarousel({
         />
       ) : ( */}
       <CompletedCookModal
-        mealsCookedCount={cookedRecipesData?.numberOfMealsCooked ?? 0}
+        mealsCookedCount={
+          optimisticMealsCooked ?? cookedRecipesData?.numberOfMealsCooked ?? 0
+        }
         isModalVisible={isModalVisible}
         toggleModal={toggleModal}
+        onRequestRating={handleCompletedModalClose}
+      />
+      
+      <ShoppingListIngredientsModal
+        isVisible={showShoppingListModal}
+        onClose={handleShoppingListModalClose}
+        ingredients={data.flatMap(step => step.ingredients)}
+        recipeId={frameworkId}
+        recipeName={recipeName}
       />
       {/* )} */}
     </View>
