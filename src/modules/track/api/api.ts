@@ -27,8 +27,8 @@ const trackApi = api
           didYouLikeIt?: boolean;
           foodSaved: number;
           mealId: string;
-          rating?: number; // 1-5 carrot rating
-          review?: string; // Optional review text
+          rating?: number; 
+          review?: string; 
         }
       >({
         query: params => ({

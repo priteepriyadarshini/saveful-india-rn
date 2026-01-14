@@ -2,22 +2,28 @@ import { ConfigContext, ExpoConfig } from '@expo/config';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
+
   name: 'Saveful',
   slug: 'saveful-app',
-  scheme: 'saveful', 
+  scheme: 'saveful',
   version: '1.2.21',
   orientation: 'portrait',
   jsEngine: 'hermes',
+
   icon: './assets/icon.png',
+
   updates: {
     enabled: false,
     fallbackToCacheTimeout: 0,
   },
+
   experiments: {
     tsconfigPaths: true,
   },
+
   assetBundlePatterns: ['**/*'],
   userInterfaceStyle: 'automatic',
+
   android: {
     package: 'com.saveful.app',
     permissions: ['ACCESS_NETWORK_STATE'],
@@ -39,10 +45,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           { scheme: 'https', host: 'app.dev.saveful.com', pathPattern: '/make/prep/*' },
           { scheme: 'https', host: 'app.dev.saveful.com', pathPattern: '/feed' },
           { scheme: 'https', host: 'app.dev.saveful.com', pathPattern: '/hacks/*' },
+
           { scheme: 'https', host: 'app.staging.saveful.com', pathPattern: '/make' },
           { scheme: 'https', host: 'app.staging.saveful.com', pathPattern: '/make/prep/*' },
           { scheme: 'https', host: 'app.staging.saveful.com', pathPattern: '/feed' },
           { scheme: 'https', host: 'app.staging.saveful.com', pathPattern: '/hacks/*' },
+
           { scheme: 'https', host: 'app.saveful.com', pathPattern: '/make' },
           { scheme: 'https', host: 'app.saveful.com', pathPattern: '/make/prep/*' },
           { scheme: 'https', host: 'app.saveful.com', pathPattern: '/feed' },
@@ -52,6 +60,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
   },
+
   ios: {
     bundleIdentifier: 'com.saveful.app',
     buildNumber: '1',
@@ -85,39 +94,38 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         {
           NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryDiskSpace',
           NSPrivacyAccessedAPITypeReasons: ['7D9E.1', 'E174.1'],
-          //bug reports, ensuring enough space
         },
         {
           NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryFileTimestamp',
           NSPrivacyAccessedAPITypeReasons: ['C617.1'],
-          //file meta data for processing images and cleaning up logs
         },
         {
           NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryUserDefaults',
           NSPrivacyAccessedAPITypeReasons: ['1C8F.1'],
-          //app & extension user pref data
         },
         {
-          NSPrivacyAccessedAPIType:
-            'NSPrivacyAccessedAPICategorySystemBootTime',
+          NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategorySystemBootTime',
           NSPrivacyAccessedAPITypeReasons: ['3D61.1'],
-          //crash reports and logs
         },
       ],
     },
   },
+
   notification: {
     icon: './assets/notification_icon.png',
     color: '#4B2176',
   },
+
   extra: {
-    // eas: {
-    //   projectId: 'c32c0b4e-c33c-4397-82e2-df9b58aadd3b',
-    // },
+    eas: {
+      projectId: '834347b1-3a49-45f6-8aca-16929fc1895a',
+    },
+
     dev: {
       accessToken: process.env.ACCESS_TOKEN,
       refreshToken: process.env.REFRESH_TOKEN,
     },
+
     environments: {
       prod: {
         title: 'Production',
@@ -149,46 +157,46 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       local: {
         android: {
           title: 'Local (Android)',
-          apiUrl: process.env.LOCAL_URL ?? 'http://192.168.0.192:3000',
-          webUrl: process.env.WEB_URL ?? 'http://192.168.0.192:3000',
+          apiUrl: process.env.LOCAL_URL ?? 'https://backend.saveful.devsomeware.com',
+          webUrl: process.env.WEB_URL ?? 'https://backend.saveful.devsomeware.com',
           socketUrl: process.env.SOCKET_URL ?? 'ws://192.168.0.192:3000/socket/app',
         },
         ios: {
           title: 'Local (iOS)',
-          apiUrl: process.env.LOCAL_URL ?? 'http://192.168.0.192:3000',
-          webUrl: process.env.WEB_URL ?? 'http://192.168.0.192:3000',
+          apiUrl: process.env.LOCAL_URL ?? 'https://backend.saveful.devsomeware.com',
+          webUrl: process.env.WEB_URL ?? 'https://backend.saveful.devsomeware.com',
           socketUrl: process.env.SOCKET_URL ?? 'ws://192.168.0.192:3000/socket/app',
         },
       },
     },
+
     oneSignalAppId: '905089d3-5a54-46dd-8e22-669fc07adce3',
   },
+
   plugins: [
     'expo-localization',
     'expo-font',
     'expo-secure-store',
     '@react-native-community/datetimepicker',
     'expo-web-browser',
-    ['onesignal-expo-plugin', 
-      { 
-        mode: 'development' 
-      }
-    ],
     [
-      'expo-build-properties',
+      'onesignal-expo-plugin',
       {
-        android: {
-          compileSdkVersion: 34,
-          targetSdkVersion: 34,
-          buildToolsVersion: '34.0.0',
-        },
-        ios: {
-          deploymentTarget: '15.1',
-        },
+        mode: 'development',
       },
     ],
+   [
+  'expo-build-properties',
+  {
+    android: {
+      compileSdkVersion: 35,
+      targetSdkVersion: 35,
+      buildToolsVersion: '35.0.0',
+    },
+    ios: {
+      deploymentTarget: '15.1',
+    },
+  },
+],
   ],
 });
-
-
-
