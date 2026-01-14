@@ -11,6 +11,8 @@ import MakeItCarousel from '../../../modules/make/components/MakeItCarousel';
 import MakeItHeader from '../../../modules/make/components/MakeItHeader';
 import MakeItNavigation from '../../../modules/make/components/MakeItNavigation';
 import MakeItSurveyModal from '../components/MakeItSurveyModal';
+import TTSSpeakerButton from '../../../modules/make/components/TTSSpeakerButton';
+import { useMakeItTTS } from '../../../modules/make/hooks/useMakeItTTS';
 import { InitialNavigationStackParams } from '../../navigation/navigator/InitialNavigator';
 import TutorialModal from '../../../modules/prep/components/TutorialModal';
 import { MAKETUTORIAL } from '../../../modules/prep/data/data';
@@ -47,6 +49,7 @@ export default function MakeItScreen({
   const [preExistingIngredients, setPreExistingIngredients] = useState<
     { id: string; title: string; averageWeight: number }[]
   >([]);
+  const [isTTSEnabled, setIsTTSEnabled] = useState(false);
 
   const getFrameworksData = async () => {
     try {
@@ -143,6 +146,50 @@ export default function MakeItScreen({
 
   const [slideIndex, setSlideIndex] = useState(0);
 
+ 
+  const makeItSteps = framework?.components
+    .filter(component =>
+      component.includedInVariants?.some(item => item.id === variant),
+    )
+    .flatMap(component =>
+      component.componentSteps.map(step => ({
+        ...step,
+        title: component.componentTitle,
+        ingredients: ingredients.filter(item => item.id === component.id),
+      })),
+    )
+    .filter((item, index, array) => {
+      if (item.alwaysShow || index === array.length - 1) {
+        return true;
+      }
+      return item.ingredients.length > 0;
+    })
+    .filter((item, index, array) => {
+      if (item.alwaysShow || index === array.length - 1) {
+        return true;
+      }
+      if (item.relevantIngredients.length === 0) {
+        return true;
+      }
+      return item.ingredients?.some(
+        ingredient =>
+          item.relevantIngredients.findIndex(
+            item => item.title === ingredient.title,
+          ) !== -1,
+      );
+    })
+    .concat({
+      title: 'Let\'s eat',
+      ingredients: [],
+      id: 'lets-eat',
+      stepInstructions: `<p>That\'s it! Time to eat!</p>`,
+      hackOrTip: [],
+      relevantIngredients: [],
+      alwaysShow: true,
+    }) || [];
+
+  const { isSpeaking } = useMakeItTTS(currentIndex, makeItSteps, isTTSEnabled);
+
   const onScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       const currentSlideSize =
@@ -213,56 +260,8 @@ export default function MakeItScreen({
       break;
   }
 
-  const makeItSteps = framework.components
-    .filter(component =>
-      component.includedInVariants?.some(item => item.id === variant),
-    )
-    .flatMap(component =>
-      component.componentSteps.map(step => ({
-        ...step,
-        // Title of the component
-        title: component.componentTitle,
-        // Only ingredients that are required for this component
-        ingredients: ingredients.filter(item => item.id === component.id),
-      })),
-    )
-    // Remove any steps that don't have ingredients
-    .filter((item, index, array) => {
-      if (item.alwaysShow || index === array.length - 1) {
-        return true;
-      }
 
-      return item.ingredients.length > 0;
-    })
-    // Remove any steps if relevantIngredients is not empty and the step doesn't have any of the relevant ingredients
-    .filter((item, index, array) => {
-      if (item.alwaysShow || index === array.length - 1) {
-        return true;
-      }
-
-      if (item.relevantIngredients.length === 0) {
-        return true;
-      }
-
-      return item.ingredients?.some(
-        ingredient =>
-          item.relevantIngredients.findIndex(
-            item => item.title === ingredient.title,
-          ) !== -1,
-      );
-    })
-    // Add a step to the end of the array to show the "Let's eat" screen
-    .concat({
-      title: 'Let’s eat',
-      ingredients: [],
-      id: 'lets-eat',
-      stepInstructions: `<p>That’s it! Time to eat!</p>`,
-      hackOrTip: [],
-      relevantIngredients: [],
-      alwaysShow: true,
-    });
-
-  if (!makeItSteps) {
+  if (!makeItSteps || makeItSteps.length === 0) {
     return null;
   }
 
@@ -307,9 +306,18 @@ export default function MakeItScreen({
 
   return (
     <View style={tw`flex-1 bg-kale`}>
+     
+     <View style={tw`mt-5`}>
+      <TTSSpeakerButton
+          isEnabled={isTTSEnabled}
+          isSpeaking={isSpeaking}
+         
+          onToggle={() => setIsTTSEnabled(prev => !prev)}
+        />
+     </View>
       <ImageBackground
         source={require('../../../../assets/ribbons/makeit.png')}
-        style={tw`relative flex-1`}
+        style={tw`relative mt-5 flex-1`}
       >
         <MakeItHeader
           completedSteps={completedSteps}
@@ -318,6 +326,8 @@ export default function MakeItScreen({
           mealId={mealId}
           frameworkId={id}
         />
+        
+       
 
         <Image
           style={[
@@ -385,8 +395,10 @@ export default function MakeItScreen({
         data={MAKETUTORIAL}
         isFirst={isFirstMakeSession}
         setIsFirst={(value: boolean) => {
+          const wasShowing = isFirstMakeSession;
           setIsFirstMakeSession(value);
-          if (!value) {
+          // Only show ingredients modal if user just closed the tutorial
+          if (wasShowing && !value) {
             setIngredientsModalVisible(true);
           }
         }}

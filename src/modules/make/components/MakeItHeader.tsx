@@ -50,24 +50,23 @@ export default function MakeItHeader({
       <SafeAreaView
         style={tw`pb-6.5 absolute left-0 right-0 z-20 flex-row items-end justify-between gap-3 px-5 pt-5`}
       >
-        {/* <View style={tw`w-5`} /> */}
-
         {title && (
           <Animated.Text
             style={[
               tw.style(
                 subheadLargeUppercase,
-                'grow text-center leading-5 text-white',
+                'flex-1 text-center leading-5 text-white',
               ),
             ]}
             numberOfLines={1}
+            ellipsizeMode="tail"
           >
             {title}
           </Animated.Text>
         )}
 
         <Pressable
-          style={tw`flex h-5 w-5 items-center justify-center`}
+          style={tw`flex h-5 w-5 flex-shrink-0 items-center justify-center`}
           onPress={() => {
             onClose();
             // setIsIncompleteModalVisible(true);
