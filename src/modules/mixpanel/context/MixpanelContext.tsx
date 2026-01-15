@@ -17,12 +17,18 @@ const MixPanelContext = React.createContext<[Mixpanel | undefined]>([
 ]);
 
 const MixPanelContextProvider: React.FC<Props> = ({ children }) => {
-  const { data: user } = useGetCurrentUserQuery(undefined, {
+  const { data: user, error: userError } = useGetCurrentUserQuery(undefined, {
     refetchOnMountOrArgChange: true,
+    // Don't retry on error to prevent crash loops
+    refetchOnReconnect: false,
   });
-  const { data: stats } = useGetStatsQuery();
+  const { data: stats } = useGetStatsQuery(undefined, {
+    skip: !user, // Only fetch stats if user is loaded
+  });
 
-  const { data: userOnboarding } = useGetUserOnboardingQuery();
+  const { data: userOnboarding } = useGetUserOnboardingQuery(undefined, {
+    skip: !user, // Only fetch onboarding if user is loaded
+  });
 
   const mixPanelRef = useRef<Mixpanel | undefined>(undefined);
   const env = useEnvironment();
@@ -41,40 +47,45 @@ const MixPanelContextProvider: React.FC<Props> = ({ children }) => {
     user_id: string | null,
     userProperties?: User | null,
   ) => {
-    // Mixpanel
-    if (user_id && userProperties) {
-      mixPanelRef.current?.identify(user_id);
-      mixPanelRef.current?.getPeople().set({
-        $name: userProperties.first_name,
-        $first_name: userProperties.first_name,
-        $email: userProperties.email,
-        has_logged_into_saveful_app: true,
-        email_verified: userProperties.email_verified,
-        id: userProperties.id,
-        last_name: userProperties.last_name,
-        phone_number: userProperties.phone_number,
-        completed_onboarding: !!userOnboarding,
-        account_status: 'active',
-        app_joined_at: unixTimestampToDate(userProperties.app_joined_at),
-      });
-      if (stats) {
+    try {
+      // Mixpanel
+      if (user_id && userProperties && mixPanelRef.current) {
+        mixPanelRef.current?.identify(user_id);
         mixPanelRef.current?.getPeople().set({
-          total_cooked: stats?.completed_meals_count ?? 0,
-          total_cost_savings: `$${stats?.total_cost_savings ?? 0}`,
-          best_co2_savings:
-            `${Number(stats?.best_co2_savings ?? 0).toFixed(1)}kg`,
-          best_cost_savings: `$${stats?.best_cost_savings ?? 0}` ,
-          best_food_savings:
-            `${Number(stats?.best_food_savings ?? 0).toFixed(1)}kg`,
-          food_savings_user:
-            `${Number(stats?.food_savings_user ?? 0).toFixed(1)}kg`,
-          total_co2_savings:
-            `${Number(stats?.total_co2_savings ?? 0).toFixed(1)}kg` ,
-          food_savings_all_users:
-            `${Number(stats?.food_savings_all_users ?? 0).toFixed(1)}kg` ,
-          total_cost_savings_value: Number(stats?.total_cost_savings ?? 0),
+          $name: userProperties.first_name,
+          $first_name: userProperties.first_name,
+          $email: userProperties.email,
+          has_logged_into_saveful_app: true,
+          email_verified: userProperties.email_verified,
+          id: userProperties.id,
+          last_name: userProperties.last_name,
+          phone_number: userProperties.phone_number,
+          completed_onboarding: !!userOnboarding,
+          account_status: 'active',
+          app_joined_at: unixTimestampToDate(userProperties.app_joined_at),
         });
+        if (stats) {
+          mixPanelRef.current?.getPeople().set({
+            total_cooked: stats?.completed_meals_count ?? 0,
+            total_cost_savings: `$${stats?.total_cost_savings ?? 0}`,
+            best_co2_savings:
+              `${Number(stats?.best_co2_savings ?? 0).toFixed(1)}kg`,
+            best_cost_savings: `$${stats?.best_cost_savings ?? 0}` ,
+            best_food_savings:
+              `${Number(stats?.best_food_savings ?? 0).toFixed(1)}kg`,
+            food_savings_user:
+              `${Number(stats?.food_savings_user ?? 0).toFixed(1)}kg`,
+            total_co2_savings:
+              `${Number(stats?.total_co2_savings ?? 0).toFixed(1)}kg` ,
+            food_savings_all_users:
+              `${Number(stats?.food_savings_all_users ?? 0).toFixed(1)}kg` ,
+            total_cost_savings_value: Number(stats?.total_cost_savings ?? 0),
+          });
+        }
       }
+    } catch (error) {
+      console.error('Failed to set Mixpanel user properties (non-critical):', error);
+      // Don't crash the app if Mixpanel fails
     }
   };
 
@@ -83,16 +94,27 @@ const MixPanelContextProvider: React.FC<Props> = ({ children }) => {
   // };
 
   useEffect(() => {
-    const token = env?.configuration?.mixpanelToken; // 👈 safe access
-  if (token) {
-    console.debug('Initialising MixPanel for env', env.environment);
+    try {
+      const token = env?.configuration?.mixpanelToken;
+      if (token) {
+        console.debug('Initialising MixPanel for env', env.environment);
+        mixPanelRef.current = new Mixpanel(token, trackAutomaticEvents);
+        void mixPanelRef.current.init();
+      } else {
+        console.debug('MixPanel not configured for env', env.environment);
+      }
+    } catch (error) {
+      console.error('Failed to initialize Mixpanel (non-critical):', error);
+      // Don't crash the app if Mixpanel fails
+    }
+  }, [env?.configuration?.mixpanelToken, env?.environment]);
 
-    mixPanelRef.current = new Mixpanel(token, trackAutomaticEvents);
-    void mixPanelRef.current.init();
-  } else {
-    console.debug('MixPanel not configured for env', env.environment);
-  }
-}, [env?.configuration?.mixpanelToken, env?.environment]);
+  // Log user fetch errors
+  useEffect(() => {
+    if (userError) {
+      console.warn('Failed to load user in MixpanelContext (non-critical):', userError);
+    }
+  }, [userError]);
 
   useEffect(() => {
     if (user) {

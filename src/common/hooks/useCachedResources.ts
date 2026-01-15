@@ -13,27 +13,55 @@ export default function useCachedResources() {
   useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
-        // Load fonts
-        await Font.loadAsync({
-          'Saveful-Bold': require('../../../assets/fonts/Saveful-Bold.otf'),
-          'Saveful-BoldItalic': require('../../../assets/fonts/Saveful-BoldItalic.otf'),
-          'Saveful-Italic': require('../../../assets/fonts/Saveful-Italic.otf'),
-          'Saveful-Regular': require('../../../assets/fonts/Saveful-Regular.otf'),
-          'Saveful-SemiBold': require('../../../assets/fonts/Saveful-SemiBold.otf'),
-          'Saveful-SemiBoldItalic': require('../../../assets/fonts/Saveful-SemiBoldItalic.otf'),
-        });
+        // Load fonts with error handling
+        try {
+          await Font.loadAsync({
+            'Saveful-Bold': require('../../../assets/fonts/Saveful-Bold.otf'),
+            'Saveful-BoldItalic': require('../../../assets/fonts/Saveful-BoldItalic.otf'),
+            'Saveful-Italic': require('../../../assets/fonts/Saveful-Italic.otf'),
+            'Saveful-Regular': require('../../../assets/fonts/Saveful-Regular.otf'),
+            'Saveful-SemiBold': require('../../../assets/fonts/Saveful-SemiBold.otf'),
+            'Saveful-SemiBoldItalic': require('../../../assets/fonts/Saveful-SemiBoldItalic.otf'),
+          });
+        } catch (fontError) {
+          console.error('Failed to load fonts:', fontError);
+          // Continue even if fonts fail - app can still work with system fonts
+        }
 
-        await EnvironmentManager.shared.initialize();
-        // await DeviceSettingsManager.shared.initialize();
-        await TokenManager.shared.initialize();
+        // Initialize environment manager
+        try {
+          await EnvironmentManager.shared.initialize();
+        } catch (envError) {
+          console.error('Failed to initialize EnvironmentManager:', envError);
+          // Continue - will use default environment
+        }
 
-        await store.dispatch(loadFeatureFlags());
+        // Initialize token manager
+        try {
+          await TokenManager.shared.initialize();
+        } catch (tokenError) {
+          console.error('Failed to initialize TokenManager:', tokenError);
+          // Continue - token manager is not critical for app startup
+        }
 
-        // // Load session data
-        await store.dispatch(loadSessionData());
+        // Load feature flags
+        try {
+          await store.dispatch(loadFeatureFlags());
+        } catch (flagsError) {
+          console.error('Failed to load feature flags:', flagsError);
+          // Continue - feature flags are not critical
+        }
+
+        // Load session data
+        try {
+          await store.dispatch(loadSessionData());
+        } catch (sessionError) {
+          console.error('Failed to load session data:', sessionError);
+          // Continue - user will just need to login again
+        }
       } catch (e) {
         // We might want to provide this error information to an error reporting service
-        console.warn(e);
+        console.warn('Error during resource loading:', e);
       } finally {
         setLoadingComplete(true);
       }

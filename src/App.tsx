@@ -31,6 +31,7 @@ import OtherLaunchTasksHandler from './common/providers/OtherLaunchTasksHandler'
 import { MixPanelContextProvider } from './modules/mixpanel/context/MixpanelContext';
 import { NotificationsProvider } from './modules/notifications/context/NotificationsContext';
 import { BadgeNotificationProvider } from './modules/badges/context/BadgeNotificationContext';
+import ErrorBoundary from './common/components/ErrorBoundary';
 import { View, Text } from 'react-native';
 
 export default function App() {
@@ -45,30 +46,32 @@ export default function App() {
   }
 
   return (
-    <Provider store={store}>
-      <CurrentRouteProvider>
-        <EnvironmentProvider>
-          <MixPanelContextProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <BottomSheetModalProvider>
-                <ActionSheetProvider>
-                  <PortalProvider>
-                    <NotificationsProvider>
-                      <BadgeNotificationProvider>
-                        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-                          <OtherLaunchTasksHandler />
-                          <AppNavigation />
-                          {/* <View><Text> Hello</Text></View> */}
-                        </SafeAreaProvider>
-                      </BadgeNotificationProvider>
-                    </NotificationsProvider>
-                  </PortalProvider>
-                </ActionSheetProvider>
-              </BottomSheetModalProvider>
-            </GestureHandlerRootView>
-          </MixPanelContextProvider>
-        </EnvironmentProvider>
-      </CurrentRouteProvider>
-    </Provider>
+    <ErrorBoundary>
+      <Provider store={store}>
+        <CurrentRouteProvider>
+          <EnvironmentProvider>
+            <MixPanelContextProvider>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <BottomSheetModalProvider>
+                  <ActionSheetProvider>
+                    <PortalProvider>
+                      <NotificationsProvider>
+                        <BadgeNotificationProvider>
+                          <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+                            <OtherLaunchTasksHandler />
+                            <AppNavigation />
+                            {/* <View><Text> Hello</Text></View> */}
+                          </SafeAreaProvider>
+                        </BadgeNotificationProvider>
+                      </NotificationsProvider>
+                    </PortalProvider>
+                  </ActionSheetProvider>
+                </BottomSheetModalProvider>
+              </GestureHandlerRootView>
+            </MixPanelContextProvider>
+          </EnvironmentProvider>
+        </CurrentRouteProvider>
+      </Provider>
+    </ErrorBoundary>
   );
 }

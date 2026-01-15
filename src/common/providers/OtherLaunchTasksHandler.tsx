@@ -8,36 +8,70 @@ import { OneSignal } from 'react-native-onesignal';
 export default function OtherLaunchTasksHandler() {
   const { sendAnalyticsUserID } = useAnalytics();
 
-  const { data: currentUser } = useGetCurrentUserQuery();
+  // Wrap in try-catch to prevent crashes if user query fails
+  const { data: currentUser, error: userError } = useGetCurrentUserQuery(
+    undefined,
+    { 
+      skip: false,
+      // Don't retry on error to prevent crash loops
+      refetchOnMountOrArgChange: false,
+      refetchOnReconnect: false,
+    }
+  );
   const [sendOneSignalPayload] = useSendOneSignalPayloadMutation();
+
+  // Log if user query fails
+  React.useEffect(() => {
+    if (userError) {
+      console.warn('Failed to load current user in OtherLaunchTasksHandler:', userError);
+    }
+  }, [userError]);
 
   React.useEffect(() => {
     const sendUserInfoToServer = async () => {
-      if (currentUser) {
-        // Initialize OneSignal with user information
-        OneSignal.login(currentUser.id);
-        OneSignal.User.addEmail(currentUser.email);
-        OneSignal.User.addTag('first_name', currentUser.first_name);
+      if (!currentUser) {
+        return;
+      }
 
-        // Retrieve OneSignal detail
-        const oneSignalId = await OneSignal.User.getOnesignalId();
-
-        // Send one signal detail to backend
-        const serverPayload: OneSignalPayload = {
-          notification_settings: {
+      try {
+        // Wrap analytics in try-catch
+        try {
+          sendAnalyticsUserID(currentUser.id, {
             id: currentUser.id,
             email: currentUser.email,
-            firstName: currentUser.first_name,
-            oneSignalId,
-          },
-        };
+          });
+        } catch (analyticsError) {
+          console.warn('Analytics initialization failed (non-critical):', analyticsError);
+        }
 
-        await sendOneSignalPayload(serverPayload);
+        // Disable OneSignal integration to prevent production crashes
+        console.log('OneSignal integration disabled in production build');
+        
+        // // Initialize OneSignal with user information
+        // try {
+        //   OneSignal.login(currentUser.id);
+        //   OneSignal.User.addEmail(currentUser.email);
+        //   OneSignal.User.addTag('first_name', currentUser.first_name);
 
-        sendAnalyticsUserID(currentUser.id, {
-          id: currentUser.id,
-          email: currentUser.email,
-        });
+        //   // Retrieve OneSignal detail
+        //   const oneSignalId = await OneSignal.User.getOnesignalId();
+
+        //   // Send one signal detail to backend
+        //   const serverPayload: OneSignalPayload = {
+        //     notification_settings: {
+        //       id: currentUser.id,
+        //       email: currentUser.email,
+        //       firstName: currentUser.first_name,
+        //       oneSignalId,
+        //     },
+        //   };
+
+        //   await sendOneSignalPayload(serverPayload);
+        // } catch (oneSignalError) {
+        //   console.warn('OneSignal setup failed (non-critical):', oneSignalError);
+        // }
+      } catch (error) {
+        console.error('Error in OtherLaunchTasksHandler:', error);
       }
     };
 

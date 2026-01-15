@@ -55,13 +55,12 @@ export default function ProfileScreen() {
   const { sendAnalyticsEvent } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
 
-  // Get recently cooked recipes from API - map to minimal structure MealCard needs
   const recentlyCooked = recentCooked.map(rc => ({
     id: rc.id,
     title: rc.title,
     heroImage: [{ url: rc.heroImageUrl || '' }],
     variantTags: [],
-  })) as any; // MealCarousel expects IFramework but only uses these fields
+  })) as any;
 
   return (
     <View style={tw`flex-1 bg-creme`}>

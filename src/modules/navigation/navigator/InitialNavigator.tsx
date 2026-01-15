@@ -62,13 +62,25 @@ function InitialNavigator() {
   const dispatch = useAppDispatch();
   const navigation = useNavigation<NavigationProp<InitialStackParamList>>();
 
-  const { data: currentUser, isLoading: isUserLoading, refetch } = useGetCurrentUserQuery(
+  const { data: currentUser, isLoading: isUserLoading, error: userError, refetch } = useGetCurrentUserQuery(
     undefined,
     { 
       skip: !accessToken,
       refetchOnMountOrArgChange: true,
     }
   );
+
+  // Log user fetch errors but don't crash
+  useEffect(() => {
+    if (userError) {
+      console.error('Failed to fetch current user:', userError);
+      // If user fetch fails, clear session and redirect to auth
+      if (accessToken) {
+        console.log('Clearing invalid session...');
+        dispatch(clearSessionData());
+      }
+    }
+  }, [userError, accessToken, dispatch]);
   const { data: userOnboarding } = useGetUserOnboardingQuery(
     undefined,
     {

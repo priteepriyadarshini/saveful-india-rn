@@ -54,7 +54,12 @@ export default function SettingsNotificationsScreen() {
   const handleNotificationsPreferenceChanged = (value: boolean) => {
     setNotificationsPreference(value);
 
-    OneSignal.Notifications.requestPermission(value);
+    // Wrap OneSignal call in try-catch to prevent production crashes
+    try {
+      OneSignal.Notifications.requestPermission(value);
+    } catch (error) {
+      console.warn('OneSignal requestPermission failed (non-critical):', error);
+    }
   };
 
   return (

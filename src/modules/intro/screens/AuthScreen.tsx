@@ -64,37 +64,54 @@ export default function AuthScreen() {
       console.log('Auth response:', result);
 
       if (result.success && result.accessToken) {
+        console.log('✅ Auth successful, saving session...');
         // Save session data
         const sessionData = {
           access_token: result.accessToken,
           refresh_token: result.refreshToken,
         };
         await dispatch(saveSessionData(sessionData));
+        console.log('✅ Session saved');
 
-        // Load user data
-        const user = await loadCurrentUser({
-          accessToken: result.accessToken,
-        }).unwrap();
+        // Load user data - make this optional to prevent crash
+        try {
+          console.log('📡 Fetching user data from /api/auth/me...');
+          const user = await loadCurrentUser({
+            accessToken: result.accessToken,
+          }).unwrap();
+          console.log('✅ User data received:', user);
 
-        if (user) {
-          // Initialize analytics
-          sendAliasUserID(user.id);
-          sendAnalyticsUserID(user.id, {
-            id: user.id,
-            first_name: user.first_name || name,
-            email: user.email,
-          });
+          if (user) {
+            // Initialize analytics
+            try {
+              sendAliasUserID(user.id);
+              sendAnalyticsUserID(user.id, {
+                id: user.id,
+                first_name: user.first_name || name,
+                email: user.email,
+              });
+            } catch (analyticsError) {
+              console.log('Analytics error (non-critical):', analyticsError);
+            }
 
-          // Initialize push notifications (disabled for now due to native module issues)
-          try {
-            console.log('OneSignal integration disabled in development - authentication proceeding normally');
-            // TokenManager.shared.identifyUser(user);
-            // OneSignal setup disabled to prevent blocking authentication
-          } catch (error) {
-            console.log('OneSignal error handled:', error);
+            console.log('✅ Authentication completed successfully');
           }
-
-          console.log('Authentication completed successfully, user should be navigated to next screen');
+        } catch (userError: any) {
+          console.error('❌ Failed to load user data:', userError);
+          console.error('Error details:', {
+            status: userError.status,
+            data: userError.data,
+            message: userError.message
+          });
+          
+          // Don't block login if user data fetch fails
+          // The session is already saved, so user should still be logged in
+          console.log('⚠️ Continuing with login despite user data fetch failure');
+          Alert.alert(
+            'Notice',
+            'Login successful! Some profile data may be unavailable.',
+            [{ text: 'OK' }]
+          );
         }
       }
     } catch (error: any) {

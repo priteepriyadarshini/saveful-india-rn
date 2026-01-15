@@ -43,15 +43,22 @@ function AppNavigation() {
 
         if (Platform.OS !== 'web' && initialUrl === null) {
           // Only restore state if there's no deep link and we're not on web
-          const savedStateString = await AsyncStorage.getItem(PERSISTENCE_KEY);
-          const state = savedStateString
-            ? JSON.parse(savedStateString)
-            : undefined;
+          try {
+            const savedStateString = await AsyncStorage.getItem(PERSISTENCE_KEY);
+            const state = savedStateString
+              ? JSON.parse(savedStateString)
+              : undefined;
 
-          if (state !== undefined) {
-            setInitialState(state);
+            if (state !== undefined) {
+              setInitialState(state);
+            }
+          } catch (storageError) {
+            console.warn('Failed to restore navigation state (non-critical):', storageError);
+            // Don't crash if navigation state is corrupted
           }
         }
+      } catch (error) {
+        console.error('Failed to get initial URL (non-critical):', error);
       } finally {
         setIsReady(true);
       }
@@ -75,22 +82,35 @@ function AppNavigation() {
         routeNameRef.current = navigationRef?.getCurrentRoute()?.name;
       }}
       onStateChange={state => {
-        const currentRouteName = navigationRef?.getCurrentRoute()?.name;
+        try {
+          const currentRouteName = navigationRef?.getCurrentRoute()?.name;
 
-        if (
-          currentRouteName !== currentRoute &&
-          automaticallyTrackRouteName(currentRouteName)
-        ) {
-          sendScreenEvent(mixpanelEventName.screenLoaded, {
-            action: `${routeNameToScreenTrackingName(
-              currentRouteName,
-            )} Visited`,
-          });
+          if (
+            currentRouteName !== currentRoute &&
+            automaticallyTrackRouteName(currentRouteName)
+          ) {
+            try {
+              sendScreenEvent(mixpanelEventName.screenLoaded, {
+                action: `${routeNameToScreenTrackingName(
+                  currentRouteName,
+                )} Visited`,
+              });
+            } catch (analyticsError) {
+              console.warn('Analytics tracking failed (non-critical):', analyticsError);
+            }
+          }
+          setCurrentRoute(currentRouteName || '');
+          updateCurrentRoute(currentRouteName || '');
+
+          // Save navigation state with error handling
+          try {
+            AsyncStorage.setItem(PERSISTENCE_KEY, JSON.stringify(state));
+          } catch (storageError) {
+            console.warn('Failed to save navigation state (non-critical):', storageError);
+          }
+        } catch (error) {
+          console.error('Navigation state change error (non-critical):', error);
         }
-        setCurrentRoute(currentRouteName || '');
-        updateCurrentRoute(currentRouteName || '');
-
-        AsyncStorage.setItem(PERSISTENCE_KEY, JSON.stringify(state));
       }}
     >
       <GlobalEvents routeName={currentRoute} />

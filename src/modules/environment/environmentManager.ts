@@ -159,7 +159,9 @@ class EnvironmentManager extends SimpleEventEmitter {
   };
 
   getUseBundledContent = () => {
-    return this.useBundledContent || false;
+    // ALWAYS use bundled content to avoid Craft CMS API calls
+    return true;
+    // return this.useBundledContent || false;
   };
 
   isProduction = () => {
