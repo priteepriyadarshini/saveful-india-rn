@@ -180,7 +180,8 @@ export default function TrackPostMakeCarousel({
       if (!feedback) {
         try {
           const ingredientIds = (selectedIngredients || []).map((i) => i.id);
-          await saveFoodAnalytics({ ingredientIds, frameworkId: framework.id }).unwrap();
+          const ingredients = (selectedIngredients || []).map((i) => ({ name: i.title, averageWeight: i.averageWeight }));
+          await saveFoodAnalytics({ ingredientIds, frameworkId: framework.id, ingredients }).unwrap();
         } catch (e) {
           // Non-blocking: continue even if analytics call fails
         }

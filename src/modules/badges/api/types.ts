@@ -58,6 +58,7 @@ export interface LeaderboardEntry {
   badgeCount: number;
   mealsCooked: number;
   foodSavedGrams: number;
+  totalMoneySaved?: number;
   rank?: number;
 }
 

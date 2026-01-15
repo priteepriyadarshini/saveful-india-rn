@@ -6,9 +6,14 @@ import { cardDrop } from '../../../theme/shadow';
 import { subheadMediumUppercase } from '../../../theme/typography';
 import ChartContent from './ChartContent';
 import { useGetStatsQuery } from '../api/api';
+import { useGetCurrentUserQuery } from '../../auth/api';
+import { getCurrencySymbol } from '../../../common/utils/currency';
 
 export default function TrackTabChart() {
   const { data: stats } = useGetStatsQuery();
+  const { data: user } = useGetCurrentUserQuery();
+
+  const currencySymbol = getCurrencySymbol(user?.country);
 
   // MOCK DATA
   // const stats = {
@@ -31,7 +36,7 @@ export default function TrackTabChart() {
     {
       name: 'money',
       heading: 'you’ve potentially saved',
-      value: `$${stats?.total_cost_savings}`,
+      value: `${currencySymbol}${Number(stats?.total_cost_savings ?? 0).toFixed(2)}`,
       description: `by cooking ${stats?.completed_meals_count} saveful meals`,
       image: {
         uri: require('../../../../assets/track/money.png'),

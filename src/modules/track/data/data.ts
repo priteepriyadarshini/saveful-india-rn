@@ -418,6 +418,7 @@ export const WEEKLYSURVEY = ({
   co2Savings = '0',
   costSavings = '0',
   foodSaved = '0',
+  currencySymbol = '$',
 }: {
   co2Savings: string;
   co2SavingsPersonalBest?: string | null;
@@ -425,6 +426,7 @@ export const WEEKLYSURVEY = ({
   costSavingsPersonalBest?: string | null;
   foodSaved: string;
   foodSavedPersonalBest?: string | null;
+  currencySymbol?: string;
 }) => [
   {
     id: 0,
@@ -453,7 +455,7 @@ export const WEEKLYSURVEY = ({
       costSavings && costSavings.length > 0 && costSavings?.charAt(0) === '-'
         ? 'more'
         : 'less',
-    value: `$${foodSaved ? costSavings?.replace(/-/g, '') : '0'}`,
+    value: `${currencySymbol}${foodSaved ? costSavings?.replace(/-/g, '') : '0'}`,
     output: `potential ${
       costSavings && costSavings.length > 0 && costSavings?.charAt(0) === '-'
         ? 'cost'

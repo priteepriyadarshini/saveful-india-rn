@@ -47,6 +47,7 @@ export default function SplashPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFAF3', // Match splash screen background color
   },
   image: {
     width: '100%',

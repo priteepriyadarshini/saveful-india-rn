@@ -7,7 +7,7 @@ import tw from '../../../common/tailwind';
 import { IChallenge } from '../../../models/craft';
 import { mixpanelEventName } from '../../analytics/analytics';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
-import { useGetCookedRecipesQuery } from '../../analytics/api/api';
+import { useGetCookedRecipesQuery, useSaveFoodAnalyticsMutation } from '../../analytics/api/api';
 import { 
   useGetUserChallengeQuery,
   useUpdateUserChallengeMutation,
@@ -74,6 +74,9 @@ export default function MakeItSurveyModal({
   const [createFeedback, { isLoading: isCreateFeedbackLoading }] =
     useCreateFeedbackMutation();
 
+  // Save food analytics (AI price calculation)
+  const [saveFoodAnalytics, { isLoading: isSavingAnalytics }] = useSaveFoodAnalyticsMutation();
+
   // Update user challenge with cooks and food saved
   const { getChallenges } = useContent();
   const [challenge, setChallenge] = useState<IChallenge>();
@@ -113,11 +116,21 @@ export default function MakeItSurveyModal({
   }, []);
 
   const onStartCooking = async () => {
-    if (isCreateFeedbackLoading) {
+    if (isCreateFeedbackLoading || isSavingAnalytics) {
       return;
     }
 
     try {
+      // Call analytics endpoint FIRST to calculate and save money based on selected ingredients
+      if (preExistingIngredients.length > 0) {
+        const ingredientIds = preExistingIngredients.map(i => i.id);
+        const ingredients = preExistingIngredients.map(i => ({ name: i.title, averageWeight: i.averageWeight }));
+        
+        console.log('[MakeItSurveyModal] Calling saveFoodAnalytics with:', { ingredientIds, ingredients, frameworkId });
+        await saveFoodAnalytics({ ingredientIds, frameworkId, ingredients }).unwrap();
+        console.log('[MakeItSurveyModal] Analytics saved successfully');
+      }
+
       // Do not create feedback at start to avoid duplicate analytics.
       // Feedback (and food saved) is recorded on completion in MakeItCarousel.
 
@@ -255,8 +268,8 @@ export default function MakeItSurveyModal({
 
             <SecondaryButton
               onPress={onStartCooking}
-              // Meals update is removed; show only feedback loading
-              loading={isCreateFeedbackLoading}
+              // Show loading state while saving analytics or feedback
+              loading={isCreateFeedbackLoading || isSavingAnalytics}
             >
               Next
             </SecondaryButton>

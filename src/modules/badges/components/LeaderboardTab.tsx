@@ -126,42 +126,55 @@ export default function LeaderboardTab() {
           </View>
 
           {/* Stats Pills */}
-          <View style={tw`mt-4 flex-row items-center justify-around`}>
+          <View style={tw`mt-4 flex-row flex-wrap gap-2`}>
             {/* Meals Cooked */}
-            <View style={tw`flex-1 items-center`}>
-              <View style={tw`mb-1.5 flex-row items-center rounded-full bg-white px-3 py-2 shadow-sm`}>
-                <Ionicons name="restaurant" size={14} color={tw.color('eggplant-vibrant') || '#7E42FF'} />
-                <Text style={tw.style(bodySmallBold, 'ml-1.5 text-eggplant')}>
+            <View style={tw`flex-1 min-w-[22%] items-center`}>
+              <View style={tw`mb-1.5 flex-row items-center rounded-full bg-white px-2.5 py-1.5 shadow-sm`}>
+                <Ionicons name="restaurant" size={13} color={tw.color('eggplant-vibrant') || '#7E42FF'} />
+                <Text style={tw.style(bodySmallBold, 'ml-1 text-eggplant text-xs')}>
                   {item.mealsCooked || 0}
                 </Text>
               </View>
-              <Text style={tw.style(subheadSmallUppercase, 'text-stone')}>
+              <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[9px]')}>
                 Meals
               </Text>
             </View>
 
             {/* Food Saved */}
-            <View style={tw`flex-1 items-center`}>
-              <View style={tw`mb-1.5 flex-row items-center rounded-full bg-white px-3 py-2 shadow-sm`}>
-                <Ionicons name="leaf" size={14} color={tw.color('kale') || '#3A7E52'} />
-                <Text style={tw.style(bodySmallBold, 'ml-1.5 text-kale')}>
-                  {foodSavedKg} kg
+            <View style={tw`flex-1 min-w-[22%] items-center`}>
+              <View style={tw`mb-1.5 flex-row items-center rounded-full bg-white px-2.5 py-1.5 shadow-sm`}>
+                <Ionicons name="leaf" size={13} color={tw.color('kale') || '#3A7E52'} />
+                <Text style={tw.style(bodySmallBold, 'ml-1 text-kale text-xs')}>
+                  {foodSavedKg}
                 </Text>
               </View>
-              <Text style={tw.style(subheadSmallUppercase, 'text-stone')}>
+              <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[9px]')}>
                 Saved
               </Text>
             </View>
 
+            {/* Money Saved */}
+            <View style={tw`flex-1 min-w-[22%] items-center`}>
+              <View style={tw`mb-1.5 flex-row items-center rounded-full bg-white px-2.5 py-1.5 shadow-sm`}>
+                <Ionicons name="cash" size={13} color={tw.color('orange') || '#F99C46'} />
+                <Text style={tw.style(bodySmallBold, 'ml-1 text-orange text-xs')}>
+                  ₹{(item.totalMoneySaved || 0).toFixed(0)}
+                </Text>
+              </View>
+              <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[9px]')}>
+                Money
+              </Text>
+            </View>
+
             {/* Badge Count */}
-            <View style={tw`flex-1 items-center`}>
-              <View style={tw`mb-1.5 flex-row items-center rounded-full bg-white px-3 py-2 shadow-sm`}>
-                <Ionicons name="ribbon" size={14} color={tw.color('orange') || '#F99C46'} />
-                <Text style={tw.style(bodySmallBold, 'ml-1.5 text-orange')}>
+            <View style={tw`flex-1 min-w-[22%] items-center`}>
+              <View style={tw`mb-1.5 flex-row items-center rounded-full bg-white px-2.5 py-1.5 shadow-sm`}>
+                <Ionicons name="ribbon" size={13} color={tw.color('eggplant-light') || '#9D6FFF'} />
+                <Text style={tw.style(bodySmallBold, 'ml-1 text-eggplant text-xs')}>
                   {item.badgeCount || 0}
                 </Text>
               </View>
-              <Text style={tw.style(subheadSmallUppercase, 'text-stone')}>
+              <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[9px]')}>
                 Badges
               </Text>
             </View>

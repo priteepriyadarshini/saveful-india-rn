@@ -9,7 +9,7 @@ const analyticsApi = api
   endpoints: (builder) => ({
     saveFoodAnalytics: builder.mutation<
       { success: boolean; foodsaved: number },
-      { ingredientIds: string[]; frameworkId?: string }
+      { ingredientIds: string[]; frameworkId?: string; ingredients?: { name: string; averageWeight: number }[] }
     >({
       query: (params) => ({
         url: '/api/analytics',
@@ -17,6 +17,7 @@ const analyticsApi = api
         body: {
           ingredinatsIds: params.ingredientIds,
           frameworkId: params.frameworkId,
+          ingredients: params.ingredients,
         },
       }),
       invalidatesTags: ['Analytics'],

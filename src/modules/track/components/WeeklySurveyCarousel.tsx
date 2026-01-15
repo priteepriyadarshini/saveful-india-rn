@@ -29,6 +29,8 @@ import {
 } from '../../../theme/typography';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SurveyStackParamList } from '../navigation/SurveyNavigator';
+import { useGetCurrentUserQuery } from '../../auth/api';
+import { getCurrencySymbol } from '../../../common/utils/currency';
 
 interface RenderItemProps {
   id: number;
@@ -169,6 +171,8 @@ export default function WeeklySurveyCarousel() {
 
   const { data: userSurveys } = useGetUserTrackSurveysQuery();
   const { data: eligibilityData } = useGetUserTrackSurveyEligibilityQuery();
+  const { data: user } = useGetCurrentUserQuery();
+  const currencySymbol = getCurrencySymbol(user?.country);
 
   const [currentIndex, setCurrentIndex] = React.useState<number>(0);
 
@@ -219,6 +223,7 @@ export default function WeeklySurveyCarousel() {
     co2Savings: userSurveys[0].co2_savings.toString(),
     costSavings: userSurveys[0].cost_savings.toString(),
     foodSaved: userSurveys[0].food_saved.toString(),
+    currencySymbol,
   });
 
   const isEligible = eligibilityData.eligible;
