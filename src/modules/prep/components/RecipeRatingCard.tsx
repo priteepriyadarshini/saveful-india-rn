@@ -85,7 +85,7 @@ const RecipeRatingCard: React.FC<RecipeRatingCardProps> = ({
     >
       {/* Header */}
       <Text style={tw.style(h7TextStyle, 'text-center text-eggplant pb-3')}>
-        CARROT RATING
+        RECIPE RATING
       </Text>
       
       {hasRatings ? (

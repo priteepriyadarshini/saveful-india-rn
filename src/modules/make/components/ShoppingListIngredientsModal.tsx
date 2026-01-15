@@ -136,28 +136,28 @@ export default function ShoppingListIngredientsModal({
                     key={ingredient.id}
                     onPress={() => toggleIngredient(ingredient.id)}
                     style={tw.style(
-                      'flex-row items-start mb-3 p-3 rounded-2lg border',
-                      isSelected ? 'bg-eggplant-light bg-opacity-10 border-eggplant' : 'bg-white border-strokecream'
+                      'flex-row items-center mb-3 p-3.5 rounded-xl border',
+                      isSelected ? 'bg-eggplant-light bg-opacity-10 border-eggplant' : 'bg-creme border-strokecream'
                     )}
                   >
-                    {/* Checkbox */}
+                    {/* Checkbox - aligned properly */}
                     <View
                       style={tw.style(
-                        'h-6 w-6 rounded-md border-2 items-center justify-center mr-3 mt-0.5',
-                        isSelected ? 'bg-eggplant border-eggplant' : 'border-stone'
+                        'h-5 w-5 rounded-md border-2 items-center justify-center mr-3 flex-shrink-0',
+                        isSelected ? 'bg-eggplant border-eggplant' : 'bg-white border-stone'
                       )}
                     >
                       {isSelected && (
-                        <Ionicons name="checkmark" size={16} color="white" />
+                        <Ionicons name="checkmark-sharp" size={14} color="white" />
                       )}
                     </View>
 
                     {/* Ingredient Info */}
                     <View style={tw`flex-1`}>
-                      <Text style={tw.style(bodyMediumBold, isSelected && 'text-eggplant')}>
+                      <Text style={tw.style(bodyMediumBold, 'text-eggplant')}>
                         {ingredient.title}
                       </Text>
-                      <Text style={tw.style(bodyMediumRegular, 'text-stone mt-0.5')}>
+                      <Text style={tw.style(bodySmallRegular, 'text-stone mt-0.5')}>
                         {ingredient.quantity}
                         {ingredient.preparation && ` • ${ingredient.preparation}`}
                       </Text>
@@ -170,8 +170,8 @@ export default function ShoppingListIngredientsModal({
 
           {/* Success Message */}
           {successMessage && (
-            <View style={tw`absolute inset-0 bg-white bg-opacity-95 items-center justify-center rounded-2lg`}>
-              <View style={tw`items-center`}>
+            <View style={tw`absolute top-0 left-0 right-0 bottom-0 bg-white bg-opacity-95 items-center justify-center rounded-2lg z-50`}>
+              <View style={tw`items-center px-6`}>
                 <View style={tw`h-20 w-20 rounded-full bg-kale items-center justify-center mb-4`}>
                   <Ionicons name="checkmark" size={40} color="white" />
                 </View>

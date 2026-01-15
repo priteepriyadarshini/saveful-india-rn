@@ -5,6 +5,7 @@ import {
   ScrollView,
   Pressable,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -190,7 +191,11 @@ export default function ShoppingListScreen() {
         </View>
       ) : displayItems.length === 0 ? (
         <View style={tw`flex-1 items-center justify-center px-10`}>
-          <Ionicons name="cart-outline" size={80} color={tw.color('creme-2')} />
+          <Image
+            source={require('../../../../assets/carrot.png')}
+            style={tw`w-40 h-40 opacity-60`}
+            resizeMode="contain"
+          />
           <Text style={tw.style(bodyMediumBold, 'text-stone text-center mt-4')}>
             {isError 
               ? 'No items added yet'
