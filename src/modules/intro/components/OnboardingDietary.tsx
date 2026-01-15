@@ -97,11 +97,21 @@ export default function OnboardingDietary({
 
   // Load ingredients from backend API and normalize shape for this component
   const getIngredientsData = async () => {
-    if (apiIngredients && apiIngredients.length > 0) {
-      const normalized = apiIngredients.map((ing) => ({ id: (ing as any)._id, title: (ing as any).name }))
-        .sort((a, b) => a.title.localeCompare(b.title));
-      console.log('Loaded ingredients for allergies (api):', normalized.length);
-      setIngredients(normalized);
+    if (apiIngredients && Array.isArray(apiIngredients) && apiIngredients.length > 0) {
+      try {
+        const normalized = apiIngredients
+          .filter((ing) => ing && (ing as any)._id && (ing as any).name)
+          .map((ing) => ({ 
+            id: String((ing as any)._id), 
+            title: String((ing as any).name) 
+          }))
+          .sort((a, b) => a.title.localeCompare(b.title));
+        console.log('Loaded ingredients for allergies (api):', normalized.length);
+        setIngredients(normalized);
+      } catch (error) {
+        console.error('Error normalizing ingredients:', error);
+        setIngredients([]);
+      }
     }
   };
 
@@ -223,6 +233,7 @@ export default function OnboardingDietary({
         {allergies.length > 0 && (
           <View style={tw`flex-row flex-wrap gap-2`}>
             {allergies.map((allergyId) => {
+              if (!allergyId) return null;
               const ing = ingredients.find(ing => ing.id === allergyId);
               const label = ing?.title ?? allergyId;
               return (
@@ -276,7 +287,7 @@ export default function OnboardingDietary({
               iconRight="search"
             />
 
-            <ScrollView style={tw.style('mt-2.5')}>
+            <ScrollView style={tw.style('mt-2.5 max-h-96')}>
               <View style={tw`py-2.5`}>
                 {filteredIngredients.map(item => {
                   return (
