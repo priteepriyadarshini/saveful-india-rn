@@ -121,6 +121,7 @@ export default function CreateChallengeScreen() {
                 'rounded-lg border border-strokecream bg-white px-4 py-3 font-saveful text-base text-darkgray',
               )}
               placeholder="Enter challenge name"
+              placeholderTextColor="#999"
               value={challengeName}
               onChangeText={setChallengeName}
               maxLength={50}
@@ -137,6 +138,7 @@ export default function CreateChallengeScreen() {
                 'rounded-lg border border-strokecream bg-white px-4 py-3 font-saveful text-base text-darkgray',
               )}
               placeholder="Describe the challenge"
+              placeholderTextColor="#999"
               value={description}
               onChangeText={setDescription}
               multiline
@@ -164,6 +166,7 @@ export default function CreateChallengeScreen() {
                 'rounded-lg border border-strokecream bg-white px-4 py-3 font-saveful text-base text-darkgray',
               )}
               placeholder="e.g., 20"
+              placeholderTextColor="#999"
               value={challengeGoals}
               onChangeText={setChallengeGoals}
               keyboardType="numeric"

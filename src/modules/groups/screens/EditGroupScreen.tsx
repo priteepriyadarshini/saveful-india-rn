@@ -150,6 +150,7 @@ export default function EditGroupScreen() {
             <TextInput
               style={tw.style('rounded-xl border border-strokecream bg-white px-4 py-3 text-darkgray')}
               placeholder="Eg - The Edwards Family"
+              placeholderTextColor="#999"
               value={name}
               onChangeText={setName}
               maxLength={50}
@@ -162,6 +163,7 @@ export default function EditGroupScreen() {
             <TextInput
               style={tw.style('rounded-xl border border-strokecream bg-white px-4 py-3 text-darkgray')}
               placeholder="Tell us a little bit about your group"
+              placeholderTextColor="#999"
               value={description}
               onChangeText={setDescription}
               multiline

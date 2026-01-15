@@ -276,11 +276,24 @@ const currentUserApi = api
         invalidatesTags: ['CurrentUser'],
         transformResponse: (r: any): CurrentUser => {
           console.log('updateDietaryProfile response:', r);
+          const normalizedId = r?._id ?? r?.id;
           return {
-            id: r.id || '',
-            email: r.email || '',
-            first_name: r.name || '',
             ...r,
+            id: normalizedId as string,
+            email: r.email || '',
+            first_name: r.name || r.first_name || '',
+            name: r.name,
+            country: r.country,
+            stateCode: r.stateCode,
+            vegType: r.vegType ?? r.dietaryProfile?.vegType,
+            dairyFree: r.dairyFree ?? r.dietaryProfile?.dairyFree,
+            nutFree: r.nutFree ?? r.dietaryProfile?.nutFree,
+            glutenFree: r.glutenFree ?? r.dietaryProfile?.glutenFree,
+            hasDiabetes: r.hasDiabetes ?? r.dietaryProfile?.hasDiabetes,
+            otherAllergies: r.otherAllergies ?? r.dietaryProfile?.otherAllergies,
+            noOfAdults: r.noOfAdults ?? r.dietaryProfile?.noOfAdults,
+            noOfChildren: r.noOfChildren ?? r.dietaryProfile?.noOfChildren,
+            tastePreference: r.tastePreference ?? r.dietaryProfile?.tastePrefrence,
           } as CurrentUser;
         },
         async onQueryStarted(_, { dispatch, queryFulfilled }) {

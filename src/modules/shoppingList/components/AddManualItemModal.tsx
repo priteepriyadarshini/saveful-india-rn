@@ -96,8 +96,9 @@ export default function AddManualItemModal({
             <View style={tw`mb-4`}>
               <Text style={tw.style(bodyMediumBold, 'mb-2')}>Ingredient Name *</Text>
               <TextInput
-                style={tw.style(bodyMediumRegular, 'border-2 border-strokecream rounded-2lg px-4 py-3 bg-white')}
+                style={tw.style(bodyMediumRegular, 'border-2 border-strokecream rounded-2lg px-4 py-3 bg-white text-black')}
                 placeholder="e.g., Tomatoes, Onions, Rice"
+                placeholderTextColor="#999"
                 value={ingredientName}
                 onChangeText={setIngredientName}
                 autoCapitalize="words"
@@ -110,8 +111,9 @@ export default function AddManualItemModal({
               <View style={tw`flex-row gap-2`}>
                 <View style={tw`flex-1`}>
                   <TextInput
-                    style={tw.style(bodyMediumRegular, 'border-2 border-strokecream rounded-2lg px-4 py-3 bg-white')}
+                    style={tw.style(bodyMediumRegular, 'border-2 border-strokecream rounded-2lg px-4 py-3 bg-white text-black')}
                     placeholder="e.g., 500"
+                    placeholderTextColor="#999"
                     value={quantity}
                     onChangeText={setQuantity}
                     keyboardType="default"
@@ -119,8 +121,9 @@ export default function AddManualItemModal({
                 </View>
                 <View style={tw`w-[100px]`}>
                   <TextInput
-                    style={tw.style(bodyMediumRegular, 'border-2 border-strokecream rounded-2lg px-4 py-3 bg-white')}
+                    style={tw.style(bodyMediumRegular, 'border-2 border-strokecream rounded-2lg px-4 py-3 bg-white text-black')}
                     placeholder="Unit"
+                    placeholderTextColor="#999"
                     value={unit}
                     onChangeText={setUnit}
                   />
@@ -135,8 +138,9 @@ export default function AddManualItemModal({
             <View style={tw`mb-4`}>
               <Text style={tw.style(bodyMediumBold, 'mb-2')}>Notes (Optional)</Text>
               <TextInput
-                style={tw.style(bodyMediumRegular, 'border-2 border-strokecream rounded-2lg px-4 py-3 bg-white')}
+                style={tw.style(bodyMediumRegular, 'border-2 border-strokecream rounded-2lg px-4 py-3 bg-white text-black')}
                 placeholder="e.g., organic, ripe"
+                placeholderTextColor="#999"
                 value={notes}
                 onChangeText={setNotes}
                 multiline

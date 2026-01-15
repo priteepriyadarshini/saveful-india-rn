@@ -176,7 +176,7 @@ export default function AuthScreen() {
                     <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
                       <Feather name="user" size={18} color="#666" style={tw`mr-2.5`} />
                       <TextInput
-                        style={tw`flex-1 text-base`}
+                        style={tw`flex-1 text-base text-black`}
                         placeholder="Enter your full name"
                         placeholderTextColor="#999"
                         value={name}
@@ -195,7 +195,7 @@ export default function AuthScreen() {
                   <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
                     <Feather name="mail" size={18} color="#666" style={tw`mr-2.5`} />
                     <TextInput
-                      style={tw`flex-1 text-base`}
+                      style={tw`flex-1 text-base text-black`}
                       placeholder="your@email.com"
                       placeholderTextColor="#999"
                       value={email}
@@ -215,7 +215,7 @@ export default function AuthScreen() {
                   <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
                     <Feather name="lock" size={18} color="#666" style={tw`mr-2.5`} />
                     <TextInput
-                      style={tw`flex-1 text-base`}
+                      style={tw`flex-1 text-base text-black`}
                       placeholder="Enter your password"
                       placeholderTextColor="#999"
                       value={password}

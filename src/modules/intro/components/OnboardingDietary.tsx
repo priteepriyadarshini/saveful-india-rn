@@ -1,11 +1,12 @@
 import { Feather } from '@expo/vector-icons';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+// Using RN Modal for allergy picker to avoid BottomSheet issues
 import TextBoxInput from '../../../common/components/Form/TextBoxInput';
 import ToggleInput from '../../../common/components/Form/ToggleInput';
 import SavefulHaptics from '../../../common/helpers/haptics';
 import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
-import { ICategory, IIngredient } from '../../../models/craft';
+import { ICategory } from '../../../models/craft';
+import { useGetAllIngredientsQuery } from '../../ingredients/api/ingredientsApi';
 import React, {
   useCallback,
   useEffect,
@@ -14,7 +15,7 @@ import React, {
   useState,
 } from 'react';
 import { Pressable, ScrollView, Text, View, Modal, TouchableOpacity } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
+// import { useReducedMotion } from 'react-native-reanimated';
 import {
   bodyLargeBold,
   bodyLargeMedium,
@@ -54,12 +55,10 @@ export default function OnboardingDietary({
   hasDiabetes?: boolean;
   setHasDiabetes?: (value: boolean) => void;
 }) {
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ['1%', '80%'], []);
+  const [isAllergyModalVisible, setIsAllergyModalVisible] = useState(false);
 
   const [searchInput, setSearchInput] = React.useState<string>('');
-  const [customAllergyInput, setCustomAllergyInput] = React.useState<string>('');
-  const [showCustomInput, setShowCustomInput] = React.useState<boolean>(false);
+  // Remove free-text allergy input; use ingredient picker modal only
   const [showVegTypePicker, setShowVegTypePicker] = useState(false);
   
   const isAllergyIngredientSelected = (value: string) => {
@@ -83,43 +82,35 @@ export default function OnboardingDietary({
     forceUpdate();
   };
 
-  const { getIngredients } = useContent();
-  const { getCategories } = useContent();
+  // const reducedMotion = useReducedMotion();
 
-  /* https://github.com/gorhom/react-native-bottom-sheet/issues/1560#issuecomment-1750466864
-  Added fixes for ios / android users who uses reduce motion */
-  const reducedMotion = useReducedMotion();
+  
+  const { data: apiIngredients } = useGetAllIngredientsQuery();
+  const [ingredients, setIngredients] = useState<{ id: string; title: string }[]>([]);
+  const dietaryCategoryOptions = [
+    { id: 'f74223f2-6285-479b-be97-8472ed79b835', title: 'Vegetarian' },
+    { id: 'f096348b-3d75-475d-a166-b9470e2978ec', title: 'Vegan' },
+    { id: 'bc2c0e89-9217-4217-aeb8-2a90daf8ce4a', title: 'Dairy Free' },
+    { id: 'e0b82f0b-a03c-4735-8810-4d70b77ba231', title: 'Nut Free' },
+    { id: '06566409-dc8c-46f0-b575-44090446ca80', title: 'Gluten Free' },
+  ];
 
-  const [ingredients, setIngredients] = useState<IIngredient[]>([]);
-  const [categories, setCategories] = useState<ICategory[]>([]);
-
+  // Load ingredients from backend API and normalize shape for this component
   const getIngredientsData = async () => {
-    const data = await getIngredients();
-
-    if (data) {
-      // Sort alphabetically
-      setIngredients(data.sort((a, b) => a.title.localeCompare(b.title)));
+    if (apiIngredients && apiIngredients.length > 0) {
+      const normalized = apiIngredients.map((ing) => ({ id: (ing as any)._id, title: (ing as any).name }))
+        .sort((a, b) => a.title.localeCompare(b.title));
+      console.log('Loaded ingredients for allergies (api):', normalized.length);
+      setIngredients(normalized);
     }
   };
 
   useEffect(() => {
     getIngredientsData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [apiIngredients]);
 
-  const getCategoriesData = async () => {
-    const data = await getCategories();
-
-    if (data) {
-      // Only ingredient categories
-      setCategories(data.filter(item => item.groupHandle === 'dietary'));
-    }
-  };
-
-  useEffect(() => {
-    getCategoriesData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Categories come from static options above; no CMS calls
 
   const filteredIngredients = ingredients.filter(item => {
     const matchInput = item.title
@@ -130,9 +121,8 @@ export default function OnboardingDietary({
     return activeIngredients || matchInput;
   });
 
-  if (!categories.length) {
-    return null;
-  }
+  // Do not early-return; allow allergy picker to work even if
+  // categories are still loading or unavailable.
 
   return (
     <View>
@@ -192,7 +182,7 @@ export default function OnboardingDietary({
         </View>
       )}
 
-      {categories.map(dietary => {
+      {dietaryCategoryOptions.map(dietary => {
         return (
           <ToggleInput
             key={dietary.id}
@@ -218,159 +208,103 @@ export default function OnboardingDietary({
           <Text style={tw.style(bodyLargeBold)}>Specific allergy?</Text>
           <Pressable
             onPress={() => {
-              setShowCustomInput(!showCustomInput);
-              if (!showCustomInput) {
-                bottomSheetModalRef.current?.dismiss();
-              }
+              console.log('Opening allergy picker (modal), ingredients count:', ingredients.length);
+              setIsAllergyModalVisible(true);
             }}
             style={tw`shrink`}
           >
-            <Text
-              style={tw.style(
-                bodyLargeMedium,
-                'text-right text-eggplant-vibrant underline',
-              )}
-            >
-              {showCustomInput ? 'Hide' : 'Tell us what it is'}
+            <Text style={tw.style(bodyLargeMedium, 'text-right text-eggplant-vibrant underline')}>
+              Tell Us?
             </Text>
           </Pressable>
         </View>
-        
-        {showCustomInput && (
-          <View style={tw`gap-2`}>
-            <TextBoxInput
-              value={customAllergyInput}
-              placeholder="Type your allergy (e.g., shellfish, soy)"
-              onChangeText={setCustomAllergyInput}
-            />
-            <Pressable
-              onPress={() => {
-                if (customAllergyInput.trim()) {
-                  const allergyText = customAllergyInput.trim();
-                  if (!allergies.includes(allergyText)) {
-                    setAllergies([...allergies, allergyText]);
-                  }
-                  setCustomAllergyInput('');
-                }
-              }}
-              style={tw`bg-eggplant-vibrant py-3 px-4 rounded-xl items-center`}
-            >
-              <Text style={tw`text-white font-bold`}>Add Allergy</Text>
-            </Pressable>
-            
-            {/* Display added custom allergies */}
-            {allergies.filter(a => !ingredients.find(ing => ing.id === a)).length > 0 && (
-              <View style={tw`mt-2`}>
-                <Text style={tw.style(bodyMediumRegular, 'text-stone mb-2')}>
-                  Your custom allergies:
-                </Text>
-                <View style={tw`flex-row flex-wrap gap-2`}>
-                  {allergies
-                    .filter(a => !ingredients.find(ing => ing.id === a))
-                    .map((allergy, index) => (
-                      <View
-                        key={index}
-                        style={tw`flex-row items-center gap-2 bg-white border border-eggplant-vibrant rounded-lg px-3 py-1.5`}
-                      >
-                        <Text style={tw.style(bodyMediumRegular)}>{allergy}</Text>
-                        <Pressable
-                          onPress={() => {
-                            setAllergies(allergies.filter(a => a !== allergy));
-                          }}
-                        >
-                          <Feather name="x" size={14} color="#666" />
-                        </Pressable>
-                      </View>
-                    ))}
-                </View>
-              </View>
-            )}
-            
-            <Pressable
-              onPress={() => {
-                bottomSheetModalRef.current?.present();
-              }}
-              style={tw`py-2 items-center`}
-            >
-              <Text style={tw.style(bodyMediumRegular, 'text-eggplant-vibrant underline')}>
-                Or select from ingredients list
-              </Text>
-            </Pressable>
-          </View>
-        )}
-      </View>
-      <BottomSheetModal
-        ref={bottomSheetModalRef}
-        index={1}
-        animateOnMount={!reducedMotion}
-        snapPoints={snapPoints}
-        containerStyle={{ backgroundColor: 'rgba(26, 26, 27, 0.7)' }}
-        // onChange={handleSheetChanges}
-        style={tw.style(
-          'overflow-hidden rounded-2.5xl border border-strokecream',
-        )}
-        handleStyle={tw.style('hidden')}
-        enableContentPanningGesture={false}
-      >
-        <View style={tw.style('bg-white px-5')}>
-          <View style={tw.style('items-end py-4')}>
-            <Pressable
-              onPress={() => {
-                bottomSheetModalRef.current?.close();
-              }}
-            >
-              <Feather name={'x'} size={16} color="black" />
-            </Pressable>
-          </View>
 
-          <View style={tw`mb-2.5 gap-2.5 border-b border-strokecream pb-5`}>
-            <Text style={tw.style(h7TextStyle, 'text-center')}>
-              What are your allergies?
-            </Text>
-            <Text style={tw.style(bodyMediumRegular, 'text-center')}>
-              Let us know what ingredients you’re allergic to – we’ll make sure
-              they don’t appear in any of your meals.
-            </Text>
-          </View>
-
-          <TextBoxInput
-            value={searchInput}
-            placeholder="Search ingredients"
-            onChangeText={setSearchInput}
-            iconRight="search"
-          />
-        </View>
-        <ScrollView style={tw.style('bg-white px-5')}>
-          <View style={tw`py-2.5`}>
-            {filteredIngredients.map(item => {
+        {/* Show selected allergies as removable chips */}
+        {allergies.length > 0 && (
+          <View style={tw`flex-row flex-wrap gap-2`}>
+            {allergies.map((allergyId) => {
+              const ing = ingredients.find(ing => ing.id === allergyId);
+              const label = ing?.title ?? allergyId;
               return (
-                <Pressable
-                  key={item.id}
-                  style={tw`flex-row items-center gap-2 border-b border-strokecream py-3.5`}
-                  onPress={() => {
-                    SavefulHaptics.selectionAsync();
-                    onValueChecked(item.id);
-                  }}
+                <View
+                  key={allergyId}
+                  style={tw`flex-row items-center gap-2 bg-white border border-eggplant-vibrant rounded-lg px-3 py-1.5`}
                 >
-                  <View
-                    style={tw.style('rounded-full border border-stone p-1')}
-                  >
-                    <View
-                      style={tw.style(
-                        'h-2 w-2 rounded-full bg-eggplant opacity-0',
-                        {
-                          'opacity-100': isAllergyIngredientSelected(item.id),
-                        },
-                      )}
-                    />
-                  </View>
-                  <Text style={tw.style(bodyMediumRegular)}>{item.title}</Text>
-                </Pressable>
+                  <Text style={tw.style(bodyMediumRegular)}>{label}</Text>
+                  <Pressable onPress={() => setAllergies(allergies.filter(a => a !== allergyId))}>
+                    <Feather name="x" size={14} color="#666" />
+                  </Pressable>
+                </View>
               );
             })}
           </View>
-        </ScrollView>
-      </BottomSheetModal>
+        )}
+      </View>
+      <Modal
+        visible={isAllergyModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsAllergyModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={tw`flex-1 bg-black/50 justify-end`}
+          activeOpacity={1}
+          onPress={() => setIsAllergyModalVisible(false)}
+        >
+          <View style={tw`bg-white rounded-t-3xl px-5 pt-4 pb-6 border border-strokecream`}
+          >
+            <View style={tw.style('items-end pb-2')}>
+              <Pressable onPress={() => setIsAllergyModalVisible(false)}>
+                <Feather name={'x'} size={16} color="black" />
+              </Pressable>
+            </View>
+
+            <View style={tw`mb-2.5 gap-2.5 border-b border-strokecream pb-5`}>
+              <Text style={tw.style(h7TextStyle, 'text-center')}>
+                What are your allergies?
+              </Text>
+              <Text style={tw.style(bodyMediumRegular, 'text-center')}>
+                Let us know what ingredients you’re allergic to – we’ll make sure
+                they don’t appear in any of your meals.
+              </Text>
+            </View>
+
+            <TextBoxInput
+              value={searchInput}
+              placeholder="Search ingredients"
+              onChangeText={setSearchInput}
+              iconRight="search"
+            />
+
+            <ScrollView style={tw.style('mt-2.5')}>
+              <View style={tw`py-2.5`}>
+                {filteredIngredients.map(item => {
+                  return (
+                    <Pressable
+                      key={item.id}
+                      style={tw`flex-row items-center gap-2 border-b border-strokecream py-3.5`}
+                      onPress={() => {
+                        SavefulHaptics.selectionAsync();
+                        onValueChecked(item.id);
+                      }}
+                    >
+                      <View style={tw.style('rounded-full border border-stone p-1')}>
+                        <View
+                          style={tw.style(
+                            'h-2 w-2 rounded-full bg-eggplant opacity-0',
+                            { 'opacity-100': isAllergyIngredientSelected(item.id) },
+                          )}
+                        />
+                      </View>
+                      <Text style={tw.style(bodyMediumRegular)}>{item.title}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Veg Type Picker Modal */}
       <Modal

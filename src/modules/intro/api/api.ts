@@ -35,13 +35,23 @@ const introApi = api
           body: data,
         }),
         invalidatesTags: ['DietaryProfile', 'CurrentUser', 'Onboarding'],
+        transformResponse: (r: any) => {
+          console.log('updateDietaryProfile response (intro):', r);
+          // Normalize the MongoDB response
+          const normalizedId = r?._id ?? r?.id;
+          return {
+            ...r,
+            id: normalizedId,
+            _id: normalizedId,
+          };
+        },
         async onQueryStarted(_, { dispatch, queryFulfilled }) {
           try {
             await queryFulfilled;
             // Refetch current user to get updated dietary profile
             dispatch(api.util.invalidateTags(['CurrentUser']));
-          } catch {
-            // Handle error if needed
+          } catch (error) {
+            console.error('updateDietaryProfile error:', error);
           }
         },
       }),

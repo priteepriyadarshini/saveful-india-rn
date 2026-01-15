@@ -50,7 +50,7 @@ import * as Yup from 'yup';
 const schema = Yup.object({
   postcode: Yup.string().required('Please enter your postcode'),
   suburb: Yup.string().required('Please enter your suburb'),
-  country: Yup.string().optional().default(undefined),
+  country: Yup.string().notRequired().nullable(),
   noOfAdults: Yup.number().required('Please enter the number of adults'),
   noOfChildren: Yup.number().required('Please enter the number of children'),
   dietaryRequirements: Yup.array().required(
@@ -66,7 +66,7 @@ const schema = Yup.object({
 interface FormData {
   postcode: string;
   suburb: string;
-  country?: string;
+  country?: string | null;
   noOfAdults: number;
   noOfChildren: number;
   dietaryRequirements: string[];
@@ -159,10 +159,10 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
     setValue,
     watch,
     // formState: { errors },
-  } = useForm<FormData, any, FormData>({
+  } = useForm<FormData>({
     mode: 'onBlur',
     defaultValues,
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema) as any,
   });
 
   const trackSurveyDay = watch('trackSurveyDay');
@@ -201,7 +201,7 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
         otherAllergies: data.allergies,
         noOfAdults: data.noOfAdults,
         noOfChildren: data.noOfChildren,
-        country: data.suburb || data.country,
+        country: data.suburb || data.country || undefined,
       };
       
       console.log('Updating dietary profile during onboarding:', dietaryProfileData);
@@ -231,11 +231,12 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
         household_composition: `${data.noOfAdults} Adult ${data.noOfChildren} Children`,
       });
 
-      console.log('Onboarding complete, navigating to feed...');
-      // Navigate to feed - the country field being set will mark onboarding as complete
-      linkTo('/Root/Feed');
+      // Navigation is handled by OnboardingScreen when `userOnboarding` updates.
+      console.log('Onboarding complete; letting parent screen navigate to feed.');
     } catch (e) {
       // This catches dietary profile update errors
+      console.error('❌ Onboarding error caught:', e);
+      console.error('Error details:', JSON.stringify(e, null, 2));
       sendFailedEventAnalytics(e);
       Alert.alert('Error updating dietary profile', 
         'There was an error saving your dietary preferences. Please try again.');
@@ -326,14 +327,14 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
                         />
                       </ScrollView>
 
-                      {item.showPeopleInput && (
-                        <View style={tw``}>
-                          <ControlledSurveyCounter
-                            name="noOfAdults"
-                            title="Adults"
-                            control={control}
-                            theme="dark"
-                          />
+          {item.showPeopleInput && (
+            <View style={tw``}>
+              <ControlledSurveyCounter
+                name="noOfAdults"
+                title="Adults"
+                control={control}
+                theme="dark"
+              />
                           <View style={tw`mb-6.5 h-px w-full bg-strokecream`} />
                           <ControlledSurveyCounter
                             name="noOfChildren"
