@@ -72,16 +72,19 @@ export default function PostMakeScreen({ route: { params } }: any) {
     // TODO: Show already completed message
     // If the survey has been completed, navigate to feed
     if (feedbackForMeal && !isStarted) {
-  if (feedbackForMeal.prompted) {
-    // Navigate to Feed tab + FeedHome screen inside FeedStack
-    navigation.navigate('Feed', 
-      { 
-        screen: 'FeedHome' 
-      });
-  } else {
-    setFeedback(feedbackForMeal);
-  }
-}
+      if (feedbackForMeal.prompted) {
+        // Navigate to Feed tab + FeedHome screen inside FeedStack via parent navigator
+        const parentNav = (navigation as any)?.getParent?.();
+        if (parentNav?.navigate) {
+          parentNav.navigate('Feed', { screen: 'FeedHome' });
+        } else {
+          // Fallback: go back
+          navigation.goBack();
+        }
+      } else {
+        setFeedback(feedbackForMeal);
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [feedbackForMeal, isStarted]);
 

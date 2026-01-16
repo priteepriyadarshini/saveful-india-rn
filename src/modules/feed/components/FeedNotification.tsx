@@ -1,7 +1,6 @@
 import { useLinkTo, useNavigation } from '@react-navigation/native';
 import { bundledSource } from '../../../common/helpers/uriHelpers';
 import tw from '../../../common/tailwind';
-import { IFramework } from '../../../models/craft';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
 import useEnvironment from '../../../modules/environment/hooks/useEnvironment';
@@ -25,6 +24,7 @@ export default function FeedNotification({
   setIsNotification: (isNotification: boolean) => void;
 }) {
   const navigation = useNavigation<TrackStackScreenProps<'TrackHome'>['navigation']>();
+  const linkTo = useLinkTo();
   const { sendAnalyticsEvent } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
   const env = useEnvironment();
@@ -39,16 +39,18 @@ export default function FeedNotification({
   // Find the first cooked recipe that doesn't have a prompted feedback
   const pendingRecipe = useMemo(() => {
     if (!cookedRecipes.length || !feedbacks) return null;
-    
-    // Get all recipe IDs that have prompted feedback
+
+    // Get all recipe IDs that have prompted feedback (use framework_id)
     const recipesWithSurvey = new Set(
       feedbacks
-        .filter(f => f.prompted && f.data.meal_id)
-        .map(f => f.data.meal_id)
+        .filter(f => f.prompted && f.framework_id)
+        .map(f => f.framework_id)
     );
 
     // Find first cooked recipe without survey
-    return cookedRecipes.find(recipe => !recipesWithSurvey.has(recipe.id)) || null;
+    const pending = cookedRecipes.find(recipe => !recipesWithSurvey.has(recipe.id)) || null;
+
+    return pending;
   }, [cookedRecipes, feedbacks]);
 
   // We can render directly from cooked recipe details; no need to fetch Craft content
@@ -102,10 +104,25 @@ export default function FeedNotification({
               recipe_id: pendingRecipe.id,
             },
           });
-          (navigation as any).navigate('Survey', {
-           screen: 'PostMake',
-           params: { id: pendingRecipe.id, title: pendingRecipe.title, heroImageUrl: pendingRecipe.heroImageUrl } as any,
-          } as any);
+          // Prefer navigating via parent (InitialNavigator). Fallback to deep link.
+          const parentNav = (navigation as any)?.getParent?.();
+          if (parentNav?.navigate) {
+            parentNav.navigate('Survey', {
+              screen: 'PostMake',
+              params: {
+                id: pendingRecipe.id,
+                title: pendingRecipe.title,
+                heroImageUrl: pendingRecipe.heroImageUrl,
+              },
+            });
+          } else {
+            // Deep link as safe fallback
+            try {
+              linkTo(`survey/postmake/${pendingRecipe.id}`);
+            } catch (_e) {
+              // no-op
+            }
+          }
         }}
       >
         {pendingRecipe?.heroImageUrl ? (

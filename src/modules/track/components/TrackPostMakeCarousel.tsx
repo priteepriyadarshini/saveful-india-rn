@@ -4,7 +4,6 @@ import tw from '../../../common/tailwind';
 import { IFramework } from '../../../models/craft';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
-import { useSaveFoodAnalyticsMutation } from '../../../modules/analytics/api/api';
 import { useBadgeChecker } from '../../../modules/badges/hooks/useBadgeChecker';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
 import {
@@ -133,7 +132,7 @@ export default function TrackPostMakeCarousel({
     useUpdateFeedbackMutation();
   // Meals update was removed; keep UI consistent by setting loading to false
   const isUpdateUserMealLoading = false;
-  const [saveFoodAnalytics] = useSaveFoodAnalyticsMutation();
+  // Removed saveFoodAnalytics here to avoid double-counting.
 
   // Show rating modal at the start of the survey
   useEffect(() => {
@@ -147,11 +146,9 @@ export default function TrackPostMakeCarousel({
       return;
     }
 
-    console.log('[TrackPostMakeCarousel] Completing feedback with ratingData:', ratingData);
 
     try {
       if (!feedback) {
-        console.log('[TrackPostMakeCarousel] Creating new feedback');
         await createFeedback({
           frameworkId: framework.id,
           prompted: true,
@@ -162,7 +159,6 @@ export default function TrackPostMakeCarousel({
           review: ratingData?.review || undefined,
         }).unwrap();
       } else {
-        console.log('[TrackPostMakeCarousel] Updating existing feedback ID:', feedback.id);
         await updateFeedback({
           id: feedback.id,
           prompted: true,
@@ -174,18 +170,8 @@ export default function TrackPostMakeCarousel({
         }).unwrap();
       }
 
-      // Only emit analytics if we just created NEW feedback (user skipped MakeItSurveyModal)
-      // If feedback already existed, analytics were already tracked in MakeItSurveyModal
-      // This prevents double-counting while ensuring skipped surveys still get counted
-      if (!feedback) {
-        try {
-          const ingredientIds = (selectedIngredients || []).map((i) => i.id);
-          const ingredients = (selectedIngredients || []).map((i) => ({ name: i.title, averageWeight: i.averageWeight }));
-          await saveFoodAnalytics({ ingredientIds, frameworkId: framework.id, ingredients }).unwrap();
-        } catch (e) {
-          // Non-blocking: continue even if analytics call fails
-        }
-      }
+      // Analytics (AI price calculation) is invoked during MakeItSurveyModal only.
+      // Do not call it here to prevent double-counting of saved food/money/meals.
 
       // Force-check milestones so users immediately receive badges if thresholds met
       // This will trigger badge notifications automatically via useBadgeChecker hook
@@ -221,7 +207,7 @@ export default function TrackPostMakeCarousel({
   };
 
   const handleRatingSubmit = (rating: number, review: string) => {
-    console.log('[TrackPostMakeCarousel] Rating submitted:', { rating, review });
+    // Rating submitted
     // Store rating data to be saved later with the survey answers
     setRatingData({ rating, review });
     setShowRatingModal(false);
@@ -229,7 +215,7 @@ export default function TrackPostMakeCarousel({
   };
 
   const handleRatingSkip = () => {
-    console.log('[TrackPostMakeCarousel] Rating skipped');
+    // Rating skipped
     // User skipped rating - continue to survey without rating data
     setRatingData(null);
     setShowRatingModal(false);

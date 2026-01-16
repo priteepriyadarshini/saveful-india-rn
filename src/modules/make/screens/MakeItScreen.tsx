@@ -14,6 +14,7 @@ import MakeItSurveyModal from '../components/MakeItSurveyModal';
 import TTSSpeakerButton from '../../../modules/make/components/TTSSpeakerButton';
 import { useMakeItTTS } from '../../../modules/make/hooks/useMakeItTTS';
 import { InitialNavigationStackParams } from '../../navigation/navigator/InitialNavigator';
+import { useIsFocused } from '@react-navigation/native';
 import TutorialModal from '../../../modules/prep/components/TutorialModal';
 import { MAKETUTORIAL } from '../../../modules/prep/data/data';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
@@ -40,6 +41,7 @@ export default function MakeItScreen({
   const { getFramework } = useContent();
   const { sendAnalyticsEvent } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
+  const isFocused = useIsFocused();
   const [framework, setFramework] = useState<IFramework>();
   const [isIntercted, setIsIntercted] = useState<boolean>(false);
   const [isFirstMakeSession, setIsFirstMakeSession] = useState<boolean>(false);
@@ -124,6 +126,9 @@ export default function MakeItScreen({
   };
 
   useEffect(() => {
+    // Only evaluate tutorial/modal visibility when this screen is focused
+    if (!isFocused) return;
+
     const checkIsFirstMakeTutorial = async () => {
       const isFirstMakeTutorial = await AsyncStorage.getItem(StorageKey);
 
@@ -135,7 +140,7 @@ export default function MakeItScreen({
     };
 
     checkIsFirstMakeTutorial();
-  }, []);
+  }, [isFocused]);
 
   useEffect(() => {
     getFrameworksData();
@@ -369,7 +374,7 @@ export default function MakeItScreen({
       </ImageBackground>
 
       <MakeItSurveyModal
-        isVisible={isIngredientsModalVisible}
+        isVisible={isFocused && isIngredientsModalVisible}
         setIsVisible={setIngredientsModalVisible}
         setIsCompltedModalVisible={setIsCompletedModalVisible}
         frameworkId={id}
@@ -385,7 +390,7 @@ export default function MakeItScreen({
       />
 
       <CompletedCookWithSurvey
-        isModalVisible={isCompletedModalVisible}
+        isModalVisible={isFocused && isCompletedModalVisible}
         //toggleModal={toggleCompletedModal}
         setIsModalVisible={setIsCompletedModalVisible}
         totalWeightOfSelectedIngredients={totalWeightOfSelectedIngredients}
@@ -398,7 +403,7 @@ export default function MakeItScreen({
           const wasShowing = isFirstMakeSession;
           setIsFirstMakeSession(value);
           // Only show ingredients modal if user just closed the tutorial
-          if (wasShowing && !value) {
+          if (wasShowing && !value && isFocused) {
             setIngredientsModalVisible(true);
           }
         }}

@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { skipToken } from '@reduxjs/toolkit/query';
 import SecondaryButton from '../../../common/components/ThemeButtons/SecondaryButton';
 import SavefulHaptics from '../../../common/helpers/haptics';
@@ -18,7 +19,7 @@ import {
   useCreateFeedbackMutation,
 } from '../../../modules/track/api/api';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Modal, Pressable, Text, View } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -88,6 +89,9 @@ export default function MakeItSurveyModal({
   const { data: cookedRecipesData } = useGetCookedRecipesQuery();
   const userMeals = cookedRecipesData?.cookedRecipes || [];
 
+  // Prevent double execution with a ref guard
+  const isExecutingRef = useRef(false);
+
   const currentUserChallenge =
     userChallenge?.data?.challengeStatus === 'joined' ? userChallenge : null;
 
@@ -120,15 +124,30 @@ export default function MakeItSurveyModal({
       return;
     }
 
+    // Prevent double execution with ref guard
+    if (isExecutingRef.current) {
+      return;
+    }
+    isExecutingRef.current = true;
+
     try {
       // Call analytics endpoint FIRST to calculate and save money based on selected ingredients
       if (preExistingIngredients.length > 0) {
+        // Idempotency: prevent double-counting for the same meal
+        const guardKey = `analytics:meal:${mealId}`;
+        const alreadySent = await AsyncStorage.getItem(guardKey);
+        if (alreadySent) {
+        } else {
         const ingredientIds = preExistingIngredients.map(i => i.id);
         const ingredients = preExistingIngredients.map(i => ({ name: i.title, averageWeight: i.averageWeight }));
-        
-        console.log('[MakeItSurveyModal] Calling saveFoodAnalytics with:', { ingredientIds, ingredients, frameworkId });
-        await saveFoodAnalytics({ ingredientIds, frameworkId, ingredients }).unwrap();
-        console.log('[MakeItSurveyModal] Analytics saved successfully');
+        const analyticsResult = await saveFoodAnalytics({ ingredientIds, frameworkId, ingredients }).unwrap();
+          try {
+            await AsyncStorage.setItem(guardKey, '1');
+          } catch (_e) {
+            // best-effort
+          }
+        }
+      } else {
       }
 
       // Do not create feedback at start to avoid duplicate analytics.
@@ -169,6 +188,9 @@ export default function MakeItSurveyModal({
         'Error completing meal',
         `Failed to save meal completion. ${errorMessage}`,
       );
+    } finally {
+      // Reset execution guard
+      isExecutingRef.current = false;
     }
   };
 

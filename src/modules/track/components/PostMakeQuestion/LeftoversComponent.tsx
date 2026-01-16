@@ -92,7 +92,6 @@ export default function LeftoversComponent({
           style={tw.style('mt-4.5 mx-5 mb-2')}
           onPress={() => {
             // Close survey by completing feedback now
-            console.log('[LeftoversComponent] Next pressed. Completing feedback.');
             try {
               // Let parent handle dismiss (handlePresentModalDismiss) after submit
               // This also ensures rating/review are included
