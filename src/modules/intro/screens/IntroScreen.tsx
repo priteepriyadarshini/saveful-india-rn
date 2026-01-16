@@ -1,52 +1,37 @@
-// import { useLinkTo } from '@react-navigation/native';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
 import PrimaryButton from '../../../common/components/ThemeButtons/PrimaryButton';
 import VersionNumber from '../../../common/components/VersionNumber';
 import tw from '../../../common/tailwind';
 import IntroCarousel from '../../../modules/intro/components/IntroCarousel';
 import INTRO from '../../../modules/intro/data/intro';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Image, ImageBackground, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import useAccessToken from '../../auth/hooks/useSessionToken';
-import { useGetUserOnboardingQuery } from '../api/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { HAS_SEEN_INTRO_KEY } from '../components/SplashPage';
 
 export default function IntroScreen() {
   const navigation = useNavigation();
-  const accessToken = useAccessToken();
-  const { data: userOnboarding } = useGetUserOnboardingQuery(undefined, {
-    skip: !accessToken, // Only fetch if user is authenticated
-  });
 
-  // Auto-navigate existing users
-  useEffect(() => {
-    if (accessToken) {
-      if (userOnboarding) {
-        // User is logged in and has completed onboarding - go to feed
-        // @ts-ignore
-        navigation.navigate('Root');
-      } else {
-        // User is logged in but hasn't completed onboarding
-        // @ts-ignore
-        navigation.navigate('Onboarding');
-      }
-    } else {
-      // No access token - go directly to sign in page
-      // @ts-ignore
-      navigation.navigate('Auth');
+  const handleGetStarted = async () => {
+    try {
+      // Mark intro as seen
+      await AsyncStorage.setItem(HAS_SEEN_INTRO_KEY, 'true');
+      // Navigate to Auth screen
+      (navigation as any).reset({
+        index: 0,
+        routes: [{ name: 'Auth' }],
+      });
+    } catch (error) {
+      console.error('Error saving intro seen status:', error);
+      // Navigate anyway
+      (navigation as any).reset({
+        index: 0,
+        routes: [{ name: 'Auth' }],
+      });
     }
-  }, [accessToken, userOnboarding, navigation]);
-
-  const handleGetStarted = () => {
-    // @ts-ignore
-    navigation.navigate('Auth');
   };
-
-  // Only show intro UI for new users (no access token) - but we auto-navigate now
-  if (accessToken !== null) {
-    return null; // Will navigate automatically via useEffect
-  }
 
   return (
     <ImageBackground

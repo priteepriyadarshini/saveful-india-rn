@@ -27,10 +27,13 @@ import HackVideoScreen from "../../hack/screens/HackVideoScreen";
 import MakeItScreen from "../../make/screens/MakeItScreen";
 import AuthScreen from "../../intro/screens/AuthScreen";
 import OnboardingNavigator from "./onboarding/OnboardingNavigator";
+import SplashPage from "../../intro/components/SplashPage";
+import IntroScreen from "../../intro/screens/IntroScreen";
 
 export type InitialStackParamList = {
-  Auth: undefined;
+  Splash: undefined;
   Intro: undefined;
+  Auth: undefined;
   Onboarding: undefined;
   Root: NavigatorScreenParams<RootStackParamList> | undefined;
   Ingredients: NavigatorScreenParams<IngredientsStackParamList> | undefined;
@@ -97,32 +100,33 @@ function InitialNavigator() {
   // Listen for auth state changes and handle automatic logout
   useAuthListener();
 
-  // Navigate based on authentication state changes
+  // Navigate based on authentication state changes (handles post-login navigation)
   useEffect(() => {
-    // Don't navigate while user data is loading
-    if (accessToken && isUserLoading) {
-      console.log('Waiting for user data to load...');
+    // Get current route safely
+    const navState = navigation.getState();
+    const currentRoute = navState?.routes?.[navState?.index ?? 0]?.name;
+    
+    // Skip navigation if:
+    // 1. No current route yet (navigation not initialized)
+    // 2. We're on the Splash screen (let SplashPage handle it)
+    // 3. No access token (user not logged in)
+    // 4. User data is still loading
+    if (!currentRoute || currentRoute === 'Splash' || !accessToken || isUserLoading) {
       return;
     }
 
-    const determineRoute = () => {
-      if (!accessToken) {
-        return 'Auth';
-      }
-      if (!hasCompletedOnboarding) {
-        return 'Onboarding';
-      }
-      return 'Root';
-    };
-
-    const targetRoute = determineRoute();
+    // User is authenticated - navigate based on onboarding status
+    const targetRoute = hasCompletedOnboarding ? 'Root' : 'Onboarding';
     
-    // Reset navigation stack to the appropriate route
-    navigation.reset({
-      index: 0,
-      routes: [{ name: targetRoute }],
-    });
-  }, [accessToken, hasCompletedOnboarding, navigation, isUserLoading]);
+    // Only navigate if we're not already on the target route
+    if (currentRoute !== targetRoute) {
+      console.log(`Navigating from ${currentRoute} to ${targetRoute} after auth state change`);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: targetRoute }],
+      });
+    }
+  }, [accessToken, hasCompletedOnboarding, isUserLoading, navigation]);
 
   // Validate token on mount - immediately clear if invalid or expired
   useEffect(() => {
@@ -150,27 +154,53 @@ function InitialNavigator() {
     }
   }, [hasCompletedOnboarding, permissionStatus, registerForNotifications]);
 
-  // Determine initial route based on auth state
-  const getInitialRoute = (): keyof InitialStackParamList => {
-    if (!accessToken) {
-      return 'Auth'; // Not authenticated - go directly to sign in
-    }
-    if (!hasCompletedOnboarding) {
-      return 'Onboarding'; // Authenticated but no onboarding - show onboarding
-    }
-    return 'Root'; // Authenticated and onboarded - show main app
-  };
-
   return (
-    <InitialNavigationStack.Navigator initialRouteName={getInitialRoute()} screenOptions={{ headerShown: false }}>
-      <InitialNavigationStack.Screen name="Auth" component={AuthScreen} options={{ headerShown: false }} />
-      <InitialNavigationStack.Screen name="Intro" component={IntroNavigator} /> 
-      <InitialNavigationStack.Screen name="Onboarding" component={OnboardingNavigator}/>
-      <InitialNavigationStack.Screen name="Root" component={RootNavigator} />
-      <InitialNavigationStack.Screen name="Ingredients" component={IngredientsStackNavigator}/>
-      <InitialNavigationStack.Screen name="Survey" component={SurveyStackNavigator} />
-      <InitialNavigationStack.Screen name="MakeIt"component={MakeItScreen}options={{title: 'Make it', headerShown: false}}/>
-      <InitialNavigationStack.Screen name="HackVideo" component={HackVideoScreen}options={{ title: 'Video', headerShown: false, presentation: 'fullScreenModal', animation: 'fade', }} />
+    <InitialNavigationStack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
+      <InitialNavigationStack.Screen 
+        name="Splash" 
+        component={SplashPage} 
+        options={{ headerShown: false }} 
+      />
+      <InitialNavigationStack.Screen 
+        name="Intro" 
+        component={IntroScreen} 
+        options={{ headerShown: false }} 
+      />
+      <InitialNavigationStack.Screen 
+        name="Auth" 
+        component={AuthScreen} 
+        options={{ headerShown: false }} 
+      />
+      <InitialNavigationStack.Screen 
+        name="Onboarding" 
+        component={OnboardingNavigator}
+        options={{ headerShown: false }}
+      />
+      <InitialNavigationStack.Screen 
+        name="Root" 
+        component={RootNavigator} 
+        options={{ headerShown: false }}
+      />
+      <InitialNavigationStack.Screen 
+        name="Ingredients" 
+        component={IngredientsStackNavigator}
+        options={{ headerShown: false }}
+      />
+      <InitialNavigationStack.Screen 
+        name="Survey" 
+        component={SurveyStackNavigator} 
+        options={{ headerShown: false }}
+      />
+      <InitialNavigationStack.Screen 
+        name="MakeIt"
+        component={MakeItScreen}
+        options={{title: 'Make it', headerShown: false}}
+      />
+      <InitialNavigationStack.Screen 
+        name="HackVideo" 
+        component={HackVideoScreen}
+        options={{ title: 'Video', headerShown: false, presentation: 'fullScreenModal', animation: 'fade' }} 
+      />
     </InitialNavigationStack.Navigator>
   );
 }
