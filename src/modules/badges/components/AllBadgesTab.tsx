@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   ImageBackground,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,10 +19,13 @@ import { bodyMediumRegular, h6TextStyle, bodySmallRegular, subheadSmallUppercase
 import { cardDrop } from '../../../theme/shadow';
 import moment from 'moment';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import BadgeInfoModal from './BadgeInfoModal';
 
 export default function AllBadgesTab() {
   const { data: userBadges, isLoading, refetch, isFetching } = useGetMyBadgesQuery();
   const [checkMyMilestones] = useCheckMyMilestonesMutation();
+  const [selectedBadge, setSelectedBadge] = useState<{ badge: Badge; userBadge: UserBadge } | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   const lastCheckKey = useRef('badges:lastMilestoneCheck');
   // Run background milestone check at most once per 30 minutes on open
@@ -55,34 +59,91 @@ export default function AllBadgesTab() {
     if (!badge) return null;
 
     const categoryConfig: Record<string, { gradient: readonly [string, string]; icon: any; iconColor: string; accentColor: string; ribbonPattern: any }> = {
-      MILESTONE: {
+      ONBOARDING: {
         gradient: ['#E8F5E9', '#FFFFFF'] as const,
-        icon: 'trophy-outline',
+        icon: 'school-outline',
         iconColor: tw.color('kale') || '#3A7E52',
         accentColor: tw.color('kale') || '#3A7E52',
         ribbonPattern: require('../../../../assets/ribbons/ingredients-ribbons/mint.png'),
       },
-      CHALLENGE_WINNER: {
+      USAGE: {
+        gradient: ['#E3F2FD', '#FFFFFF'] as const,
+        icon: 'phone-portrait-outline',
+        iconColor: tw.color('blueberry') || '#2196F3',
+        accentColor: tw.color('blueberry') || '#2196F3',
+        ribbonPattern: require('../../../../assets/ribbons/ingredients-ribbons/radish.png'),
+      },
+      COOKING: {
+        gradient: ['#FFF3E0', '#FFFFFF'] as const,
+        icon: 'restaurant-outline',
+        iconColor: tw.color('orange') || '#FF9800',
+        accentColor: tw.color('orange') || '#FF9800',
+        ribbonPattern: require('../../../../assets/ribbons/ingredients-ribbons/orange.png'),
+      },
+      MONEY_SAVED: {
+        gradient: ['#E8F5E9', '#FFFFFF'] as const,
+        icon: 'cash-outline',
+        iconColor: tw.color('kale') || '#4CAF50',
+        accentColor: tw.color('kale') || '#4CAF50',
+        ribbonPattern: require('../../../../assets/ribbons/ingredients-ribbons/mint.png'),
+      },
+      FOOD_SAVED: {
+        gradient: ['#F1F8E9', '#FFFFFF'] as const,
+        icon: 'leaf-outline',
+        iconColor: '#8BC34A',
+        accentColor: '#8BC34A',
+        ribbonPattern: require('../../../../assets/ribbons/ingredients-ribbons/mint2.png'),
+      },
+      PLANNING: {
         gradient: ['#F3E5F5', '#FFFFFF'] as const,
-        icon: 'medal-outline',
-        iconColor: tw.color('eggplant-vibrant') || '#7E42FF',
+        icon: 'clipboard-outline',
+        iconColor: tw.color('eggplant-vibrant') || '#9C27B0',
         accentColor: tw.color('eggplant') || '#4B2176',
         ribbonPattern: require('../../../../assets/ribbons/ingredients-ribbons/eggplant-light.png'),
       },
-      SPECIAL: {
+      BONUS: {
+        gradient: ['#FBE9E7', '#FFFFFF'] as const,
+        icon: 'gift-outline',
+        iconColor: tw.color('chilli') || '#FF5722',
+        accentColor: tw.color('chilli') || '#FF5722',
+        ribbonPattern: require('../../../../assets/ribbons/ingredients-ribbons/chilli.png'),
+      },
+      SPONSOR: {
+        gradient: ['#FCE4EC', '#FFFFFF'] as const,
+        icon: 'business-outline',
+        iconColor: '#E91E63',
+        accentColor: '#E91E63',
+        ribbonPattern: require('../../../../assets/ribbons/ingredients-ribbons/radish.png'),
+      },
+      CHALLENGE_WINNER: {
         gradient: ['#FFF9C4', '#FFFFFF'] as const,
-        icon: 'star',
-        iconColor: tw.color('orange') || '#F99C46',
-        accentColor: tw.color('orange') || '#F99C46',
+        icon: 'trophy-outline',
+        iconColor: '#FFC107',
+        accentColor: '#FFC107',
         ribbonPattern: require('../../../../assets/ribbons/ingredients-ribbons/lemon.png'),
+      },
+      SPECIAL: {
+        gradient: ['#E0F7FA', '#FFFFFF'] as const,
+        icon: 'star',
+        iconColor: '#00BCD4',
+        accentColor: '#00BCD4',
+        ribbonPattern: require('../../../../assets/ribbons/ingredients-ribbons/radish.png'),
       },
     };
 
     const badgeCategory = badge.category as string;
-    const config = categoryConfig[badgeCategory] || categoryConfig.MILESTONE;
+    const config = categoryConfig[badgeCategory] || categoryConfig.ONBOARDING;
+
+    const handleBadgePress = () => {
+      setSelectedBadge({ badge, userBadge: item });
+      setShowModal(true);
+    };
 
     return (
-      <View style={tw.style('mx-4 mb-4 overflow-hidden rounded-2xl bg-white border border-strokecream', cardDrop)}>
+      <Pressable 
+        onPress={handleBadgePress}
+        style={tw.style('mx-4 mb-4 overflow-hidden rounded-2xl bg-white border border-strokecream', cardDrop)}
+      >
         <ImageBackground
           source={config.ribbonPattern}
           resizeMode="cover"
@@ -118,6 +179,17 @@ export default function AllBadgesTab() {
                   </View>
                 )}
               </View>
+              
+              {/* Sponsor Logo */}
+              {badge.isSponsorBadge && badge.sponsorLogoUrl && (
+                <View style={tw`mt-2`}>
+                  <Image
+                    source={{ uri: badge.sponsorLogoUrl }}
+                    style={tw`h-8 w-16 rounded`}
+                    resizeMode="contain"
+                  />
+                </View>
+              )}
             </View>
 
             {/* Badge Details */}
@@ -143,6 +215,15 @@ export default function AllBadgesTab() {
                     {badge.category.replace(/_/g, ' ')}
                   </Text>
                 </View>
+                
+                {badge.isSponsorBadge && badge.sponsorName && (
+                  <View style={tw`flex-row items-center rounded-full bg-pink-100 px-3 py-1.5`}>
+                    <Ionicons name="business" size={12} color="#E91E63" />
+                    <Text style={tw.style(bodySmallBold, 'ml-1.5 text-xs')} style={{ color: '#E91E63' }}>
+                      {badge.sponsorName}
+                    </Text>
+                  </View>
+                )}
                 
                 {item.achievedValue !== undefined && item.achievedValue > 0 && (
                   <View style={tw`flex-row items-center rounded-full bg-mint/30 px-3 py-1.5`}>
@@ -174,7 +255,7 @@ export default function AllBadgesTab() {
           </View>
         </LinearGradient>
         </ImageBackground>
-      </View>
+      </Pressable>
     );
   };
 
@@ -224,6 +305,19 @@ export default function AllBadgesTab() {
           />
         }
       />
+      
+      {/* Badge Info Modal */}
+      {selectedBadge && (
+        <BadgeInfoModal
+          isVisible={showModal}
+          badge={selectedBadge.badge}
+          userBadge={selectedBadge.userBadge}
+          onClose={() => {
+            setShowModal(false);
+            setSelectedBadge(null);
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }

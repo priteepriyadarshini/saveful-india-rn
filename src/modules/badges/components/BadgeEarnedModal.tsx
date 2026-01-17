@@ -23,31 +23,74 @@ export default function BadgeEarnedModal({
 }: BadgeEarnedModalProps) {
   if (!badge) return null;
 
+
   const getCategoryConfig = () => {
     switch (badge.category) {
-      case 'MILESTONE':
+      case 'ONBOARDING':
         return {
           gradient: ['#3A7E52', '#2D6142'] as const,
           accentColor: '#3A7E52',
-          label: 'Milestone Achievement',
+          label: 'Welcome Achievement',
+        };
+      case 'USAGE':
+        return {
+          gradient: ['#2196F3', '#1976D2'] as const,
+          accentColor: '#2196F3',
+          label: 'App Engagement',
+        };
+      case 'COOKING':
+        return {
+          gradient: ['#FF9800', '#F57C00'] as const,
+          accentColor: '#FF9800',
+          label: 'Cooking Milestone',
+        };
+      case 'MONEY_SAVED':
+        return {
+          gradient: ['#4CAF50', '#388E3C'] as const,
+          accentColor: '#4CAF50',
+          label: 'Savings Achievement',
+        };
+      case 'FOOD_SAVED':
+        return {
+          gradient: ['#8BC34A', '#689F38'] as const,
+          accentColor: '#8BC34A',
+          label: 'Waste Reduction',
+        };
+      case 'PLANNING':
+        return {
+          gradient: ['#9C27B0', '#7B1FA2'] as const,
+          accentColor: '#9C27B0',
+          label: 'Planning Master',
+        };
+      case 'BONUS':
+        return {
+          gradient: ['#FF5722', '#E64A19'] as const,
+          accentColor: '#FF5722',
+          label: 'Bonus Achievement',
+        };
+      case 'SPONSOR':
+        return {
+          gradient: ['#E91E63', '#C2185B'] as const,
+          accentColor: '#E91E63',
+          label: 'Partner Reward',
         };
       case 'CHALLENGE_WINNER':
         return {
-          gradient: ['#4B2176', '#3A1A5C'] as const,
-          accentColor: '#4B2176',
+          gradient: ['#FFC107', '#FFA000'] as const,
+          accentColor: '#FFC107',
           label: 'Challenge Winner',
         };
       case 'SPECIAL':
         return {
-          gradient: ['#F99C46', '#E88A35'] as const,
-          accentColor: '#F99C46',
+          gradient: ['#00BCD4', '#0097A7'] as const,
+          accentColor: '#00BCD4',
           label: 'Special Recognition',
         };
       default:
         return {
           gradient: ['#4B2176', '#3A1A5C'] as const,
           accentColor: '#4B2176',
-          label: 'Achievement',
+          label: 'Achievement Unlocked',
         };
     }
   };
@@ -175,11 +218,17 @@ export default function BadgeEarnedModal({
                     },
                   ]}
                 >
-                  <Image
-                    source={{ uri: badge.imageUrl }}
-                    style={tw.style('h-36 w-36')}
-                    resizeMode="contain"
-                  />
+                  {badge.imageUrl && badge.imageUrl.trim() !== '' ? (
+                    <Image
+                      source={{ uri: badge.imageUrl }}
+                      style={tw.style('h-36 w-36 rounded-full')}
+                      resizeMode="contain"
+                    />
+                  ) : (
+                    <View style={tw.style('h-36 w-36 items-center justify-center')}>
+                      <Text style={tw.style('text-6xl')}>🏆</Text>
+                    </View>
+                  )}
                 </View>
               </View>
             </Animatable.View>

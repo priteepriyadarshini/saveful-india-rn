@@ -19,6 +19,18 @@ const badgesApi = api
   .injectEndpoints({
     overrideExisting: true,
     endpoints: builder => ({
+      // Get badge by id
+      getBadgeById: builder.query<Badge, { id: string }>({
+        query: ({ id }) => ({
+          url: `/api/badges/${id}`,
+          method: 'GET',
+        }),
+        providesTags: (_r, _e, arg) => [{ type: 'Badges', id: arg.id } as any],
+        transformResponse: (r: any) => {
+          // Backend may return { badge: {...} } or the badge directly
+          return r?.badge ?? r;
+        },
+      }),
       // Get all badges
       getAllBadges: builder.query<Badge[], { includeInactive?: boolean }>({
         query: params => ({
@@ -132,4 +144,5 @@ export const {
   useGetMyBadgeStatsQuery,
   useMarkBadgeAsViewedMutation,
   useCheckMyMilestonesMutation,
+  useLazyGetBadgeByIdQuery,
 } = badgesApi;
