@@ -22,8 +22,6 @@ function useAnalytics(){
 
   const env = EnvironmentManager.shared.getEnvironment();
 
-  // 🔧 Replace feature flags with simple booleans
-  // Change these values once feature flag file has been created
   const alertOnTrackEvent = false;
   const alertOnIdentify = false;
   const alertOnScreen = false;

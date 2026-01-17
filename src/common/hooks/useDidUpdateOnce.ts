@@ -8,7 +8,6 @@ const useUpdateEffectOnce = (
   const didUpdateOnce = React.useRef(false);
 
   React.useEffect(() => {
-    // block first call of the hook and forward each consecutive one
     if (didMountRef.current) {
       if (!didUpdateOnce.current) {
         callback();

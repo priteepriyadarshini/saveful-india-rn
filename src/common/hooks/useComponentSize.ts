@@ -6,8 +6,7 @@ interface ComponentSize {
   height?: number;
 }
 
-// Hook for getting the size of a component
-// Returns the size, and an onLayout function to apply to the view you want to know the size of
+
 const useComponentSize = (
   initialSize?: ComponentSize,
 ): [ComponentSize, (event: LayoutChangeEvent) => void] => {

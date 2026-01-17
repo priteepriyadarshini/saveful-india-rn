@@ -1,6 +1,6 @@
 import tw from '../tailwind';
 import { useWindowDimensions } from 'react-native';
-import { Style } from 'twrnc'; //maybe error during bundling
+import { Style } from 'twrnc'; 
 
 export enum ScreenSizeType {
   S = 0,
@@ -11,7 +11,6 @@ export enum ScreenSizeType {
 
 export default function useScreenSize() {
   const { height } = useWindowDimensions();
-  // Little helper function to get current device height
   const calculateScreenSize = (): ScreenSizeType => {
     if (height < 550) {
       return ScreenSizeType.S;
@@ -25,7 +24,7 @@ export default function useScreenSize() {
     return ScreenSizeType.XL;
   };
 
-  // Little helper function that will return a style with different styles depending on device size.
+
   const getStyle = (baseStyle: string, styles: string[]): Style => {
     const screenSize = calculateScreenSize();
     return tw.style(baseStyle, styles[screenSize]);

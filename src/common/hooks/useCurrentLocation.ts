@@ -26,14 +26,11 @@ export default function useWatchLocation(
 
   React.useEffect(() => {
     const manageSubscription = async () => {
-      // console.debug({visible, shouldWatch, subscription: foregroundSubscription.current})
 
       if (shouldWatch && !foregroundSubscription.current) {
         console.debug('useCurrentLocation: starting foreground subscription');
-        // Start watching position in real-time
         foregroundSubscription.current = await Location.watchPositionAsync(
           {
-            // For better logs, we set the accuracy to the most sensitive option
             accuracy,
           },
           currentLocation => {

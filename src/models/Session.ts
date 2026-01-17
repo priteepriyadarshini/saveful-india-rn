@@ -20,7 +20,6 @@ export interface CurrentUser {
   app_joined_at?: string;
   inserted_at?: string;
   timezone?: string;
-  // Dietary and location fields from backend
   country?: string;
   stateCode?: string;
   vegType?: 'OMNI' | 'VEGETARIAN' | 'VEGAN';
@@ -49,7 +48,7 @@ export interface CurrentUserTOTP {
 
 export interface PhotoFile {
   blur_url: string | null;
-  file: string | null; // Check this typo
+  file: string | null; 
   id: string;
   large_url: string | null;
   medium_url: string | null;
@@ -73,7 +72,6 @@ export type OpenBankingConnectionStatus =
   | 'connected'
   | 'error';
 
-// Returns a boolean representing if a user has connected a bank account
 export function isConnectedFromStatus(
   status?: OpenBankingConnectionStatus,
   opts?: { includeInitiatingAsConnected?: boolean },
@@ -86,9 +84,7 @@ export function isConnectedFromStatus(
     case 'expired':
       return false;
     case 'initiated':
-      // We usually lwant to include intiated as connected
-      // but the MyImpact home screen is designed around us not doing that
-      // so we can force it to false for that scenario here.
+
       return opts?.includeInitiatingAsConnected ?? true;
     case 'connected':
     case 'expiring':

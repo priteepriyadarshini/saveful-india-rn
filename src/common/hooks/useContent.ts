@@ -17,17 +17,8 @@ export default function useContent() {
   const env = useEnvironment();
 
   let contentService: ContentService;
-  // ALWAYS use bundled content to avoid Craft CMS calls
   contentService = new BundledContentService();
   
-  // if (env.useBundledContent) {
-  //   contentService = new BundledContentService();
-  //   // console.log('created BundledHelpContentService');
-  // } else {
-  //   contentService = new RealTimeContentService();
-  //   // console.log('created RealTimeHelpContentService');
-  // }
-
   const getArticleContents = async () => {
     await contentService.loadContent();
     const response = contentService.getArticleContents();

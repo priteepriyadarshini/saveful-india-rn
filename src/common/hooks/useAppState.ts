@@ -6,7 +6,6 @@ export default function useAppState(): AppStateStatus {
     AppState.currentState,
   );
 
-  // App resume
   useEffect(() => {
     const listener = AppState.addEventListener('change', setAppState);
 

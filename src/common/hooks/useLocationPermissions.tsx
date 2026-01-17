@@ -36,12 +36,10 @@ export default function useLocationPermissions() {
     }
   };
 
-  // Check when the hook starts
   React.useEffect(() => {
     checkLocationPermission();
   }, []);
 
-  // Re-check permissions when we become active
   React.useEffect(() => {
     if (state === 'active') {
       checkLocationPermission();

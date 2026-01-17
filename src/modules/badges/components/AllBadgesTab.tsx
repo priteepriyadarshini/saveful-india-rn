@@ -219,7 +219,7 @@ export default function AllBadgesTab() {
                 {badge.isSponsorBadge && badge.sponsorName && (
                   <View style={tw`flex-row items-center rounded-full bg-pink-100 px-3 py-1.5`}>
                     <Ionicons name="business" size={12} color="#E91E63" />
-                    <Text style={tw.style(bodySmallBold, 'ml-1.5 text-xs')} style={{ color: '#E91E63' }}>
+                    <Text style={tw.style(bodySmallBold, 'ml-1.5 text-xs', { color: '#E91E63' })}>
                       {badge.sponsorName}
                     </Text>
                   </View>

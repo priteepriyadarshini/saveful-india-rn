@@ -8,19 +8,16 @@ import { OneSignal } from 'react-native-onesignal';
 export default function OtherLaunchTasksHandler() {
   const { sendAnalyticsUserID } = useAnalytics();
 
-  // Wrap in try-catch to prevent crashes if user query fails
   const { data: currentUser, error: userError } = useGetCurrentUserQuery(
     undefined,
     { 
       skip: false,
-      // Don't retry on error to prevent crash loops
       refetchOnMountOrArgChange: false,
       refetchOnReconnect: false,
     }
   );
   const [sendOneSignalPayload] = useSendOneSignalPayloadMutation();
 
-  // Log if user query fails
   React.useEffect(() => {
     if (userError) {
       console.warn('Failed to load current user in OtherLaunchTasksHandler:', userError);
@@ -34,7 +31,6 @@ export default function OtherLaunchTasksHandler() {
       }
 
       try {
-        // Wrap analytics in try-catch
         try {
           sendAnalyticsUserID(currentUser.id, {
             id: currentUser.id,
@@ -44,7 +40,6 @@ export default function OtherLaunchTasksHandler() {
           console.warn('Analytics initialization failed (non-critical):', analyticsError);
         }
 
-        // Disable OneSignal integration to prevent production crashes
         console.log('OneSignal integration disabled in production build');
         
         // // Initialize OneSignal with user information
