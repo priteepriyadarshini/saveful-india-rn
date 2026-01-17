@@ -1,10 +1,6 @@
 import useAnimationTimer from "./useAnimationTimer";
 
-// Some easing functions copied from:
-// https://github.com/streamich/ts-easing/blob/master/src/index.ts
 
-
-// Hardcode here or pull in a dependency
 export type EasingFunctions = 'linear' | 'elastic' | 'inExpo';
 
 const easing = {
