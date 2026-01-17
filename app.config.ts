@@ -33,7 +33,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#FFFAF3',
     },
     adaptiveIcon: {
-      foregroundImage: './assets/adaptive_icon.png',
+      foregroundImage: './assets/adaptive-icon.png',
       backgroundColor: '#FFFAF3',
     },
     intentFilters: [
