@@ -42,6 +42,15 @@ export default function TrackTabChart() {
         uri: require('../../../../assets/track/money.png'),
       },
     },
+    {
+      name: 'co2',
+      heading: 'you’ve potentially saved',
+      value: `${Number(stats?.total_co2_savings ?? 0).toFixed(2)}kg CO2`,
+      description: `by cooking ${stats?.completed_meals_count} saveful meals`,
+      image: {
+        uri: require('../../../../assets/track/food.png'),
+      },
+    },
   ];
 
   const [activeTab, setActiveTab] = useState(TRACK?.[0].name);
@@ -69,8 +78,10 @@ export default function TrackTabChart() {
               style={tw.style(
                 `items-center border border-strokecream px-2.5 py-1 ${
                   index === TRACK.length - 1
-                    ? 'rounded-r-[11px]'
-                    : 'rounded-l-[11px]'
+                    ? 'rounded-tr-2lg rounded-br-2lg'
+                    : index === 0
+                    ? 'rounded-tl-2lg rounded-bl-2lg'
+                    : ''
                 } ${
                   activeTab === content.name
                     ? 'border-creme-2 bg-white'
