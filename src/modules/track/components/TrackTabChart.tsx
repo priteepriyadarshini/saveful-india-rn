@@ -15,14 +15,7 @@ export default function TrackTabChart() {
 
   const currencySymbol = getCurrencySymbol(user?.country);
 
-  // MOCK DATA
-  // const stats = {
-  //   food_savings_user: 12.5,
-  //   total_cost_savings: 87.3,
-  //   completed_meals_count: 18,
-  // };
-
-
+ 
   const TRACK = [
     {
       name: 'food',
@@ -30,7 +23,7 @@ export default function TrackTabChart() {
       value: `${Number(stats?.food_savings_user ?? 0).toFixed(2)}kg`,
       description: `by cooking ${stats?.completed_meals_count} saveful meals`,
       image: {
-        uri: require('../../../../assets/track/food.png'),
+        uri: require('../../../../assets/track/food1.png'),
       },
     },
     {
@@ -39,7 +32,7 @@ export default function TrackTabChart() {
       value: `${currencySymbol}${Number(stats?.total_cost_savings ?? 0).toFixed(2)}`,
       description: `by cooking ${stats?.completed_meals_count} saveful meals`,
       image: {
-        uri: require('../../../../assets/track/money.png'),
+        uri: require('../../../../assets/track/money1.png'),
       },
     },
     {
@@ -48,7 +41,7 @@ export default function TrackTabChart() {
       value: `${Number(stats?.total_co2_savings ?? 0).toFixed(2)}kg CO2`,
       description: `by cooking ${stats?.completed_meals_count} saveful meals`,
       image: {
-        uri: require('../../../../assets/track/food.png'),
+        uri: require('../../../../assets/track/co2.png'),
       },
     },
   ];
@@ -59,7 +52,6 @@ export default function TrackTabChart() {
     setActiveTab(tabName);
   };
 
-  // if (!stats || isGetStatsLoading) return null;
 
   return (
     <View

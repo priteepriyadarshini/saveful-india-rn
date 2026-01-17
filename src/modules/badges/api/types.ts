@@ -109,15 +109,18 @@ export interface UserBadge {
 export interface LeaderboardEntry {
   userId: string;
   userName: string;
-  userEmail: string;
   badgeCount: number;
   mealsCooked: number;
   foodSavedGrams: number;
   totalMoneySaved?: number;
+  totalCo2SavedGrams?: number;
+  totalCo2SavedKg?: number;
   rank?: number;
 }
 
 export type TimeFilter = 'today' | 'weekly' | 'monthly' | 'all';
+
+export type MetricFilter = 'meals' | 'saved' | 'money' | 'badges' | 'co2' | 'all';
 
 export interface BadgeStats {
   totalBadges: number;

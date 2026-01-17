@@ -7,20 +7,23 @@ import {
   RefreshControl,
   TouchableOpacity,
   ImageBackground,
+  ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import tw from '../../../common/tailwind';
 import { useGetLeaderboardQuery } from '../api/api';
-import { LeaderboardEntry, TimeFilter } from '../api/types';
+import { LeaderboardEntry, TimeFilter, MetricFilter } from '../api/types';
 import { bodyMediumRegular, h6TextStyle, bodySmallRegular, bodySmallBold, subheadSmallUppercase } from '../../../theme/typography';
 import { cardDrop } from '../../../theme/shadow';
 
 export default function LeaderboardTab() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
+  const [metricFilter, setMetricFilter] = useState<MetricFilter>('all');
   const { data: leaderboard, isLoading, refetch, isFetching } = useGetLeaderboardQuery({ 
     limit: 100,
-    period: timeFilter 
+    period: timeFilter,
+    metric: metricFilter 
   });
 
   const timeFilters: { key: TimeFilter; label: string; icon: any }[] = [
@@ -28,6 +31,15 @@ export default function LeaderboardTab() {
     { key: 'weekly', label: 'Weekly', icon: 'calendar' },
     { key: 'monthly', label: 'Monthly', icon: 'calendar-outline' },
     { key: 'all', label: 'All Time', icon: 'infinite' },
+  ];
+
+  const metricFilters: { key: MetricFilter; label: string; icon: any; color: string; bgColor: string }[] = [
+    { key: 'all', label: 'Overall', icon: 'trophy', color: '#623eae', bgColor: '#F3EDFF' },
+    { key: 'meals', label: 'Meals', icon: 'restaurant', color: '#6B35E8', bgColor: '#EFE7FF' },
+    { key: 'saved', label: 'Food', icon: 'leaf', color: '#2D8659', bgColor: '#E8F5EE' },
+    { key: 'money', label: 'Money', icon: 'cash', color: '#E87722', bgColor: '#FFF4E6' },
+    { key: 'badges', label: 'Badges', icon: 'ribbon', color: '#9D6FFF', bgColor: '#F5F0FF' },
+    { key: 'co2', label: 'CO2e', icon: 'cloud-outline', color: '#4A5568', bgColor: '#F7FAFC' },
   ];
 
   const renderLeaderboardItem = ({ item, index }: { item: LeaderboardEntry; index: number }) => {
@@ -68,7 +80,8 @@ export default function LeaderboardTab() {
     };
 
     const config = getRankConfig(rank);
-    const foodSavedKg = (item.foodSavedGrams / 1000).toFixed(2);
+    const foodSavedKg = ((item.foodSavedGrams || 0) / 1000).toFixed(2);
+    const co2SavedKg = item.totalCo2SavedKg || 0;
 
     return (
       <View style={tw.style('mx-4 mb-3 overflow-hidden rounded-2xl border bg-white', cardDrop, {
@@ -85,101 +98,117 @@ export default function LeaderboardTab() {
             colors={config.gradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-          style={tw`p-4`}
-        >
-          <View style={tw`flex-row items-center`}>
-            {/* Rank Badge */}
-            <View style={tw`mr-3 w-16 items-center justify-center`}>
-              {config.icon ? (
-                <View style={tw`items-center`}>
-                  <View style={tw.style('mb-1 h-12 w-12 items-center justify-center rounded-full', {
-                    backgroundColor: `${config.color}15`,
-                  })}>
-                    <Ionicons name={config.icon as any} size={24} color={config.color} />
+            style={tw`px-4 py-3`}
+          >
+            {/* Header Row: Rank + Name */}
+            <View style={tw`mb-3 flex-row items-center`}>
+              {/* Rank Badge */}
+              <View style={tw`mr-3`}>
+                {config.icon ? (
+                  <View style={tw`items-center`}>
+                    <View style={tw.style('h-10 w-10 items-center justify-center rounded-full', {
+                      backgroundColor: `${config.color}15`,
+                    })}>
+                      <Ionicons name={config.icon as any} size={20} color={config.color} />
+                    </View>
                   </View>
-                  <Text style={tw.style(subheadSmallUppercase, 'text-black')}>#{rank}</Text>
-                </View>
-              ) : (
-                <View style={tw`h-12 w-12 items-center justify-center rounded-full bg-creme-2`}>
-                  <Text style={tw.style(h6TextStyle, 'text-sm text-eggplant')}>#{rank}</Text>
-                </View>
-              )}
-            </View>
+                ) : (
+                  <View style={tw`h-10 w-10 items-center justify-center rounded-full bg-creme-2`}>
+                    <Text style={tw.style(bodySmallBold, 'text-eggplant')}>{rank}</Text>
+                  </View>
+                )}
+              </View>
 
-            {/* User Info */}
-            <View style={tw`flex-1`}>
-              <Text
-                style={tw.style(bodyMediumRegular, 'mb-1 font-bold text-black')}
-                numberOfLines={1}
-              >
-                {item.userName || 'Anonymous User'}
-              </Text>
-              {item.userEmail && (
+              {/* User Name */}
+              <View style={tw`flex-1`}>
                 <Text
-                  style={tw.style(bodySmallRegular, 'text-stone')}
+                  style={tw.style(bodyMediumRegular, 'font-bold text-black text-base')}
                   numberOfLines={1}
                 >
-                  {item.userEmail}
+                  {item.userName || 'Anonymous User'}
                 </Text>
+              </View>
+
+              {/* Rank Number Badge for top 3 */}
+              {isTopThree && (
+                <View style={tw.style('ml-2 rounded-full px-2.5 py-1', {
+                  backgroundColor: `${config.color}20`,
+                })}>
+                  <Text style={tw.style(bodySmallBold, 'text-xs')} selectable={false}>
+                    #{rank}
+                  </Text>
+                </View>
               )}
             </View>
-          </View>
 
-          {/* Stats Pills */}
-          <View style={tw`mt-4 flex-row flex-wrap gap-2`}>
-            {/* Meals Cooked */}
-            <View style={tw`flex-1 min-w-[22%] items-center`}>
-              <View style={tw`mb-1.5 flex-row items-center rounded-full bg-white px-2.5 py-1.5 shadow-sm`}>
-                <Ionicons name="restaurant" size={13} color={tw.color('eggplant-vibrant') || '#7E42FF'} />
-                <Text style={tw.style(bodySmallBold, 'ml-1 text-eggplant text-xs')}>
-                  {item.mealsCooked || 0}
+            {/* Stats Row: All metrics in one line */}
+            <View style={tw`flex-row items-center justify-between gap-1.5`}>
+              {/* Meals */}
+              <View style={tw`items-center`}>
+                <View style={tw`mb-1 flex-row items-center rounded-full bg-white px-2 py-1 shadow-sm`}>
+                  <Ionicons name="restaurant" size={11} color={tw.color('eggplant-vibrant') || '#7E42FF'} />
+                  <Text style={tw.style(bodySmallBold, 'ml-1 text-eggplant text-[10px]')}>
+                    {item.mealsCooked || 0}
+                  </Text>
+                </View>
+                <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[8px]')}>
+                  Meals
                 </Text>
               </View>
-              <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[9px]')}>
-                Meals
-              </Text>
-            </View>
 
-            {/* Food Saved */}
-            <View style={tw`flex-1 min-w-[22%] items-center`}>
-              <View style={tw`mb-1.5 flex-row items-center rounded-full bg-white px-2.5 py-1.5 shadow-sm`}>
-                <Ionicons name="leaf" size={13} color={tw.color('kale') || '#3A7E52'} />
-                <Text style={tw.style(bodySmallBold, 'ml-1 text-kale text-xs')}>
-                  {foodSavedKg}
+              {/* Food Saved */}
+              <View style={tw`items-center`}>
+                <View style={tw`mb-1 flex-row items-center rounded-full bg-white px-2 py-1 shadow-sm`}>
+                  <Ionicons name="leaf" size={11} color={tw.color('kale') || '#3A7E52'} />
+                  <Text style={tw.style(bodySmallBold, 'ml-1 text-kale text-[10px]')}>
+                    {foodSavedKg}
+                  </Text>
+                </View>
+                <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[8px]')}>
+                  Saved
                 </Text>
               </View>
-              <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[9px]')}>
-                Saved
-              </Text>
-            </View>
 
-            {/* Money Saved */}
-            <View style={tw`flex-1 min-w-[22%] items-center`}>
-              <View style={tw`mb-1.5 flex-row items-center rounded-full bg-white px-2.5 py-1.5 shadow-sm`}>
-                <Ionicons name="cash" size={13} color={tw.color('orange') || '#F99C46'} />
-                <Text style={tw.style(bodySmallBold, 'ml-1 text-orange text-xs')}>
-                  ₹{(item.totalMoneySaved || 0).toFixed(0)}
+              {/* Money */}
+              <View style={tw`items-center`}>
+                <View style={tw`mb-1 flex-row items-center rounded-full bg-white px-2 py-1 shadow-sm`}>
+                  <Ionicons name="cash" size={11} color={tw.color('orange') || '#F99C46'} />
+                  <Text style={tw.style(bodySmallBold, 'ml-1 text-orange text-[10px]')}>
+                    ₹{(item.totalMoneySaved || 0).toFixed(0)}
+                  </Text>
+                </View>
+                <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[8px]')}>
+                  Money
                 </Text>
               </View>
-              <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[9px]')}>
-                Money
-              </Text>
-            </View>
 
-            {/* Badge Count */}
-            <View style={tw`flex-1 min-w-[22%] items-center`}>
-              <View style={tw`mb-1.5 flex-row items-center rounded-full bg-white px-2.5 py-1.5 shadow-sm`}>
-                <Ionicons name="ribbon" size={13} color={tw.color('eggplant-light') || '#9D6FFF'} />
-                <Text style={tw.style(bodySmallBold, 'ml-1 text-eggplant text-xs')}>
-                  {item.badgeCount || 0}
+              {/* Badges */}
+              <View style={tw`items-center`}>
+                <View style={tw`mb-1 flex-row items-center rounded-full bg-white px-2 py-1 shadow-sm`}>
+                  <Ionicons name="ribbon" size={11} color={tw.color('eggplant-light') || '#9D6FFF'} />
+                  <Text style={tw.style(bodySmallBold, 'ml-1 text-eggplant text-[10px]')}>
+                    {item.badgeCount || 0}
+                  </Text>
+                </View>
+                <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[8px]')}>
+                  Badges
                 </Text>
               </View>
-              <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[9px]')}>
-                Badges
-              </Text>
+
+              {/* CO2e */}
+              <View style={tw`items-center`}>
+                <View style={tw`mb-1 flex-row items-center rounded-full bg-white px-2 py-1 shadow-sm`}>
+                  <Ionicons name="cloud-outline" size={11} color={tw.color('stone') || '#6D6D72'} />
+                  <Text style={tw.style(bodySmallBold, 'ml-1 text-stone text-[10px]')}>
+                    {co2SavedKg.toFixed(2)}
+                  </Text>
+                </View>
+                <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[8px]')}>
+                  CO2e kg
+                </Text>
+              </View>
             </View>
-          </View>
-        </LinearGradient>
+          </LinearGradient>
         </ImageBackground>
       </View>
     );
@@ -243,6 +272,48 @@ export default function LeaderboardTab() {
             );
           })}
         </View>
+      </View>
+
+      {/* Metric Filter Tabs */}
+      <View style={tw`bg-white border-t border-strokecream`}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={tw`px-4 py-3 gap-2.5`}
+        >
+          {metricFilters.map((filter) => {
+            const isActive = metricFilter === filter.key;
+            return (
+              <TouchableOpacity
+                key={filter.key}
+                onPress={() => setMetricFilter(filter.key)}
+                style={[
+                  tw`flex-row items-center rounded-xl px-4 py-2.5 min-w-[90px]`,
+                  isActive 
+                    ? { backgroundColor: filter.color, shadowColor: filter.color, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 3 }
+                    : { backgroundColor: filter.bgColor }
+                ]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isActive }}
+              >
+                <Ionicons
+                  name={filter.icon}
+                  size={18}
+                  color={isActive ? '#FFFFFF' : filter.color}
+                  style={tw`mr-2`}
+                />
+                <Text
+                  style={[
+                    tw.style(bodySmallBold, 'text-sm'),
+                    { color: isActive ? '#FFFFFF' : filter.color }
+                  ]}
+                >
+                  {filter.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
 
       {/* Leaderboard List */}

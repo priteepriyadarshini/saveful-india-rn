@@ -45,7 +45,7 @@ const badgesApi = api
       }),
 
       // Get leaderboard with user stats
-      getLeaderboard: builder.query<LeaderboardEntry[], { limit?: number; period?: TimeFilter }>({
+      getLeaderboard: builder.query<LeaderboardEntry[], { limit?: number; period?: TimeFilter; metric?: string }>({
         query: params => {
           const mapPeriod = (p?: TimeFilter) => {
             if (!p) return 'ALL_TIME';
@@ -63,9 +63,27 @@ const badgesApi = api
                 return 'ALL_TIME';
             }
           };
+          const mapMetric = (m?: string) => {
+            if (!m || m === 'all') return 'BOTH';
+            switch (m) {
+              case 'meals':
+                return 'MEALS_COOKED';
+              case 'saved':
+                return 'FOOD_SAVED';
+              case 'money':
+                return 'MONEY_SAVED';
+              case 'badges':
+                return 'BADGES';
+              case 'co2':
+                return 'CO2_SAVED';
+              default:
+                return 'BOTH';
+            }
+          };
           const limitParam = params.limit ?? 50;
           const periodParam = mapPeriod(params.period);
-          const query = `?limit=${limitParam}&period=${periodParam}&metric=BOTH`;
+          const metricParam = mapMetric(params.metric);
+          const query = `?limit=${limitParam}&period=${periodParam}&metric=${metricParam}`;
           return {
             url: `/api/analytics/leaderboard${query}`,
             method: 'GET',
@@ -80,6 +98,8 @@ const badgesApi = api
             rank: index + 1,
             mealsCooked: entry.mealsCooked || entry.numberOfMealsCooked || 0,
             foodSavedGrams: entry.foodSavedGrams || entry.foodSavedInGrams || 0,
+            totalCo2SavedGrams: entry.totalCo2SavedInGrams || entry.totalCo2SavedGrams || 0,
+            totalCo2SavedKg: entry.totalCo2SavedKg || Number(((entry.totalCo2SavedInGrams || 0) / 1000).toFixed(2)),
           }));
         },
       }),
