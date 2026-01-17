@@ -118,7 +118,7 @@ export default function FeedNotification({
           } else {
             // Deep link as safe fallback
             try {
-              linkTo(`survey/postmake/${pendingRecipe.id}`);
+              linkTo(`/survey/postmake/${pendingRecipe.id}`);
             } catch (_e) {
               // no-op
             }

@@ -170,7 +170,7 @@ export default function MakeItSurveyModal({
       scheduleNotification({
         message: `How was your ${title ?? 'meal'}?`,
         delayInSeconds: 30 * 60, // 30 minutes
-        url: `survey/postmake/${mealId}`,
+        url: `/survey/postmake/${mealId}`,
       });
 
       setIsVisible(false);
