@@ -1,11 +1,17 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-export type IntroStackParamList = {
+export type IntroNavigatorStackParamList = {
   IntroHome: undefined;
-  Auth: undefined;
+  AuthScreen: undefined;
+  OTPVerificationScreen: {
+    email: string;
+    name: string;
+  };
   Onboarding: undefined;
   PostOnboarding: undefined;
 };
+
+export type IntroStackParamList = IntroNavigatorStackParamList;
 
 export type IntroStackScreenProps<Screen extends keyof IntroStackParamList> =
   NativeStackScreenProps<IntroStackParamList, Screen>;

@@ -33,6 +33,35 @@ export interface SignupData {
   tastePreference?: string[];
 }
 
+export interface RequestOtpData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  name: string;
+  country?: string;
+  stateCode?: string;
+  vegType?: string;
+  dairyFree?: boolean;
+  nutFree?: boolean;
+  glutenFree?: boolean;
+  hasDiabetes?: boolean;
+  otherAllergies?: string[];
+  noOfAdults?: number;
+  noOfChildren?: number;
+  tastePreference?: string[];
+}
+
+export interface VerifyOtpData {
+  email: string;
+  otp: string;
+}
+
+export interface OtpResponse {
+  success: boolean;
+  message: string;
+  expiresIn?: string;
+}
+
 export interface AuthResponse {
   success: boolean;
   accessToken: string;
@@ -87,7 +116,37 @@ const currentUserApi = api
         },
       }),
 
-      // New signup endpoint for NestJS backend
+      // Request OTP for signup
+      requestOTP: builder.mutation<OtpResponse, RequestOtpData>({
+        query: data => ({
+          url: '/api/auth/request-otp',
+          method: 'POST',
+          body: data,
+        }),
+      }),
+
+      // Verify OTP and create account
+      verifyOTP: builder.mutation<AuthResponse, VerifyOtpData>({
+        query: data => ({
+          url: '/api/auth/verify-otp',
+          method: 'POST',
+          body: data,
+        }),
+        invalidatesTags: ['CurrentUser'],
+        async onQueryStarted(_, { dispatch, queryFulfilled }) {
+          try {
+            const { data } = await queryFulfilled;
+            // If verification successful and has token, refetch user data
+            if (data.success && data.accessToken) {
+              dispatch(currentUserApi.util.invalidateTags(['CurrentUser']));
+            }
+          } catch {
+            // Handle error if needed
+          }
+        },
+      }),
+
+      // New signup endpoint for NestJS backend (legacy, kept for backward compatibility)
       signup: builder.mutation<AuthResponse, SignupData>({
         query: data => ({
           url: '/api/auth/signup',
@@ -342,6 +401,8 @@ const currentUserApi = api
 export const {
   useLoginMutation,
   useSignupMutation,
+  useRequestOTPMutation,
+  useVerifyOTPMutation,
   useRefreshTokenMutation,
   useGetCurrentUserQuery,
   useLazyGetCurrentUserQuery,

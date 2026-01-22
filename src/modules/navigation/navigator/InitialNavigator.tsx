@@ -26,6 +26,7 @@ import IngredientsStackNavigator, {
 import HackVideoScreen from "../../hack/screens/HackVideoScreen";
 import MakeItScreen from "../../make/screens/MakeItScreen";
 import AuthScreen from "../../intro/screens/AuthScreen";
+import OTPVerificationScreen from "../../intro/screens/OTPVerificationScreen";
 import OnboardingNavigator from "./onboarding/OnboardingNavigator";
 import SplashPage from "../../intro/components/SplashPage";
 import IntroScreen from "../../intro/screens/IntroScreen";
@@ -34,6 +35,7 @@ export type InitialStackParamList = {
   Splash: undefined;
   Intro: undefined;
   Auth: undefined;
+  OTPVerificationScreen: { email: string; name: string } | undefined;
   Onboarding: undefined;
   Root: NavigatorScreenParams<RootStackParamList> | undefined;
   Ingredients: NavigatorScreenParams<IngredientsStackParamList> | undefined;
@@ -169,6 +171,11 @@ function InitialNavigator() {
       <InitialNavigationStack.Screen 
         name="Auth" 
         component={AuthScreen} 
+        options={{ headerShown: false }} 
+      />
+      <InitialNavigationStack.Screen 
+        name="OTPVerificationScreen" 
+        component={OTPVerificationScreen} 
         options={{ headerShown: false }} 
       />
       <InitialNavigationStack.Screen 

@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import IntroScreen from '../../../intro/screens/IntroScreen';
 import AuthScreen from '../../../intro/screens/AuthScreen';
+import OTPVerificationScreen from '../../../intro/screens/OTPVerificationScreen';
 
 import { IntroStackParamList } from './types';
 
@@ -10,7 +11,7 @@ const IntroNavigationStack = createNativeStackNavigator<IntroStackParamList>();
 function IntroNavigator() {
   return (
     <IntroNavigationStack.Navigator
-      initialRouteName="Auth"
+      initialRouteName="AuthScreen"
       screenOptions={{
         headerTransparent: true,
         headerTintColor: '#000000',
@@ -23,12 +24,19 @@ function IntroNavigator() {
         options={{ headerShown: false }}
       />
       <IntroNavigationStack.Screen
-        name="Auth"
+        name="AuthScreen"
         component={AuthScreen}
         options={{ 
-          headerShown: true,
+          headerShown: false,
           title: '',
-          headerTransparent: true,
+        }}
+      />
+      <IntroNavigationStack.Screen
+        name="OTPVerificationScreen"
+        component={OTPVerificationScreen}
+        options={{ 
+          headerShown: false,
+          title: '',
         }}
       />
     </IntroNavigationStack.Navigator>

@@ -6,26 +6,27 @@ import { Feather } from '@expo/vector-icons';
 import tw from '../../../common/tailwind';
 import PrimaryButton from '../../../common/components/ThemeButtons/PrimaryButton';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
-import { useLoginMutation, useSignupMutation, SignupData } from '../../auth/api';
+import { useLoginMutation, useRequestOTPMutation, SignupData } from '../../auth/api';
 import { saveSessionData } from '../../auth/sessionSlice';
 import { useAppDispatch } from '../../../store/hooks';
 import { useLazyGetCurrentUserQuery } from '../../auth/api';
 import { TokenManager } from '../../pushNotifications/TokenManager';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
 import { bodyMediumRegular, h6TextStyle } from '../../../theme/typography';
-
-export default function AuthScreen() {
+export default function AuthScreen({ navigation }: any) {
   const dispatch = useAppDispatch();
   const { sendAnalyticsUserID, sendAliasUserID } = useAnalytics();
   
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
-  const [signup, { isLoading: isSignupLoading }] = useSignupMutation();
+  const [requestOTP, { isLoading: isRequestingOTP }] = useRequestOTPMutation();
   const [loadCurrentUser] = useLazyGetCurrentUserQuery();
 
   const handleAuth = async () => {
@@ -37,81 +38,113 @@ export default function AuthScreen() {
         return;
       }
 
-      if (!isLogin && !name) {
-        Alert.alert('Error', 'Please enter your name');
-        return;
-      }
+      if (!isLogin) {
+        // Signup flow - request OTP
+        if (!name) {
+          Alert.alert('Error', 'Please enter your name');
+          return;
+        }
 
-      let result;
-      
-      if (isLogin) {
-        console.log('Attempting login...');
-        result = await login({ email, password }).unwrap();
-        console.log('Login result:', result);
-      } else {
-        const signupData: SignupData = {
+        if (password !== confirmPassword) {
+          Alert.alert('Error', 'Passwords do not match');
+          return;
+        }
+
+        if (password.length < 6) {
+          Alert.alert('Error', 'Password must be at least 6 characters');
+          return;
+        }
+
+        console.log('Requesting OTP for signup...');
+        const result = await requestOTP({
           email,
           password,
+          confirmPassword,
           name,
-          stateCode: 'IN-DL', 
-          vegType: 'OMNI', // Default, will be updated in dietary profile
-        };
-        console.log('Attempting signup...', signupData);
-        result = await signup(signupData).unwrap();
-        console.log('Signup result:', result);
-      }
+          stateCode: 'IN-DL',
+          vegType: 'OMNI',
+        }).unwrap();
+        
+        console.log('OTP request result:', result);
 
-      console.log('Auth response:', result);
-
-      if (result.success && result.accessToken) {
-        console.log('✅ Auth successful, saving session...');
-        // Save session data
-        const sessionData = {
-          access_token: result.accessToken,
-          refresh_token: result.refreshToken,
-        };
-        await dispatch(saveSessionData(sessionData));
-        console.log('✅ Session saved');
-
-        // Load user data - make this optional to prevent crash
-        try {
-          console.log('📡 Fetching user data from /api/auth/me...');
-          const user = await loadCurrentUser({
-            accessToken: result.accessToken,
-          }).unwrap();
-          console.log('✅ User data received:', user);
-
-          if (user) {
-            // Initialize analytics
-            try {
-              sendAliasUserID(user.id);
-              sendAnalyticsUserID(user.id, {
-                id: user.id,
-                first_name: user.first_name || name,
-                email: user.email,
-              });
-            } catch (analyticsError) {
-              console.log('Analytics error (non-critical):', analyticsError);
-            }
-
-            console.log('✅ Authentication completed successfully');
-          }
-        } catch (userError: any) {
-          console.error('❌ Failed to load user data:', userError);
-          console.error('Error details:', {
-            status: userError.status,
-            data: userError.data,
-            message: userError.message
-          });
-          
-          // Don't block login if user data fetch fails
-          // The session is already saved, so user should still be logged in
-          console.log('⚠️ Continuing with login despite user data fetch failure');
+        if (result.success) {
           Alert.alert(
-            'Notice',
-            'Login successful! Some profile data may be unavailable.',
-            [{ text: 'OK' }]
+            'OTP Sent',
+            `A verification code has been sent to ${email}`,
+            [
+              {
+                text: 'OK',
+                onPress: () => {
+                  // Navigate to OTP verification screen with all signup data
+                  navigation.navigate('OTPVerificationScreen', { 
+                    email, 
+                    name,
+                    password,
+                    confirmPassword,
+                    stateCode: 'IN-DL',
+                    vegType: 'OMNI',
+                  });
+                },
+              },
+            ]
           );
+        }
+      } else {
+        // Login flow - direct login
+        console.log('Attempting login...');
+        const result = await login({ email, password }).unwrap();
+        console.log('Login result:', result);
+
+        if (result.success && result.accessToken) {
+          console.log('✅ Auth successful, saving session...');
+          // Save session data
+          const sessionData = {
+            access_token: result.accessToken,
+            refresh_token: result.refreshToken,
+          };
+          await dispatch(saveSessionData(sessionData));
+          console.log('✅ Session saved');
+
+          // Load user data - make this optional to prevent crash
+          try {
+            console.log('📡 Fetching user data from /api/auth/me...');
+            const user = await loadCurrentUser({
+              accessToken: result.accessToken,
+            }).unwrap();
+            console.log('✅ User data received:', user);
+
+            if (user) {
+              // Initialize analytics
+              try {
+                sendAliasUserID(user.id);
+                sendAnalyticsUserID(user.id, {
+                  id: user.id,
+                  first_name: user.first_name || name,
+                  email: user.email,
+                });
+              } catch (analyticsError) {
+                console.log('Analytics error (non-critical):', analyticsError);
+              }
+
+              console.log('✅ Authentication completed successfully');
+            }
+          } catch (userError: any) {
+            console.error('❌ Failed to load user data:', userError);
+            console.error('Error details:', {
+              status: userError.status,
+              data: userError.data,
+              message: userError.message
+            });
+            
+            // Don't block login if user data fetch fails
+            // The session is already saved, so user should still be logged in
+            console.log('⚠️ Continuing with login despite user data fetch failure');
+            Alert.alert(
+              'Notice',
+              'Login successful! Some profile data may be unavailable.',
+              [{ text: 'OK' }]
+            );
+          }
         }
       }
     } catch (error: any) {
@@ -123,7 +156,7 @@ export default function AuthScreen() {
     }
   };
 
-  const isLoading = isLoginLoading || isSignupLoading;
+  const isLoading = isLoginLoading || isRequestingOTP;
 
   return (
     <ImageBackground
@@ -233,6 +266,34 @@ export default function AuthScreen() {
                     </Pressable>
                   </View>
                 </View>
+
+                {!isLogin && (
+                  <View>
+                    <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>
+                      Confirm Password *
+                    </Text>
+                    <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
+                      <Feather name="lock" size={18} color="#666" style={tw`mr-2.5`} />
+                      <TextInput
+                        style={tw`flex-1 text-base text-black`}
+                        placeholder="Confirm your password"
+                        placeholderTextColor="#999"
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        secureTextEntry={!showConfirmPassword}
+                        autoComplete="password"
+                        editable={!isLoading}
+                      />
+                      <Pressable onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                        <Feather 
+                          name={showConfirmPassword ? "eye-off" : "eye"} 
+                          size={18} 
+                          color="#666" 
+                        />
+                      </Pressable>
+                    </View>
+                  </View>
+                )}
               </View>
 
               {/* Submit Button */}
@@ -247,11 +308,11 @@ export default function AuthScreen() {
                     <View style={tw`flex-row items-center justify-center gap-2`}>
                       <ActivityIndicator color="white" />
                       <Text style={tw`text-white font-bold`}>
-                        {isLogin ? 'Signing in...' : 'Creating account...'}
+                        {isLogin ? 'Signing in...' : 'Sending OTP...'}
                       </Text>
                     </View>
                   ) : (
-                    isLogin ? 'Sign In' : 'Create Account'
+                    isLogin ? 'Sign In' : 'Continue'
                   )}
                 </PrimaryButton>
               </View>
