@@ -62,6 +62,7 @@ export default function ProfileScreen() {
     variantTags: [],
   })) as any;
 
+
   return (
     <View style={tw`flex-1 bg-creme`}>
       <AnimatedSettingsHeader title="Profile" animatedValue={offset} />
@@ -85,27 +86,33 @@ export default function ProfileScreen() {
           </View>
         </SafeAreaView>
 
-        {recentlyCooked.length > 0 && (
-          <View style={tw.style('flex-1 bg-creme')}>
-            <View style={tw.style(`items-start pt-8`)}>
-              <Text
-                style={tw.style(
-                  subheadLargeUppercase,
-                  'pb-4.5 px-5 text-left text-midgray',
-                )}
-              >
-                Recently cooked
-              </Text>
+        <View style={tw.style('flex-1 bg-creme')}>
+          <View style={tw.style(`items-start pt-6 pb-8 bg-creme`)}>
+            <Text
+              style={tw.style(
+                subheadLargeUppercase,
+                'pb-3 px-5 text-left text-midgray',
+              )}
+            >
+              Recently cooked
+            </Text>
+            {recentlyCooked.length > 0 ? (
               <MealCarousel
                 type="profile"
                 items={recentlyCooked}
                 contentContainerStyle={tw`pl-5 pr-3`}
               />
-            </View>
+            ) : (
+              <View style={tw`px-5 py-1 items-center bg-creme`}> 
+                <Text style={[tw`text-base text-center`, { fontFamily: 'Apercu', color: tw.color('midgray') }]}>
+                  No recent recipe cooked
+                </Text>
+              </View>
+            )}
           </View>
-        )}
+        </View>
 
-        <View style={tw.style('px-5 pt-9')}>
+        <View style={tw.style('px-5 pt-4')}>
           {data.map((item, index) => (
             <Pressable
               onPress={() => onNavigate(item.name)}

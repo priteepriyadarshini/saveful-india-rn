@@ -22,19 +22,20 @@ export function ProfileInfo() {
   });
 
   const dateCreated = useMemoizedDateFormatLabel(
-    user?.inserted_at,
+    user?.app_joined_at ?? user?.inserted_at,
     DateFormats.MonthYearFull,
   );
-
 
   return (
     <>
       <Text style={tw.style(h7TextStyle, "text-white")}>{`${user?.first_name} ${
         user?.last_name ?? ""
       }`}</Text>
-      <Text style={[tw.style(subheadMediumUppercase, "mt-1 text-white")]}>
-        {dateCreated ? `Saveful since ${dateCreated}` : ` `}
-      </Text>
+      {dateCreated && (
+        <Text style={tw.style(subheadMediumUppercase, "mt-1 text-white")}>
+          Saveful since {dateCreated}
+        </Text>
+      )}
     </>
   );
 }
