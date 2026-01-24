@@ -1,13 +1,16 @@
 import PrimaryButton from '../../../../common/components/ThemeButtons/PrimaryButton';
+import SecondaryButton from '../../../../common/components/ThemeButtons/SecondaryButton';
 import tw from '../../../../common/tailwind';
 import { mixpanelEventName } from '../../../../modules/analytics/analytics';
 import useAnalytics from '../../../../modules/analytics/hooks/useAnalytics';
+import { TrackSurveyEligibility } from '../../api/types';
 //import { useGetFFNQuery } from 'modules/qantas/api/api';
 import { useCurentRoute } from '../../../../modules/route/context/CurrentRouteContext';
 import TrackContent from '../../../../modules/track/components/TrackContent';
 import TrackLinearGradient from '../../../../modules/track/components/TrackLinearGradient';
-import { Dimensions, Image, Text, View } from 'react-native';
+import { Dimensions, Image, Text, View, ActivityIndicator } from 'react-native';
 import * as Progress from 'react-native-progress';
+import moment from 'moment';
 import {
   bodyMediumRegular,
   bodySmallRegular,
@@ -16,17 +19,24 @@ import {
 
 export default function StartSurvey({
   setIsStartSurvey,
+  eligibilityData,
+  isCheckingEligibility,
 }: {
   setIsStartSurvey: (value: boolean) => void;
+  eligibilityData?: TrackSurveyEligibility;
+  isCheckingEligibility?: boolean;
 }) {
   const { sendAnalyticsEvent } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
 
   //const { data: qantasFFN } = useGetFFNQuery(); //Uncomment when available
-  // Temporary mock data for testing layout
+  // Use surveys_count from eligibility data
   const qantasFFN = {
-    surveys_count: 2, // Change this value to simulate different progress states
+    surveys_count: eligibilityData?.surveys_count || 0,
   };
+
+  const isEligible = eligibilityData?.eligible ?? true;
+  const nextSurveyDate = eligibilityData?.next_survey_date;
 
 
   return (
@@ -55,10 +65,26 @@ export default function StartSurvey({
                 'max-w-60 mx-auto pb-2 text-center text-white',
               )}
             >
-              {`Let’s estimate by starting with the food you cooked (or cooked with) this week.`}
+              {isEligible 
+                ? `Let's estimate by starting with the food you cooked (or cooked with) this week.`
+                : `You've already completed this week's survey!`
+              }
             </Text>
 
-            {qantasFFN && qantasFFN.surveys_count < 4 && (
+            {/* Show "already completed" message if not eligible */}
+            {!isEligible && nextSurveyDate && (
+              <View style={tw`mt-4 rounded-md bg-creme p-6`}>
+                <Text style={tw.style(bodyMediumRegular, 'text-center')}>
+                  Your next survey will be available on{' '}
+                  <Text style={tw`font-bold`}>
+                    {moment(nextSurveyDate).format('MMMM Do, YYYY')}
+                  </Text>
+                </Text>
+              </View>
+            )}
+
+            {/* Show Qantas progress only if eligible and count < 4 */}
+            {isEligible && qantasFFN && qantasFFN.surveys_count < 4 && (
               <View style={tw`mt-2 gap-4 rounded-md bg-creme p-6`}>
                 <View style={tw`py-2`}>
                   <Progress.Bar
@@ -101,22 +127,36 @@ export default function StartSurvey({
         </TrackContent>
         <View>
           <TrackLinearGradient style={'top-[-33px]'} />
-          <PrimaryButton
-            buttonSize="large"
-            style={tw.style('mb-2')}
-            onPress={() => {
-              sendAnalyticsEvent({
-                event: mixpanelEventName.actionClicked,
-                properties: {
-                  location: newCurrentRoute,
-                  action: mixpanelEventName.weeklySurveyStarted,
-                },
-              });
-              setIsStartSurvey(true);
-            }}
-          >
-            Let’s go
-          </PrimaryButton>
+          {isCheckingEligibility ? (
+            <View style={tw`mb-2 items-center py-4`}>
+              <ActivityIndicator size="large" color={tw.color('white')} />
+            </View>
+          ) : isEligible ? (
+            <PrimaryButton
+              buttonSize="large"
+              style={tw.style('mb-2')}
+              onPress={() => {
+                sendAnalyticsEvent({
+                  event: mixpanelEventName.actionClicked,
+                  properties: {
+                    location: newCurrentRoute,
+                    action: mixpanelEventName.weeklySurveyStarted,
+                  },
+                });
+                setIsStartSurvey(true);
+              }}
+            >
+              Let's go
+            </PrimaryButton>
+          ) : (
+            <SecondaryButton
+              buttonSize="large"
+              style={tw.style('mb-2')}
+              disabled
+            >
+              Survey completed for this week
+            </SecondaryButton>
+          )}
         </View>
       </View>
     </View>

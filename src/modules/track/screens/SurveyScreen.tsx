@@ -9,7 +9,7 @@ import _ from 'lodash';
 import { mixpanelEventName } from '../../analytics/analytics';
 import { handleFormSubmitException } from '../../forms/validation';
 import { useCurentRoute } from '../../route/context/CurrentRouteContext';
-//import { useCreateUserTrackSurveyMutation } from 'modules/track/api/api';
+import { useCreateUserTrackSurveyMutation, useGetUserTrackSurveyEligibilityQuery } from '../../../modules/track/api/api';
 import TrackSurvey from '../../../modules/track/components/TrackSurvey';
 import StartSurvey from '../components/WeeklySurvey/StartSurvey';
 import SurveyResult from '../components/WeeklySurvey/SurveyResult';
@@ -92,34 +92,12 @@ export default function SurveyScreen() {
   const paddingTop = `pt-[${insets.top}px]`;
   const paddingBottom = `pb-${insets.bottom + 80}px`;
 
-  // const [createUserTrackSurvey, { isSuccess }] =
-  //   useCreateUserTrackSurveyMutation(); //Uncommnet when available
+  const [createUserTrackSurvey, { isSuccess, isLoading }] =
+    useCreateUserTrackSurveyMutation();
 
-  //Temporary MOCK Data
-const [isSuccess, setIsSuccess] = useState(false);
-
-type SurveyApiResponse = {
-  spent: string;
-  waste: string;
-  co2_savings?: number;
-  cost_savings?: number;
-  food_saved?: number;
-};
-
-const createUserTrackSurvey = async (data: FormData): Promise<SurveyApiResponse> =>  {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve({
-        spent: '1200',
-        waste: '300',
-        co2_savings: 15,
-        cost_savings: 200,
-        food_saved: 5,
-      });
-    }, 1000);
-  });
-};
-//Temporary data ends here
+  // Check eligibility before allowing survey
+  const { data: eligibilityData, isLoading: checkingEligibility } = 
+    useGetUserTrackSurveyEligibilityQuery();
 
   const [surveyResult, setSurveyResult] = useState<WeekResults>();
 
@@ -149,62 +127,84 @@ const createUserTrackSurvey = async (data: FormData): Promise<SurveyApiResponse>
   const currentDate = new Date();
   const dateAsString = currentDate.toISOString();
 
-  const onSurveyComplete = handleSubmit(async data => {
-    if (_.isEmpty(data)) {
-      // No new data. Lets return
+  const onSurveyComplete = handleSubmit(async formData => {
+    if (_.isEmpty(formData)) {
+      return;
+    }
+
+    // Double-check eligibility before submission
+    if (!eligibilityData?.eligible) {
+      Alert.alert(
+        'Survey Not Available',
+        eligibilityData?.message || 'You have already completed this week\'s survey. Please try again next week.',
+        [{ text: 'OK' }]
+      );
       return;
     }
 
     try {
-      try {
-        //const result = await createUserTrackSurvey(data).unwrap(); //Uncomment when available
-        const result = await createUserTrackSurvey(data); 
+      const result = await createUserTrackSurvey({
+        cookingFrequency: formData.cookingFrequency,
+        scraps: formData.scraps,
+        uneatenLeftovers: formData.uneatenLeftovers,
+        produceWaste: {
+          fruit: formData.binnedFruit,
+          veggies: formData.binnedVeggies,
+          dairy: formData.binnedDairy,
+          bread: formData.binnedBread,
+          meat: formData.binnedMeat,
+          herbs: formData.binnedHerbs,
+        },
+        preferredIngredients: formData.preferredIngredients.filter(
+          (i): i is string => !!i,
+        ),
+        noOfCooks: formData.noOfCooks,
+      }).unwrap();
 
-        if (result) {
-          // TODO: Change after getting the result from the API
-          setSurveyResult(
-            SAVINGS({
-              spent: result.spent,
-              waste: result.waste,
-              co2Savings: result.co2_savings ? Number(result.co2_savings) : 0,
-              co2SavingsPersonalBest: null,
-              costSavings: result.cost_savings
-                ? Number(result.cost_savings)
-                : 0,
-              costSavingsPersonalBest: null,
-              foodSaved: result.food_saved ? Number(result.food_saved) : 0,
-              foodSavedPersonalBest: null,
-            }),
-          );
+      if (result) {
+        setSurveyResult(
+          SAVINGS({
+            spent: '0',
+            waste: '0',
+            co2Savings: result.calculatedSavings.co2_savings,
+            co2SavingsPersonalBest: result.isCo2PersonalBest ? result.calculatedSavings.co2_savings : null,
+            costSavings: result.calculatedSavings.cost_savings,
+            costSavingsPersonalBest: result.isCostPersonalBest ? result.calculatedSavings.cost_savings : null,
+            foodSaved: result.calculatedSavings.food_saved,
+            foodSavedPersonalBest: result.isFoodSavedPersonalBest ? result.calculatedSavings.food_saved : null,
+          }),
+        );
 
-          const props = {
-            location: newCurrentRoute,
-            action: mixpanelEventName.weeklySurveyCompleted,
-            completed_on: dateAsString,
-            ...data,
-            ...surveyResult,
-          };
+        const props = {
+          location: newCurrentRoute,
+          action: mixpanelEventName.weeklySurveyCompleted,
+          completed_on: dateAsString,
+          ...formData,
+          ...result.calculatedSavings,
+        };
 
-          sendAnalyticsEvent({
-            event: mixpanelEventName.weeklySurveyScreenView,
-            properties: props,
-          });
+        sendAnalyticsEvent({
+          event: mixpanelEventName.weeklySurveyScreenView,
+          properties: props,
+        });
 
-          sendAnalyticsEvent({
-            event: mixpanelEventName.actionClicked,
-            properties: props,
-          });
+        sendAnalyticsEvent({
+          event: mixpanelEventName.actionClicked,
+          properties: props,
+        });
 
-          setIsCompleted(true);
-        }
-      } catch (error: unknown) {
-        // Whoopss.
-        sendFailedEventAnalytics(error);
-        Alert.alert('Update error', JSON.stringify(error));
+        setIsCompleted(true);
       }
-    } catch (e) {
-      sendFailedEventAnalytics(e);
-      handleFormSubmitException(e, setError);
+    } catch (error: any) {
+      sendFailedEventAnalytics(error);
+      
+      // Handle specific error messages from backend
+      const errorMessage = error?.data?.message || 
+                          error?.message || 
+                          'Failed to submit survey. Please try again.';
+      
+      Alert.alert('Survey Error', errorMessage, [{ text: 'OK' }]);
+      handleFormSubmitException(error, setError);
     }
   });
 
@@ -339,7 +339,11 @@ const createUserTrackSurvey = async (data: FormData): Promise<SurveyApiResponse>
           source={require('../../../../assets/placeholder/purple-bg.png')}
         >
           <HeaderMenu />
-          <StartSurvey setIsStartSurvey={setIsStartSurvey} />
+          <StartSurvey 
+            setIsStartSurvey={setIsStartSurvey} 
+            eligibilityData={eligibilityData}
+            isCheckingEligibility={checkingEligibility}
+          />
         </ImageBackground>
       ) : (
         <>

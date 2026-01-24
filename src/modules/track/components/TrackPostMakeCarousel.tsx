@@ -1,7 +1,7 @@
 import GenericCarouselPagination from '../../../common/components/GenericCarousel/GenericCarouselPagination';
 // import { getAllIngredientsFromComponents } from 'common/helpers/filterIngredients';
 import tw from '../../../common/tailwind';
-import { IFramework } from '../../../models/craft';
+import { IFramework } from '../types/local';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
 import { useBadgeChecker } from '../../../modules/badges/hooks/useBadgeChecker';

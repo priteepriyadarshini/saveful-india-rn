@@ -10,11 +10,15 @@ import {
   FeedbacksForFrameworkResponse,
   Stats,
   StatsResponse,
+  TrackSurveyResponse,
+  TrackSurveyEligibility,
+  CreateTrackSurveyDto,
+  WeeklySavingsSummary,
 } from '../../../modules/track/api/types';
 
 const trackApi = api
   .enhanceEndpoints({
-    addTagTypes: ['Feedback', 'UserMeals', 'Favourites', 'Stats'],
+    addTagTypes: ['Feedback', 'UserMeals', 'Favourites', 'Stats', 'TrackSurvey'],
   })
   .injectEndpoints({
     overrideExisting: true,
@@ -183,6 +187,43 @@ const trackApi = api
         providesTags: ['Stats'],
         transformResponse: r => r as Stats,
       }),
+      // Track Survey endpoints
+      getUserTrackSurveys: builder.query<TrackSurveyResponse[], void>({
+        query: () => ({
+          url: '/api/track-survey',
+          method: 'GET',
+        }),
+        providesTags: ['TrackSurvey'],
+      }),
+      getUserTrackSurveyEligibility: builder.query<TrackSurveyEligibility, void>({
+        query: () => ({
+          url: '/api/track-survey/eligibility',
+          method: 'GET',
+        }),
+        providesTags: ['TrackSurvey'],
+      }),
+      getLatestTrackSurvey: builder.query<TrackSurveyResponse, void>({
+        query: () => ({
+          url: '/api/track-survey/latest',
+          method: 'GET',
+        }),
+        providesTags: ['TrackSurvey'],
+      }),
+      getWeeklySummary: builder.query<WeeklySavingsSummary, void>({
+        query: () => ({
+          url: '/api/track-survey/summary',
+          method: 'GET',
+        }),
+        providesTags: ['TrackSurvey'],
+      }),
+      createUserTrackSurvey: builder.mutation<TrackSurveyResponse, CreateTrackSurveyDto>({
+        query: (body) => ({
+          url: '/api/track-survey',
+          method: 'POST',
+          body,
+        }),
+        invalidatesTags: ['TrackSurvey', 'Stats'],
+      }),
     }),
   });
 
@@ -198,31 +239,19 @@ export const {
   useCreateFavouriteMutation,
   useDeleteFavouriteMutation,
   useGetStatsQuery,
+  useGetUserTrackSurveysQuery,
+  useGetUserTrackSurveyEligibilityQuery,
+  useGetLatestTrackSurveyQuery,
+  useGetWeeklySummaryQuery,
+  useCreateUserTrackSurveyMutation,
 } = trackApi;
 
-// Stubs for removed surveys - return empty/default data
-export const useGetUserTrackSurveysQuery = () => ({ 
-  data: [] as Array<{
-    co2_savings: number;
-    cost_savings: number;
-    food_saved: number;
-  }>
-});
-export const useGetUserTrackSurveyEligibilityQuery = () => ({ 
-  data: {
-    eligible: false,
-    next_survey_date: new Date().toISOString(),
-  }
-});
-
-// Temporary stubs for removed meals endpoints to avoid runtime errors in UI components
 export const useGetUserMealsQuery = () => ({ data: [] as any[] });
 export const useUpdateUserMealMutation = () => {
   const mutate = async (_params: any) => Promise.resolve();
   return [mutate, { isLoading: false }] as const;
 };
 
-// Temporary stub for single meal fetch used by PostMakeScreen
 export const useGetUserMealQuery = (params?: { id: string }) => {
   const id = params?.id;
   const meal = id

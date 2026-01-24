@@ -1,7 +1,7 @@
 import { useLinkTo, useNavigation } from '@react-navigation/native';
 import SecondaryButton from '../../../../common/components/ThemeButtons/SecondaryButton';
 import tw from '../../../../common/tailwind';
-import { IFramework } from '../../../../models/craft';
+import { IFramework } from '../../types/local';
 import { ITrackPostMakeIngredient } from '../../../../modules/track/components/TrackPostMakeIngredients';
 import TrackPostMakeLeftovers from '../../../../modules/track/components/TrackPostMakeLeftovers';
 import React from 'react';

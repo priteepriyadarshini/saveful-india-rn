@@ -3,7 +3,7 @@ import { useLinkTo, useNavigation } from '@react-navigation/native';
 import { skipToken } from '@reduxjs/toolkit/query';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
 import tw from '../../../common/tailwind';
-import { IFramework } from '../../../models/craft';
+import { IFramework } from '../types/local';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';

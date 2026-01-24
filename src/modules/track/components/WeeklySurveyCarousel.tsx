@@ -220,9 +220,9 @@ export default function WeeklySurveyCarousel() {
   }
 
   const data = WEEKLYSURVEY({
-    co2Savings: userSurveys[0].co2_savings.toString(),
-    costSavings: userSurveys[0].cost_savings.toString(),
-    foodSaved: userSurveys[0].food_saved.toString(),
+    co2Savings: userSurveys[0].calculatedSavings.co2_savings.toString(),
+    costSavings: userSurveys[0].calculatedSavings.cost_savings.toString(),
+    foodSaved: userSurveys[0].calculatedSavings.food_saved.toString(),
     currencySymbol,
   });
 

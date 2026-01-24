@@ -1,7 +1,7 @@
 import SecondaryButton from '../../../../common/components/ThemeButtons/SecondaryButton';
 import { bundledSource } from '../../../../common/helpers/uriHelpers';
 import tw from '../../../../common/tailwind';
-import { IFramework } from '../../../../models/craft';
+import { IFramework } from '../../types/local';
 import useEnvironment from '../../../environment/hooks/useEnvironment';
 import React from 'react';
 import { Dimensions, Image, Text, View } from 'react-native';

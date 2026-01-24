@@ -2,7 +2,7 @@ import TextBoxInput from '../../../../common/components/Form/TextBoxInput';
 import PrimaryButton from '../../../../common/components/ThemeButtons/PrimaryButton';
 import useContent from '../../../../common/hooks/useContent';
 import tw from '../../../../common/tailwind';
-import { IIngredient } from '../../../../models/craft';
+import { IIngredient } from '../../types/local';
 import TrackLinearGradient from '../../../../modules/track/components/TrackLinearGradient';
 import TrackPostMakeIngredients, {
   ITrackPostMakeIngredient,

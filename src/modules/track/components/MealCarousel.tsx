@@ -5,7 +5,7 @@ import {
   GenericCarouselFlatlist 
 } from '../../../common/components/GenericCarousel';
 import tw from '../../../common/tailwind';
-import { IAsset, ITag, IFramework } from '../../../models/craft';
+import { IAsset, ITag, IFramework } from '../types/local';
 import MealCard from '../../feed/components/MealCard';
 
 interface RenderItemProps {

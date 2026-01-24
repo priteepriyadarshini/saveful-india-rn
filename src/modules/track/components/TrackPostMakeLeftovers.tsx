@@ -3,7 +3,7 @@ import { Text, View, Dimensions } from "react-native";
 import { filterAllergiesByUserPreferences } from "../../../common/helpers/filterIngredients";
 import useContent from "../../../common/hooks/useContent";
 import tw from "../../../common/tailwind";
-import { IFramework } from "../../../models/craft";
+import { IFramework } from '../types/local';
 import { subheadLargeUppercase, bodySmallRegular } from "../../../theme/typography";
 import MealCarousel from "./MealCarousel";
 import { useGetUserOnboardingQuery } from '../../../modules/intro/api/api'; 

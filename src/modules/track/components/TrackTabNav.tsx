@@ -5,7 +5,7 @@ import { Image, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import { bundledSource } from '../../../common/helpers/uriHelpers';
 import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
-import { IFramework } from '../../../models/craft';
+import { IFramework } from '../types/local';
 import useEnvironment from '../../environment/hooks/useEnvironment';
 import { 
   bodyMediumBold, 

@@ -5,7 +5,7 @@ import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar'
 import { filterAllergiesByUserPreferences } from '../../../common/helpers/filterIngredients';
 // Removed Craft CMS content dependency; using API favourites details
 import tw from '../../../common/tailwind';
-import { IFramework } from '../../../models/craft';
+import { IFramework } from '../types/local';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
 import useEnvironment from '../../../modules/environment/hooks/useEnvironment';
