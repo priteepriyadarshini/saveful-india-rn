@@ -119,7 +119,7 @@ export default function StartSurvey({
                 >
                   {`You're only ${
                     4 - (qantasFFN.surveys_count ?? 0)
-                  } surveys away from earning 100 Qantas Points and getting closer to achieving Green Tier.`}
+                  } surveys away from completing your monthly tracking goal and unlocking new achievements.`}
                 </Text>
               </View>
             )}

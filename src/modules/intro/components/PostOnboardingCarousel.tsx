@@ -196,8 +196,8 @@ export default function PostOnboardingCarousel({
                 <Text
                   style={tw.style(bodyMediumRegular, 'mb-5 mt-1.5 text-center')}
                 >
-                  Enjoy the benefits of being green. Earn a Green Leaf and more
-                  Qantas points.
+                  Enjoy the benefits of being green. Earn achievements and track
+                  your food waste reduction progress.
                 </Text>
                 <View style={tw`gap-5`}>
                   <TextBoxInput

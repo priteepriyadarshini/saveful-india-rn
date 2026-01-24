@@ -230,9 +230,8 @@ const {
                       )}
                       maxFontSizeMultiplier={1}
                     >
-                      Link your Qantas Frequent Flyer account and complete four
-                      weekly surveys to earn 100 Qantas Points and get closer to
-                      achieving Green Tier.
+                      Complete your weekly surveys to track your food waste
+                      reduction progress and unlock achievements.
                     </Text>
                   </View>
 

@@ -81,9 +81,10 @@ export default function ChallengeDetailScreen() {
       Alert.alert('Success', 'Joined challenge successfully!');
       refetch();
     } catch (error: any) {
+      const { getSafeErrorMessage } = require('../../../modules/forms/validation');
       Alert.alert(
         'Error',
-        error?.data?.message || 'Failed to join challenge. Please try again.',
+        getSafeErrorMessage(error, 'Failed to join challenge. Please try again.'),
       );
     }
   };
@@ -106,9 +107,10 @@ export default function ChallengeDetailScreen() {
               Alert.alert('Success', 'Left challenge successfully');
               refetch();
             } catch (error: any) {
+              const { getSafeErrorMessage } = require('../../../modules/forms/validation');
               Alert.alert(
                 'Error',
-                error?.data?.message || 'Failed to leave challenge',
+                getSafeErrorMessage(error, 'Failed to leave challenge'),
               );
             }
           },

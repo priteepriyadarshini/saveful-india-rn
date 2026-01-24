@@ -1,9 +1,9 @@
 import { Feather } from '@expo/vector-icons';
 import { useLinkTo, useNavigation } from '@react-navigation/native';
-import React, { SetStateAction, useEffect, useState } from 'react';
+import React, { SetStateAction, useMemo, useState } from 'react';
 import { Image, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import { bundledSource } from '../../../common/helpers/uriHelpers';
-import useContent from '../../../common/hooks/useContent';
+import { useGetAllFrameworkCategoriesQuery } from '../../../modules/frameworkCategory/api/frameworkCategoryApi';
 import tw from '../../../common/tailwind';
 import { IFramework } from '../types/local';
 import useEnvironment from '../../environment/hooks/useEnvironment';
@@ -26,21 +26,22 @@ export default function TrackTabNav() {
     setActiveTab(tabName);
   };
 
-  const [frameworks, setFrameworks] = React.useState<IFramework[]>([]);
-  const { getFrameworks } = useContent();
+  // Fetch framework categories from the API instead of CraftCMS
+  const { data: apiFrameworks } = useGetAllFrameworkCategoriesQuery();
 
-  const getFrameworksData = async () => {
-    const data = await getFrameworks();
-
-    if (data) {
-      setFrameworks(data);
-    }
-  };
-
-  useEffect(() => {
-    getFrameworksData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Convert API frameworks to IFramework format
+  const frameworks = useMemo(() => {
+    if (!apiFrameworks) return [];
+    
+    return apiFrameworks.map((fw): IFramework => ({
+      id: fw._id,
+      title: fw.title,
+      slug: fw.title.toLowerCase().replace(/\s+/g, '-'),
+      heroImage: fw.heroImageUrl,
+      iconImage: fw.iconImageUrl,
+      description: fw.description,
+    }));
+  }, [apiFrameworks]);
 
   if (frameworks.length === 0) {
     return null;

@@ -6,7 +6,6 @@ export interface ValidationErrors {
 }
 
 export function getValidationErrorsFromError(e: unknown) {
-  // console.debug({ e });
 
   if (
     Object.prototype.hasOwnProperty.call(e, 'status') &&
@@ -20,7 +19,6 @@ export function getValidationErrorsFromError(e: unknown) {
 }
 
 export function getFetchErrorFromException(e: unknown) {
-  // console.debug(e);
   if (
     Object.prototype.hasOwnProperty.call(e, 'status') &&
     Object.prototype.hasOwnProperty.call(e, 'error')
@@ -31,25 +29,52 @@ export function getFetchErrorFromException(e: unknown) {
   return undefined;
 }
 
+
+export function getSafeErrorMessage(
+  error: any,
+  fallback: string = 'An error occurred'
+): string {
+
+  if (error?.data?.message) {
+    const message = error.data.message;
+    if (Array.isArray(message)) {
+      return message.join('. ');
+    }
+    if (typeof message === 'string') {
+      return message;
+    }
+  }
+  
+  if (error?.message) {
+    const message = error.message;
+    if (Array.isArray(message)) {
+      return message.join('. ');
+    }
+    if (typeof message === 'string') {
+      return message;
+    }
+  }
+  
+  return fallback;
+}
+
 export function toastErrorMessageFromException(
   e: unknown,
   fallbackMessage = 'An error ocurred. Please try again',
-) {
+): string {
   const fetchError = getFetchErrorFromException(e);
   if (fetchError) {
     return `An error ocurred. (${fetchError.status}})`;
-  } else {
-    return fallbackMessage;
   }
+  
+  return getSafeErrorMessage(e, fallbackMessage);
 }
 
-// Takes a `setError` function from a redux-hook-form, and a Record<string, any> object
-// and applies the errors for the form
-// e.g. addNestedFormErrors(setError, errors)
+
 export function addNestedServerErrors<
   T,
-  // E extends Record<string, string[] | Record<string, string[]>>,
->(
+
+ >(
   setError: (key: keyof T, error: ErrorOption) => void,
   errors?: ValidationErrors, // E
   pathPrefix: string[] = [],
@@ -58,27 +83,22 @@ export function addNestedServerErrors<
   }
 
   Object.keys(errors ?? []).forEach(field => {
-    // Build the current error key from the list of prefixes and the current field name
-    // e.g. ['profile'] + 'first_name' => 'profile.first_name'
+
     const errorKey = [...(pathPrefix ?? []), field].join('.') as keyof T;
 
-    // Get the error
     const fieldError = errors?.[field];
 
     if (Array.isArray(fieldError)) {
-      // If its an array, its a list of errrors for this field
       setError(errorKey, {
         type: 'server',
         message: fieldError?.join('\n'),
       });
     } else {
-      // If it isn't an array, its a nested error object, so recurse into that
       addNestedServerErrors(setError, fieldError, [...pathPrefix, field]);
     }
   });
 }
-// Set errors if we can (changeset errors from the server),
-// or show a toast, if we cant
+
 export function handleFormSubmitException<T>(
   e: unknown,
   setError: (key: keyof T, error: ErrorOption) => void,
@@ -91,18 +111,24 @@ export function handleFormSubmitException<T>(
   }
 }
 
-// This one is simpler, but doesn't work with nested values
 export function addServerErrors<T>(
-  errors: { [P in keyof T]?: string[] },
+  errors: { [P in keyof T]?: string[] | string },
   setError: (
     fieldName: keyof T,
     error: { type: string; message: string },
   ) => void,
 ) {
   return Object.keys(errors).forEach(key => {
+    const errorValue = errors[key as keyof T];
+    const message = Array.isArray(errorValue) 
+      ? errorValue.join('.\r\n') 
+      : typeof errorValue === 'string' 
+      ? errorValue 
+      : '';
+    
     setError(key as keyof T, {
       type: 'server',
-      message: (errors[key as keyof T] ?? []).join('.\r\n'),
+      message,
     });
   });
 }

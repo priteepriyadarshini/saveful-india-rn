@@ -298,14 +298,15 @@ export const SAVINGS = ({
 }): WeekResults => ({
   spent,
   waste,
+  co2: co2Savings.toString(),
   currentWeekResults: [
     {
       id: 0,
       type: 'food',
-      saved: `${foodSaved.toFixed(2)}kg`,
+      saved: `${(foodSaved / 1000).toFixed(2)}kg`,
       description:
         foodSavedPersonalBest && foodSavedPersonalBest > foodSaved
-          ? `Your personal best is ${foodSavedPersonalBest}kg`
+          ? `Your personal best is ${(foodSavedPersonalBest / 1000).toFixed(2)}kg`
           : 'New personal best!',
       isBest: !foodSavedPersonalBest || foodSavedPersonalBest < foodSaved,
       image: {
@@ -315,10 +316,10 @@ export const SAVINGS = ({
     {
       id: 1,
       type: 'dollars',
-      saved: `$${costSavings.toFixed(2)}`,
+      saved: `₹${costSavings.toFixed(2)}`,
       description:
         costSavingsPersonalBest && costSavingsPersonalBest > costSavings
-          ? `Your personal best is $${costSavingsPersonalBest}`
+          ? `Your personal best is ₹${costSavingsPersonalBest.toFixed(2)}`
           : 'New personal best!',
       isBest: !costSavingsPersonalBest || costSavingsPersonalBest < costSavings,
       image: {
@@ -328,10 +329,10 @@ export const SAVINGS = ({
     {
       id: 2,
       type: 'co2',
-      saved: `${co2Savings.toFixed(2)}kg`,
+      saved: `${(co2Savings / 1000).toFixed(2)}kg`,
       description:
         co2SavingsPersonalBest && co2SavingsPersonalBest > co2Savings
-          ? `Your personal best is ${co2SavingsPersonalBest}kg`
+          ? `Your personal best is ${(co2SavingsPersonalBest / 1000).toFixed(2)}kg`
           : 'New personal best!',
       isBest: !co2SavingsPersonalBest || co2SavingsPersonalBest < co2Savings,
       image: {

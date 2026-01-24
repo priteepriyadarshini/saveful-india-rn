@@ -27,12 +27,14 @@ export default function JoinGroupModal({ onJoin }: JoinGroupModalProps) {
       const result = await joinGroup({ code: joinCode.trim() }).unwrap();
       setIsModalVisible(false);
       setJoinCode('');
-      Alert.alert('Success', result.message || 'Joined group successfully!');
+      const { getSafeErrorMessage } = require('../../../modules/forms/validation');
+      Alert.alert('Success', getSafeErrorMessage(result, 'Joined group successfully!'));
       onJoin?.(result.message);
     } catch (error: any) {
+      const { getSafeErrorMessage } = require('../../../modules/forms/validation');
       Alert.alert(
         'Error',
-        error?.data?.message || 'Failed to join group. Please check your code and try again.',
+        getSafeErrorMessage(error, 'Failed to join group. Please check your code and try again.'),
       );
     }
   };

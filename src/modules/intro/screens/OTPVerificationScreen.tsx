@@ -137,9 +137,10 @@ export default function OTPVerificationScreen({ route, navigation }: any) {
       }
     } catch (error: any) {
       console.error('OTP verification error:', error);
+      const { getSafeErrorMessage } = require('../../../modules/forms/validation');
       Alert.alert(
         'Verification Failed',
-        error?.data?.message || error?.message || 'Invalid OTP. Please try again.'
+        getSafeErrorMessage(error, 'Invalid OTP. Please try again.')
       );
     }
   };
@@ -170,7 +171,8 @@ export default function OTPVerificationScreen({ route, navigation }: any) {
       }
     } catch (error: any) {
       console.error('Resend OTP error:', error);
-      Alert.alert('Error', error?.data?.message || 'Failed to resend OTP. Please try again.');
+      const { getSafeErrorMessage } = require('../../../modules/forms/validation');
+      Alert.alert('Error', getSafeErrorMessage(error, 'Failed to resend OTP. Please try again.'));
     }
   };
 

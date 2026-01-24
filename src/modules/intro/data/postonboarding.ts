@@ -21,9 +21,9 @@ export const POSTONBOARDING = [
     contentList: [
       {
         id: 0,
-        heading: 'for frequent flYers',
+        heading: 'track your impact',
         subHeading:
-          'Frequent Flyers can earn another Green Leaf and more Qantas points.',
+          'Track your food waste reduction and earn achievements as you save more.',
       },
       {
         id: 1,

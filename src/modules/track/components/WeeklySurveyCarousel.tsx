@@ -204,7 +204,7 @@ export default function WeeklySurveyCarousel() {
           {eligibilityData.eligible ? (
             <SecondaryButton
               onPress={() => {
-                navigation.navigate('SurveyWeekly');
+                navigation.navigate('Survey', { screen: 'SurveyWeekly' });
               }}
             >
               Take your weekly survey now
@@ -255,7 +255,7 @@ export default function WeeklySurveyCarousel() {
           {isEligible ? (
             <SecondaryButton
               onPress={() => {
-                navigation.navigate('SurveyWeekly');
+                navigation.navigate('Survey', { screen: 'SurveyWeekly' });
               }}
             >
               Take your weekly survey now
@@ -313,7 +313,7 @@ export default function WeeklySurveyCarousel() {
           <View style={tw`gap-2`}>
             <SecondaryButton
               onPress={() => {
-                navigation.navigate('SurveyWeekly');
+                navigation.navigate('Survey', { screen: 'SurveyWeekly' });
               }}
             >
               Take your weekly survey now

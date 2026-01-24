@@ -100,9 +100,10 @@ export default function EditGroupScreen() {
         },
       ]);
     } catch (error: any) {
+      const { getSafeErrorMessage } = require('../../../modules/forms/validation');
       Alert.alert(
         'Error',
-        error?.data?.message || 'Failed to update group. Please try again.',
+        getSafeErrorMessage(error, 'Failed to update group. Please try again.'),
       );
     }
   };

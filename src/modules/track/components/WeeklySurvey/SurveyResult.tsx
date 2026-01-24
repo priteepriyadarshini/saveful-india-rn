@@ -3,7 +3,6 @@ import { useLinkTo, useNavigation } from '@react-navigation/native';
 import PrimaryButton from '../../../../common/components/ThemeButtons/PrimaryButton';
 import SecondaryButton from '../../../../common/components/ThemeButtons/SecondaryButton';
 import { filterAllergiesByUserPreferences } from '../../../../common/helpers/filterIngredients';
-import useContent from '../../../../common/hooks/useContent';
 import tw from '../../../../common/tailwind';
 import { IFramework } from '../../types/local';
 import { mixpanelEventName } from '../../../../modules/analytics/analytics';
@@ -11,6 +10,7 @@ import useAnalytics from '../../../../modules/analytics/hooks/useAnalytics';
 import { useCurentRoute } from '../../../../modules/route/context/CurrentRouteContext';
 import { useGetUserOnboardingQuery } from '../../../../modules/intro/api/api';
 import { useGetUserTrackSurveysQuery } from '../../../../modules/track/api/api';
+import { useGetAllFrameworkCategoriesQuery } from '../../../../modules/frameworkCategory/api/frameworkCategoryApi';
 import MealCarousel from '../../../../modules/track/components/MealCarousel';
 import SavingsCarousel from '../../../../modules/track/components/SavingsCarousel';
 import TipsOfTheWeekCarousel from '../../../../modules/track/components/TipsOfTheWeekCarousel';
@@ -18,7 +18,7 @@ import TrackSurveyBaseline from '../../../../modules/track/components/TrackSurve
 import { TIPSOFTHEWEEK } from '../../../../modules/track/data/data';
 import getWeekNumber from '../../../../modules/track/helpers/getWeekNumber';
 import { WeekResults } from '../../../../modules/track/types';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Dimensions, Image, Pressable, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { cardDrop } from '../../../../theme/shadow';
@@ -45,38 +45,27 @@ export default function SurveyResult({
   const { data: userOnboarding } = useGetUserOnboardingQuery();
   const { data: userTrackSurveys } = useGetUserTrackSurveysQuery();
 
+  // Fetch framework categories from the API instead of CraftCMS
+  const { data: apiFrameworks, isLoading: isLoadingFrameworks } = useGetAllFrameworkCategoriesQuery();
 
-  // Temporary mock data
-  // const userOnboarding = {
-  //   allergies: [], // Replace with actual allergies when available
-  //   track_survey_day: 1, // Replace with actual survey day
-  // };
+  // Convert API frameworks to IFramework format and filter by allergies
+  const frameworks = useMemo(() => {
+    if (!apiFrameworks) return [];
+    
+    const mappedFrameworks: IFramework[] = apiFrameworks.map((fw) => ({
+      id: fw._id,
+      title: fw.title,
+      slug: fw.title.toLowerCase().replace(/\s+/g, '-'),
+      heroImage: fw.heroImageUrl,
+      iconImage: fw.iconImageUrl,
+      description: fw.description,
+    }));
 
-  // const userTrackSurveys = [
-  //   { id: 'mock1' }, // Add more mock surveys if needed
-  // ];
-
-
-  const { getFrameworks } = useContent();
-  const [frameworks, setFrameworks] = useState<IFramework[]>([]);
-
-  const getFrameworksData = async () => {
-    const data = await getFrameworks();
-
-    if (data) {
-      setFrameworks(
-        filterAllergiesByUserPreferences(
-          data.slice(0, 3),
-          userOnboarding?.allergies,
-        ),
-      );
-    }
-  };
-
-  useEffect(() => {
-    getFrameworksData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return filterAllergiesByUserPreferences(
+      mappedFrameworks.slice(0, 3),
+      userOnboarding?.allergies,
+    );
+  }, [apiFrameworks, userOnboarding?.allergies]);
 
   const { sendAnalyticsEvent } = useAnalytics();
 
@@ -144,6 +133,7 @@ export default function SurveyResult({
                 <TrackSurveyBaseline
                   spent={surveyResult.spent}
                   waste={surveyResult.waste}
+                  co2={surveyResult.co2}
                 />
 
                 {/* What this means */}

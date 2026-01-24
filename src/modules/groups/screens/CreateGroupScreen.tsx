@@ -90,9 +90,10 @@ export default function CreateGroupScreen() {
       ]);
     } catch (error: any) {
       console.error('Create group error:', error);
+      const { getSafeErrorMessage } = require('../../../modules/forms/validation');
       Alert.alert(
         'Error',
-        error?.data?.message || error?.message || 'Failed to create group. Please try again.',
+        getSafeErrorMessage(error, 'Failed to create group. Please try again.'),
       );
     }
   };

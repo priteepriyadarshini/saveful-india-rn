@@ -30,6 +30,7 @@ export interface Savings {
 export interface WeekResults {
   spent: string;
   waste: string;
+  co2?: string;
   currentWeekResults: Savings[];
 }
 

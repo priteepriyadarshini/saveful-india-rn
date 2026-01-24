@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { Text, View, Dimensions } from "react-native";
 import { filterAllergiesByUserPreferences } from "../../../common/helpers/filterIngredients";
-import useContent from "../../../common/hooks/useContent";
+import { useGetAllFrameworkCategoriesQuery } from '../../../modules/frameworkCategory/api/frameworkCategoryApi';
 import tw from "../../../common/tailwind";
 import { IFramework } from '../types/local';
 import { subheadLargeUppercase, bodySmallRegular } from "../../../theme/typography";
@@ -13,25 +13,25 @@ export default function TrackPostMakeLeftovers({
 }: {
   meals: { id: string }[];
 }) {
-  const { getFrameworks } = useContent();
-  const { data: userOnboarding } = useGetUserOnboardingQuery(); //uncomment once the file has been created
-  const [frameworks, setFrameworks] = useState<IFramework[]>([]);
+  // Fetch framework categories from the API instead of CraftCMS
+  const { data: apiFrameworks } = useGetAllFrameworkCategoriesQuery();
+  const { data: userOnboarding } = useGetUserOnboardingQuery();
 
-  const getFrameworksData = async () => {
-    const data = await getFrameworks();
+  // Convert API frameworks to IFramework format and filter by allergies
+  const frameworks = useMemo(() => {
+    if (!apiFrameworks) return [];
+    
+    const mappedFrameworks: IFramework[] = apiFrameworks.map((fw) => ({
+      id: fw._id,
+      title: fw.title,
+      slug: fw.title.toLowerCase().replace(/\s+/g, '-'),
+      heroImage: fw.heroImageUrl,
+      iconImage: fw.iconImageUrl,
+      description: fw.description,
+    }));
 
-    if (data) {
-      setFrameworks(
-        filterAllergiesByUserPreferences(data, userOnboarding?.allergies)
-      );
-    }
-  };
-
-
-  useEffect(() => {
-    getFrameworksData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return filterAllergiesByUserPreferences(mappedFrameworks, userOnboarding?.allergies);
+  }, [apiFrameworks, userOnboarding?.allergies]);
 
   if (frameworks.length === 0) {
     return null;

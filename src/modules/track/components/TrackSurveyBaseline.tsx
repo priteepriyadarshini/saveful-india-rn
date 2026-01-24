@@ -12,14 +12,16 @@ import {
 export default function TrackSurveyBaseline({
   waste = '0',
   spent = '0',
+  co2 = '0',
 }: {
   waste: string;
   spent: string;
+  co2?: string;
 }) {
   const TRACK = [
     {
       name: 'food',
-      value: `${Number(waste).toFixed(2)}kg`,
+      value: `${(Number(waste) / 1000).toFixed(2)}kg`,
       description: `food waste footprint`,
       image: {
         uri: require('../../../../assets/placeholder/apple.png'),
@@ -27,10 +29,18 @@ export default function TrackSurveyBaseline({
     },
     {
       name: 'money',
-      value: `$${spent}`,
+      value: `₹${Number(spent).toFixed(2)}`,
       description: `food waste cost`,
       image: {
         uri: require('../../../../assets/placeholder/money.png'),
+      },
+    },
+    {
+      name: 'co2',
+      value: `${(Number(co2) / 1000).toFixed(2)}kg`,
+      description: `CO2 emissions saved`,
+      image: {
+        uri: require('../../../../assets/placeholder/apple.png'),
       },
     },
   ];
@@ -61,9 +71,11 @@ export default function TrackSurveyBaseline({
               key={index}
               style={tw.style(
                 `items-center border border-strokecream px-2.5 py-1 ${
-                  index === TRACK.length - 1
+                  index === 0
+                    ? 'rounded-l-full'
+                    : index === TRACK.length - 1
                     ? 'rounded-r-full'
-                    : 'rounded-l-full'
+                    : ''
                 } ${
                   activeTab === content.name
                     ? 'border-creme-2 bg-white'

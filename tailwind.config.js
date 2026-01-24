@@ -3,13 +3,21 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
+
         sans: ['Saveful-Regular'],
         'sans-italic': ['Saveful-Italic'],
         'sans-bold': ['Saveful-Bold'],
         'sans-bold-italic': ['Saveful-BoldItallic'],
         'sans-semibold': ['Saveful-SemiBold'],
         'sans-semibold-italic': ['Saveful-SemiBoldItalic'],
+         saveful: ['Saveful-Regular'],
+        'saveful-italic': ['Saveful-Italic'],
+        'saveful-bold': ['Saveful-Bold'],
+        'saveful-bold-italic': ['Saveful-BoldItallic'],
+        'saveful-semibold': ['Saveful-SemiBold'],
+        'saveful-semibold-italic': ['Saveful-SemiBoldItalic'],
         mono: ['Courier New', 'monospace'],
+        
       },
       borderRadius: {
         '2lg': '0.675rem',
@@ -21,6 +29,7 @@ module.exports = {
       },
       colors: {
         black: '#1A1A1B',
+        darkgray: '#6D6D72',
         creme: {
           DEFAULT: '#FFFAF3',
           2: '#E8DAC8',

@@ -1,6 +1,6 @@
 import TextBoxInput from '../../../../common/components/Form/TextBoxInput';
 import PrimaryButton from '../../../../common/components/ThemeButtons/PrimaryButton';
-import useContent from '../../../../common/hooks/useContent';
+import {useGetAllIngredientsQuery} from '../../../ingredients/api/ingredientsApi';
 import tw from '../../../../common/tailwind';
 import { IIngredient } from '../../types/local';
 import TrackLinearGradient from '../../../../modules/track/components/TrackLinearGradient';
@@ -39,22 +39,24 @@ export default function WeeklyIngredientsList<T extends FieldValues>(
     ITrackPostMakeIngredient[]
   >([]);
 
-  const { getIngredients } = useContent();
+  // Fetch ingredients from the API instead of CraftCMS
+  const { data: apiIngredients, isLoading } = useGetAllIngredientsQuery();
   const [ingredients, setIngredients] = useState<IIngredient[]>([]);
 
-  const getIngredientsData = async () => {
-    const data = await getIngredients();
-
-    if (data) {
-      // Sort alphabetically
-      setIngredients(data.sort((a, b) => a.title.localeCompare(b.title)));
-    }
-  };
-
   useEffect(() => {
-    getIngredientsData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (apiIngredients) {
+      // Convert API ingredients to IIngredient format and sort alphabetically
+      const mappedIngredients: IIngredient[] = apiIngredients.map((ing) => ({
+        id: ing._id,
+        title: ing.name,
+        slug: ing.name.toLowerCase().replace(/\s+/g, '-'),
+        heroImage: ing.heroImageUrl,
+        theme: ing.theme || 'Green',
+        averageWeight: ing.averageWeight || 0,
+      }));
+      setIngredients(mappedIngredients.sort((a, b) => a.title.localeCompare(b.title)));
+    }
+  }, [apiIngredients]);
 
   const onValueChecked = (value: ITrackPostMakeIngredient) => {
     const valueIndex = selectedIngredients.findIndex(x => x.id === value.id);

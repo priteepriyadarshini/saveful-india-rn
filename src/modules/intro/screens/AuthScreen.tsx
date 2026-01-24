@@ -149,9 +149,10 @@ export default function AuthScreen({ navigation }: any) {
       }
     } catch (error: any) {
       console.error('Auth error:', error);
+      const { getSafeErrorMessage } = require('../../../modules/forms/validation');
       Alert.alert(
         'Authentication Failed',
-        error?.data?.message || error?.message || 'Please check your credentials and try again'
+        getSafeErrorMessage(error, 'Please check your credentials and try again')
       );
     }
   };

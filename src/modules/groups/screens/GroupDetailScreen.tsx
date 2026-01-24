@@ -99,7 +99,8 @@ export default function GroupDetailScreen() {
               Alert.alert('Success', 'Group deleted successfully');
               navigation.goBack();
             } catch (error: any) {
-              Alert.alert('Error', error?.data?.message || 'Failed to delete group');
+              const { getSafeErrorMessage } = require('../../../modules/forms/validation');
+              Alert.alert('Error', getSafeErrorMessage(error, 'Failed to delete group'));
             }
           },
         },
@@ -122,7 +123,8 @@ export default function GroupDetailScreen() {
               Alert.alert('Success', 'Left group successfully');
               navigation.goBack();
             } catch (error: any) {
-              Alert.alert('Error', error?.data?.message || 'Failed to leave group');
+              const { getSafeErrorMessage } = require('../../../modules/forms/validation');
+              Alert.alert('Error', getSafeErrorMessage(error, 'Failed to leave group'));
             }
           },
         },
@@ -148,7 +150,8 @@ export default function GroupDetailScreen() {
               setIsSettingsOpen(false);
               refetch();
             } catch (error: any) {
-              Alert.alert('Error', error?.data?.message || 'Failed to transfer ownership');
+              const { getSafeErrorMessage } = require('../../../modules/forms/validation');
+              Alert.alert('Error', getSafeErrorMessage(error, 'Failed to transfer ownership'));
               setPendingOwnerId(null);
             }
           },

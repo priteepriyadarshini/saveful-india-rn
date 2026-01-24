@@ -7,7 +7,7 @@ import GenericCarouselPagination from '../../../common/components/GenericCarouse
 import tw from '../../../common/tailwind';
 import _ from 'lodash';
 import { mixpanelEventName } from '../../analytics/analytics';
-import { handleFormSubmitException } from '../../forms/validation';
+import { handleFormSubmitException, getSafeErrorMessage } from '../../forms/validation';
 import { useCurentRoute } from '../../route/context/CurrentRouteContext';
 import { useCreateUserTrackSurveyMutation, useGetUserTrackSurveyEligibilityQuery } from '../../../modules/track/api/api';
 import TrackSurvey from '../../../modules/track/components/TrackSurvey';
@@ -84,7 +84,7 @@ const itemWidth = (windowWidth - itemLength) / 2;
 
 export default function SurveyScreen() {
   const data = SURVEY;
-  //const linkTo = useLinkTo();
+  const linkTo = useLinkTo();
   const navigation = useNavigation<TrackStackScreenProps<'TrackHome'>['navigation']>();
 
 
@@ -95,7 +95,6 @@ export default function SurveyScreen() {
   const [createUserTrackSurvey, { isSuccess, isLoading }] =
     useCreateUserTrackSurveyMutation();
 
-  // Check eligibility before allowing survey
   const { data: eligibilityData, isLoading: checkingEligibility } = 
     useGetUserTrackSurveyEligibilityQuery();
 
@@ -112,9 +111,7 @@ export default function SurveyScreen() {
   const {
     control,
     handleSubmit,
-    // setValue,
     setError,
-    // formState: { errors },
   } = useForm<FormData>({
     mode: 'onBlur',
     defaultValues,
@@ -123,7 +120,6 @@ export default function SurveyScreen() {
 
   sendTimeEventAnalytics(mixpanelEventName.weeklySurveyScreenView);
 
-  // Get the current date
   const currentDate = new Date();
   const dateAsString = currentDate.toISOString();
 
@@ -132,7 +128,6 @@ export default function SurveyScreen() {
       return;
     }
 
-    // Double-check eligibility before submission
     if (!eligibilityData?.eligible) {
       Alert.alert(
         'Survey Not Available',
@@ -143,29 +138,36 @@ export default function SurveyScreen() {
     }
 
     try {
+      // Ensure all numeric fields are integers as expected by backend
+      const toInt = (v: unknown): number => {
+        if (typeof v === 'number') return Math.round(v);
+        const n = parseInt(String(v ?? 0), 10);
+        return Number.isNaN(n) ? 0 : n;
+      };
+
       const result = await createUserTrackSurvey({
-        cookingFrequency: formData.cookingFrequency,
-        scraps: formData.scraps,
-        uneatenLeftovers: formData.uneatenLeftovers,
+        cookingFrequency: toInt(formData.cookingFrequency),
+        scraps: toInt(formData.scraps),
+        uneatenLeftovers: toInt(formData.uneatenLeftovers),
         produceWaste: {
-          fruit: formData.binnedFruit,
-          veggies: formData.binnedVeggies,
-          dairy: formData.binnedDairy,
-          bread: formData.binnedBread,
-          meat: formData.binnedMeat,
-          herbs: formData.binnedHerbs,
+          fruit: toInt(formData.binnedFruit),
+          veggies: toInt(formData.binnedVeggies),
+          dairy: toInt(formData.binnedDairy),
+          bread: toInt(formData.binnedBread),
+          meat: toInt(formData.binnedMeat),
+          herbs: toInt(formData.binnedHerbs),
         },
         preferredIngredients: formData.preferredIngredients.filter(
           (i): i is string => !!i,
         ),
-        noOfCooks: formData.noOfCooks,
+        noOfCooks: toInt(formData.noOfCooks),
       }).unwrap();
 
       if (result) {
         setSurveyResult(
           SAVINGS({
-            spent: '0',
-            waste: '0',
+            spent: result.calculatedSavings.cost_savings.toString(),
+            waste: result.calculatedSavings.food_saved.toString(),
             co2Savings: result.calculatedSavings.co2_savings,
             co2SavingsPersonalBest: result.isCo2PersonalBest ? result.calculatedSavings.co2_savings : null,
             costSavings: result.calculatedSavings.cost_savings,
@@ -198,10 +200,8 @@ export default function SurveyScreen() {
     } catch (error: any) {
       sendFailedEventAnalytics(error);
       
-      // Handle specific error messages from backend
-      const errorMessage = error?.data?.message || 
-                          error?.message || 
-                          'Failed to submit survey. Please try again.';
+      // Handle specific error messages from backend using safe helper
+      const errorMessage = getSafeErrorMessage(error, 'Failed to submit survey. Please try again.');
       
       Alert.alert('Survey Error', errorMessage, [{ text: 'OK' }]);
       handleFormSubmitException(error, setError);
@@ -277,10 +277,14 @@ export default function SurveyScreen() {
     setIsCompleted(false);
     setActiveDotIndex(0);
     setIsStartSurvey(false);
-    navigation.reset({
-    index: 0,
-    routes: [{ name: 'TrackHome' }],
-  });
+
+    const parent = (navigation as any)?.getParent?.();
+    if (parent?.navigate) {
+      parent.navigate('Root', { screen: 'Track' });
+    } else {
+      linkTo('/track');
+    }
+    
   };
 
   const HeaderMenu = () => {

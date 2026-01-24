@@ -23,4 +23,5 @@ export interface IIngredient {
   id: string;
   title: string;
   imageUrl?: string;
+  averageWeight: number;
 }
