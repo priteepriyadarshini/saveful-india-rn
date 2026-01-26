@@ -32,9 +32,11 @@ const transformRecipeForCard = (recipe: Recipe) => {
 export default function Featuring({
   ingredientId,
   title,
+  hasHacks,
 }: {
   ingredientId: string;
   title: string;
+  hasHacks: boolean;
 }) {
   const [recipes, setRecipes] = React.useState<Recipe[]>([]);
   const [, setCurrentIndex] = React.useState<number>(0);
@@ -68,7 +70,21 @@ export default function Featuring({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ingredientId]);
 
-  if (isLoading || recipes.length === 0) {
+  if (isLoading) {
+    return null;
+  }
+
+  if (recipes.length === 0) {
+    // Show empty state only if there are no hacks/tips either
+    if (!hasHacks) {
+      return (
+        <View style={tw`w-full items-center my-5`}>
+          <Text style={tw.style(h7TextStyle, 'px-5 text-center')}>
+            No recipe is present for this yet
+          </Text>
+        </View>
+      );
+    }
     return null;
   }
 

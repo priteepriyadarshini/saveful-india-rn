@@ -241,6 +241,7 @@ export default function IngredientDetailScreen({
                     <Featuring
                       ingredientId={ingredient?.id}
                       title={ingredient.title}
+                      hasHacks={ingredient.relatedHacks.length > 0}
                     />
                     <ReadyToCook {...ingredient} />
                     {ingredient.relatedHacks.length > 0 && (

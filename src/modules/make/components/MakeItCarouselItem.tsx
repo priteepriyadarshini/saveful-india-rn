@@ -38,7 +38,6 @@ export default function MakeItCarouselItem({
   const [isIngredientsActive, setIsIngredientsActive] =
     useState<boolean>(false);
 
-  // Stabilize RenderHTML props to avoid frequent provider rerenders
   const contentWidth = useMemo(() => Dimensions.get('window').width - 40, []);
   const tagsStyles = useMemo(
     () => ({
