@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Alert, ActivityIndicator, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image, ImageBackground, Pressable, Modal } from 'react-native';
+import { View, Text, TextInput, Alert, ActivityIndicator, TouchableOpacity, Image, ImageBackground, Pressable, Modal } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { Feather } from '@expo/vector-icons';
@@ -168,15 +169,15 @@ export default function AuthScreen({ navigation }: any) {
       }}
     >
       <SafeAreaView style={tw`flex-1 justify-between pb-2.5 pt-6`}>
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={tw`flex-1`}
+        <KeyboardAwareScrollView
+          enableOnAndroid
+          enableAutomaticScroll
+          extraScrollHeight={24}
+          keyboardOpeningTime={0}
+          contentContainerStyle={tw`flex-grow justify-between`}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <ScrollView 
-            contentContainerStyle={tw`flex-grow justify-between`}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
             {/* Logo */}
             <View style={tw`items-center pt-4 pb-4`}>
               <Image
@@ -335,8 +336,7 @@ export default function AuthScreen({ navigation }: any) {
 
             {/* Spacer for bottom */}
             <View />
-          </ScrollView>
-        </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
       </SafeAreaView>
       
       <FocusAwareStatusBar statusBarStyle="dark" />
