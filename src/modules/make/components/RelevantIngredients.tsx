@@ -35,39 +35,42 @@ export default function RelevantIngredients({
     <View
       style={[
         tw.style(
-          `px-4.5 absolute bottom-0 left-0 right-0 z-10 rounded-tl-[25px] rounded-tr-[25px] border border-b-0 border-creme-3 bg-kale py-6`,
+          `px-4.5 absolute bottom-0 left-0 right-0 z-50 rounded-tl-[25px] rounded-tr-[25px] border border-b-0 border-creme-3 bg-kale py-6`,
           isIngredientsActive ? 'top-1/2' : '',
         ),
         cardIngredientDrop,
       ]}
     >
-      <ScrollView
-        automaticallyAdjustContentInsets
-        // contentContainerStyle={tw.style('border')}
+      <Pressable
+        onPress={() => {
+          toggleIngredients(!isIngredientsActive);
+        }}
       >
-        <Pressable
-          onPress={() => {
-            toggleIngredients(!isIngredientsActive);
-          }}
+        <View style={tw`flex-row items-center justify-between gap-3 pb-2`}>
+          <Text
+            style={tw.style(subheadLargeUppercase, 'text-strokecream')}
+            maxFontSizeMultiplier={1}
+          >
+            Ingredients
+          </Text>
+          <Feather
+            name={isIngredientsActive ? 'chevrons-down' : 'chevrons-up'}
+            size={24}
+            color={tw.color('creme')}
+          />
+        </View>
+      </Pressable>
+
+      {isIngredientsActive && (
+        <ScrollView
+          style={tw`max-h-[40vh]`}
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
         >
-          <View style={tw`flex-row items-center justify-between gap-3`}>
-            <Text
-              style={tw.style(subheadLargeUppercase, 'text-strokecream')}
-              maxFontSizeMultiplier={1}
-            >
-              Ingredients
-            </Text>
-            <Feather
-              name={isIngredientsActive ? 'chevrons-down' : 'chevrons-up'}
-              size={24}
-              color={tw.color('creme')}
-            />
-          </View>
           <Animatable.View
-            style={tw.style(
-              `${isIngredientsActive ? 'mb-10' : 'h-0 overflow-hidden'}`,
-            )}
+            animation="fadeIn"
             duration={300}
+            style={tw`pb-4`}
           >
             {ingredients.map((ingredient, index) => (
               <View
@@ -90,8 +93,8 @@ export default function RelevantIngredients({
               </View>
             ))}
           </Animatable.View>
-        </Pressable>
-      </ScrollView>
+        </ScrollView>
+      )}
     </View>
   );
 }

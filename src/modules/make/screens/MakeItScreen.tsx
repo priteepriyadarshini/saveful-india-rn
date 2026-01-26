@@ -11,7 +11,7 @@ import MakeItCarousel from '../../../modules/make/components/MakeItCarousel';
 import MakeItHeader from '../../../modules/make/components/MakeItHeader';
 import MakeItNavigation from '../../../modules/make/components/MakeItNavigation';
 import MakeItSurveyModal from '../components/MakeItSurveyModal';
-import TTSSpeakerButton from '../../../modules/make/components/TTSSpeakerButton';
+import RelevantIngredients from '../components/RelevantIngredients';
 import { useMakeItTTS } from '../../../modules/make/hooks/useMakeItTTS';
 import { InitialNavigationStackParams } from '../../navigation/navigator/InitialNavigator';
 import { useIsFocused } from '@react-navigation/native';
@@ -52,6 +52,7 @@ export default function MakeItScreen({
     { id: string; title: string; averageWeight: number }[]
   >([]);
   const [isTTSEnabled, setIsTTSEnabled] = useState(false);
+  const [isIngredientsActive, setIsIngredientsActive] = useState<boolean>(false);
 
   const getFrameworksData = async () => {
     try {
@@ -148,10 +149,8 @@ export default function MakeItScreen({
   }, [id]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
-
   const [slideIndex, setSlideIndex] = useState(0);
 
- 
   const makeItSteps = framework?.components
     .filter(component =>
       component.includedInVariants?.some(item => item.id === variant),
@@ -228,6 +227,11 @@ export default function MakeItScreen({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex]);
 
+  // Auto-collapse ingredients panel when swiping to new step
+  useEffect(() => {
+    setIsIngredientsActive(false);
+  }, [currentIndex]);
+
   if (!framework) {
     return null;
   }
@@ -264,7 +268,6 @@ export default function MakeItScreen({
       iconSource = require('../../../../assets/animations/cook-01.png');
       break;
   }
-
 
   if (!makeItSteps || makeItSteps.length === 0) {
     return null;
@@ -311,15 +314,6 @@ export default function MakeItScreen({
 
   return (
     <View style={tw`flex-1 bg-kale`}>
-     
-     <View style={tw`mt-5`}>
-      <TTSSpeakerButton
-          isEnabled={isTTSEnabled}
-          isSpeaking={isSpeaking}
-         
-          onToggle={() => setIsTTSEnabled(prev => !prev)}
-        />
-     </View>
       <ImageBackground
         source={require('../../../../assets/ribbons/makeit.png')}
         style={tw`relative mt-5 flex-1`}
@@ -330,9 +324,10 @@ export default function MakeItScreen({
           title={makeItSteps?.[currentIndex]?.title ?? ''}
           mealId={mealId}
           frameworkId={id}
+          isTTSEnabled={isTTSEnabled}
+          isSpeaking={isSpeaking}
+          onToggleTTS={() => setIsTTSEnabled(prev => !prev)}
         />
-        
-       
 
         <Image
           style={[
@@ -373,6 +368,17 @@ export default function MakeItScreen({
         </View>
       </ImageBackground>
 
+      {/* Fixed Ingredients Panel at Screen Level */}
+      {makeItSteps[currentIndex]?.ingredients && 
+       makeItSteps[currentIndex].ingredients.length > 0 && 
+       currentIndex < makeItSteps.length - 1 && (
+        <RelevantIngredients
+          ingredients={makeItSteps[currentIndex].ingredients}
+          setIsIngredientsActive={setIsIngredientsActive}
+          isIngredientsActive={isIngredientsActive}
+        />
+      )}
+
       <MakeItSurveyModal
         isVisible={isFocused && isIngredientsModalVisible}
         setIsVisible={setIngredientsModalVisible}
@@ -391,7 +397,6 @@ export default function MakeItScreen({
 
       <CompletedCookWithSurvey
         isModalVisible={isFocused && isCompletedModalVisible}
-        //toggleModal={toggleCompletedModal}
         setIsModalVisible={setIsCompletedModalVisible}
         totalWeightOfSelectedIngredients={totalWeightOfSelectedIngredients}
       />
