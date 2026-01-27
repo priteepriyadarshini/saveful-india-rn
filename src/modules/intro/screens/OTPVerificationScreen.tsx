@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, Alert, ActivityIndicator, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image, ImageBackground } from 'react-native';
+import { View, Text, TextInput, Alert, ActivityIndicator, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image, ImageBackground, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import tw from '../../../common/tailwind';
@@ -19,6 +19,15 @@ export default function OTPVerificationScreen({ route, navigation }: any) {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timer, setTimer] = useState(600); // 10 minutes in seconds
   const inputRefs = useRef<(TextInput | null)[]>([]);
+  const [rowWidth, setRowWidth] = useState(0);
+  const gap = 8; // px between boxes
+  const defaultBoxSize = 48; // fallback size
+  const boxSize = React.useMemo(() => {
+    if (!rowWidth) return defaultBoxSize;
+    const computed = Math.floor((rowWidth - gap * 5) / 6);
+    // Clamp for consistency across very small/large screens
+    return Math.max(44, Math.min(64, computed));
+  }, [rowWidth]);
   
   const [verifyOTP, { isLoading: isVerifying }] = useVerifyOTPMutation();
   const [requestOTP, { isLoading: isResending }] = useRequestOTPMutation();
@@ -206,7 +215,7 @@ export default function OTPVerificationScreen({ route, navigation }: any) {
             </View>
 
             {/* OTP Card */}
-            <View style={tw`mx-5 bg-white rounded-3xl px-5 py-6 shadow-lg mb-6`}>
+            <View style={tw`mx-4 bg-white rounded-3xl px-6 py-8 shadow-lg mb-6`}>
               {/* Back Button */}
               <TouchableOpacity
                 onPress={() => navigation.goBack()}
@@ -218,60 +227,76 @@ export default function OTPVerificationScreen({ route, navigation }: any) {
               </TouchableOpacity>
 
               {/* Title */}
-              <View style={tw`mb-4`}>
-                <Text style={tw.style(h6TextStyle, 'text-center text-radish mb-2')}>
+              <View style={tw`mb-6`}>
+                <Text style={tw.style(h6TextStyle, 'text-center text-eggplant mb-3 tracking-wide')}>
                   VERIFY YOUR EMAIL
                 </Text>
                 <Text style={tw.style(bodyMediumRegular, 'text-center text-stone')}>
                   We've sent a 6-digit code to
                 </Text>
-                <Text style={tw.style(bodyMediumRegular, 'text-center text-radish font-bold mt-1')}>
+                <Text style={tw.style(bodyMediumRegular, 'text-center text-eggplant font-bold mt-1')}>
                   {email}
                 </Text>
               </View>
 
               {/* OTP Input */}
               <View style={tw`mb-4`}>
-                <Text style={tw.style(bodySmallRegular, 'text-stone text-center mb-3')}>
+                <Text style={tw.style(bodySmallRegular, 'text-stone text-center mb-4')}>
                   Enter verification code
                 </Text>
-                <View style={tw`flex-row justify-center gap-2`}>
+                <View
+                  style={tw`flex-row justify-center items-center`}
+                  onLayout={(e) => setRowWidth(e.nativeEvent.layout.width)}
+                >
                   {otp.map((digit, index) => (
                     <View
                       key={index}
-                      style={tw`bg-creme rounded-xl w-12 h-14 justify-center items-center border-2 ${
-                        digit ? 'border-radish' : 'border-transparent'
-                      }`}
+                      style={{ marginHorizontal: gap / 2 }}
                     >
-                      <TextInput
-                        ref={(ref) => {
-                          inputRefs.current[index] = ref;
-                        }}
-                        style={tw`text-2xl font-bold text-center w-full text-radish`}
-                        maxLength={1}
-                        keyboardType="number-pad"
-                        value={digit}
-                        onChangeText={(value) => handleOtpChange(value, index)}
-                        onKeyPress={(e) => handleKeyPress(e, index)}
-                        editable={!isLoading}
-                        selectTextOnFocus
-                      />
+                      <View
+                        style={[
+                          tw`bg-white rounded-2xl justify-center items-center border-2 shadow-sm`,
+                          digit ? tw`border-eggplant` : tw`border-stone/30`,
+                          { width: boxSize, height: Math.round(boxSize * 1.2) },
+                        ]}
+                      >
+                        <TextInput
+                          ref={(ref) => {
+                            inputRefs.current[index] = ref;
+                          }}
+                          style={[
+                            tw`font-bold text-center text-eggplant`,
+                            {
+                              fontSize: Math.max(18, Math.min(28, Math.round(boxSize * 0.55))),
+                              paddingVertical: 0,
+                            },
+                          ]}
+                          maxLength={1}
+                          keyboardType="number-pad"
+                          value={digit}
+                          onChangeText={(value) => handleOtpChange(value, index)}
+                          onKeyPress={(e) => handleKeyPress(e, index)}
+                          editable={!isLoading}
+                          selectTextOnFocus
+                          textAlignVertical="center"
+                          allowFontScaling={false}
+                          placeholderTextColor="#D1D5DB"
+                        />
+                      </View>
                     </View>
                   ))}
                 </View>
               </View>
 
-              {/* Timer */}
-              <View style={tw`mb-4`}>
-                <Text style={tw.style(bodySmallRegular, 'text-center text-stone')}>
+              <View style={tw`mb-5 bg-creme/50 rounded-xl py-3 px-4`}>
+                <Text style={tw.style(bodyMediumRegular, 'text-center text-stone')}>
                   Code expires in{' '}
-                  <Text style={tw`font-bold ${timer < 60 ? 'text-red-500' : 'text-radish'}`}>
+                  <Text style={tw`font-bold text-lg ${timer < 60 ? 'text-chilli' : 'text-eggplant'}`}>
                     {formatTime(timer)}
                   </Text>
                 </Text>
               </View>
 
-              {/* Verify Button */}
               <View style={tw`mt-2 mb-3`}>
                 <PrimaryButton
                   onPress={handleVerify}
@@ -294,11 +319,11 @@ export default function OTPVerificationScreen({ route, navigation }: any) {
               <TouchableOpacity
                 onPress={handleResendOTP}
                 disabled={isLoading || timer > 0}
-                style={tw`pt-2 items-center`}
+                style={tw`pt-3 items-center py-3`}
               >
                 <Text style={tw.style(bodyMediumRegular, 'text-center text-stone')}>
                   Didn't receive the code?{' '}
-                  <Text style={tw`font-bold ${timer > 0 ? 'text-gray-400' : 'text-radish'}`}>
+                  <Text style={tw`font-bold ${timer > 0 ? 'text-gray-400' : 'text-eggplant underline'}`}>
                     Resend
                   </Text>
                 </Text>
