@@ -2,7 +2,8 @@ import { useLinkTo, useNavigation } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { bundledSource } from "../../../common/helpers/uriHelpers";
-import useContent from "../../../common/hooks/useContent";
+import { recipeApiService } from '../../recipe/api/recipeApiService';
+import { recipeToFramework } from '../../recipe/adapters/recipeAdapter';
 import tw from "../../../common/tailwind";
 import { IFramework } from "../../../models/craft";
 import { cardDrop } from "../../../theme/shadow";
@@ -15,7 +16,6 @@ export default function AccordionFramework({ item }: { item: any }) {
   //const linkTo = useLinkTo();
   const [framework, setFramework] = useState<IFramework>();
 
-  const { getFramework } = useContent();
   const env = useEnvironment();
 
   // Navigation prop
@@ -23,10 +23,11 @@ export default function AccordionFramework({ item }: { item: any }) {
   const navigation = useNavigation<InitialNav>();
 
   const getFrameworksData = async (id: string) => {
-    const data = await getFramework(id);
-
-    if (data) {
-      setFramework(data);
+    try {
+      const recipe = await recipeApiService.getRecipeById(id);
+      if (recipe) setFramework(recipeToFramework(recipe));
+    } catch (error) {
+      console.error('Failed to load framework from API', error);
     }
   };
 

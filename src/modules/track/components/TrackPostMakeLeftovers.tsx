@@ -25,12 +25,10 @@ export default function TrackPostMakeLeftovers({
       id: fw._id,
       title: fw.title,
       slug: fw.title.toLowerCase().replace(/\s+/g, '-'),
-      heroImage: fw.heroImageUrl,
-      iconImage: fw.iconImageUrl,
-      description: fw.description,
+      heroImageUrl: fw.heroImageUrl,
     }));
 
-    return filterAllergiesByUserPreferences(mappedFrameworks, userOnboarding?.allergies);
+    return filterAllergiesByUserPreferences(mappedFrameworks as unknown as import('../../../models/craft').IFramework[], userOnboarding?.allergies) as unknown as IFramework[];
   }, [apiFrameworks, userOnboarding?.allergies]);
 
   if (frameworks.length === 0) {

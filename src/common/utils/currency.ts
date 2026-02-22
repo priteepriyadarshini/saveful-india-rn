@@ -17,7 +17,29 @@ const COUNTRY_CURRENCY_SYMBOLS: Record<string, string> = {
   FR: '€',    // France – EUR
 };
 
+// Fallback map for full country names – used for existing users whose
+// country field was stored as a display name rather than an ISO code.
+const COUNTRY_NAME_TO_SYMBOL: Record<string, string> = {
+  'india': '₹',
+  'australia': 'A$',
+  'new zealand': 'NZ$',
+  'united states': '$',
+  'united kingdom': '£',
+  'canada': 'C$',
+  'china': '¥',
+  'japan': '¥',
+  'south korea': '₩',
+  'singapore': 'S$',
+  'united arab emirates': 'AED',
+  'germany': '€',
+  'france': '€',
+};
+
 export function getCurrencySymbol(country?: string): string {
   if (!country) return '$';
-  return COUNTRY_CURRENCY_SYMBOLS[country.toUpperCase()] ?? '$';
+  // Try ISO code first (e.g. 'IN', 'US')
+  const byCode = COUNTRY_CURRENCY_SYMBOLS[country.toUpperCase()];
+  if (byCode) return byCode;
+  // Fallback: try full country name (e.g. 'India', 'United States')
+  return COUNTRY_NAME_TO_SYMBOL[country.toLowerCase()] ?? '$';
 }

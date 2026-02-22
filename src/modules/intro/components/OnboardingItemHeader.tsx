@@ -224,7 +224,8 @@ export default function OnboardingItemHeader({
                     setSelectedCountry(country.name);
                     setValue('postcode', country.code);
                     setValue('suburb', country.name);
-                    setValue('country', country.name);
+                    // Store the ISO code so getCurrencySymbol works correctly
+                    setValue('country', country.code);
                     setShowCountryPicker(false);
                   }}
                 >

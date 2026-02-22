@@ -164,7 +164,7 @@ export default function MealsCarousel() {
             <GenericCarouselFlatlist
               flatListRef={flatListRef}
               contentContainerStyle={tw`pl-5 pr-3`}
-              data={carouselItems}
+              data={carouselItems as IFramework[]}
               itemLength={itemLength + 8}
               renderItem={(renderItem: { item: IFramework; index: number }) => (
                 <View style={tw.style(`w-[${itemLength}px] mr-2`)}>

@@ -1,5 +1,6 @@
 import CheckGroup from '../../../common/components/Form/CheckGroup';
-import useContent from '../../../common/hooks/useContent';
+import { ingredientApiService } from '../api/ingredientApiService';
+import { transformIngredientsToLegacyFormat } from '../helpers/ingredientTransformers';
 import tw from '../../../common/tailwind';
 import { IIngredient } from '../../../models/craft';
 import { lineTwoTheme } from '../../../modules/feed/utils/ingredientTheme';
@@ -16,14 +17,14 @@ export default function ReadyToCook({
 
   const heroImageBGSrc: ImageRequireSource = lineTwoTheme(ingredientTheme);
 
-  const { getIngredients } = useContent();
   const [ingredients, setIngredients] = React.useState<IIngredient[]>();
 
   const getIngredientsData = async () => {
-    const data = await getIngredients();
-
-    if (data) {
-      setIngredients(data);
+    try {
+      const ings = await ingredientApiService.getAllIngredients();
+      if (ings) setIngredients(transformIngredientsToLegacyFormat(ings));
+    } catch (error) {
+      console.error('Failed to load ingredients from API', error);
     }
   };
 

@@ -201,7 +201,11 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
         otherAllergies: data.allergies,
         noOfAdults: data.noOfAdults,
         noOfChildren: data.noOfChildren,
-        country: data.suburb || data.country || undefined,
+        // data.postcode holds the ISO country code (e.g. 'IN') when the user
+        // picks a country from the picker; data.country also holds the ISO code
+        // now. Fall back to suburb (country display name) for legacy paths and
+        // let getCurrencySymbol handle both formats.
+        country: data.postcode || data.country || data.suburb || undefined,
       };
       
       console.log('Updating dietary profile during onboarding:', dietaryProfileData);

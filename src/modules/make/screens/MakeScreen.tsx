@@ -137,8 +137,8 @@ export default function MakeScreen() {
         ListHeaderComponent={ListHeader}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
-        onScroll={onScroll}
-        contentContainerStyle={{ paddingBottom: 20 }}
+        onScroll={onScroll as any}
+        contentContainerStyle={{ paddingBottom: 20 } as any}
       />
 
       <FocusAwareStatusBar statusBarStyle="light" />

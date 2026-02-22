@@ -27,6 +27,16 @@ class HackOrTipApiService {
     return EnvironmentManager.shared.apiUrl();
   }
 
+  async getAll(type?: string, isActive?: boolean): Promise<ApiHackOrTip[]> {
+    const baseUrl = this.getBaseUrl();
+    const params = new URLSearchParams();
+    if (type) params.append('type', type);
+    if (isActive !== undefined) params.append('isActive', String(isActive));
+    const query = params.toString() ? `?${params.toString()}` : '';
+    const response = await axios.get(`${baseUrl}/api/hack-or-tip${query}`);
+    return response.data;
+  }
+
   async getHackOrTipById(id: string): Promise<ApiHackOrTip> {
     const baseUrl = this.getBaseUrl();
     const response = await axios.get(`${baseUrl}/api/hack-or-tip/${id}`);

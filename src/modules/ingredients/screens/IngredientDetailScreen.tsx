@@ -1,6 +1,5 @@
 import AnimatedHeader from '../../../common/components/AnimatedHeader';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
-import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
 import { IIngredient } from '../../../models/craft';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
@@ -144,35 +143,13 @@ export default function IngredientDetailScreen({
 
   const { sendScrollEventInitiation } = useAnalytics();
 
-  const { data: apiIngredient, isLoading: isApiLoading, error: apiError } = useGetIngredientByIdQuery(id);
-  const { getIngredient } = useContent();
+  const { data: apiIngredient, error: apiError } = useGetIngredientByIdQuery(id);
   const [ingredient, setIngredient] = React.useState<IIngredient>();
 
   useEffect(() => {
-    const loadIngredient = async () => {
-      try {
-        if (apiIngredient && !apiError) {
-          // Use new API data - transform to legacy format
-          const transformedData = transformIngredientToLegacyFormat(apiIngredient);
-          setIngredient(transformedData);
-        } else {
-          // Fallback to old content service
-          const data = await getIngredient(id);
-          if (data) {
-            setIngredient(data);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading ingredient:', error);
-        // Fallback to old content service on error
-        const data = await getIngredient(id);
-        if (data) {
-          setIngredient(data);
-        }
-      }
-    };
-
-    loadIngredient();
+    if (apiIngredient && !apiError) {
+      setIngredient(transformIngredientToLegacyFormat(apiIngredient));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, apiIngredient, apiError]);
 

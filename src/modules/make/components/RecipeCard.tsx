@@ -3,7 +3,6 @@ import { Image, Pressable, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { bundledSource } from '../../../common/helpers/uriHelpers';
-import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
 import { IAsset, ITag } from '../../../models/craft';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
@@ -41,7 +40,6 @@ export default function RecipeCard({
   setMaxHeight?: (value: number) => void;
 }) {
   const env = useEnvironment();
-  const { getFramework } = useContent();
   const navigation = useNavigation<IngredientsNavigationProp>();
   const { sendAnalyticsEvent } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
@@ -60,16 +58,10 @@ export default function RecipeCard({
         return;
       }
     } catch (error) {
-      console.error('Error fetching recipe, falling back to framework:', error);
-    }
-
-    // Use API data
-    const framework = await getFramework(id);
-    if (framework) {
-      navigation.navigate('PrepDetail', { slug: framework.slug });
+      console.error('Error fetching recipe:', error);
     }
   },
-  [getFramework, navigation],
+  [navigation],
 );
 
   return (

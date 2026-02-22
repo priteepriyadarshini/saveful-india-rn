@@ -331,7 +331,7 @@ export default function TrackPostMakeCarousel({
         isVisible={showRatingModal}
         recipeId={framework.id}
         recipeName={framework.title}
-        recipeImage={framework.heroImage?.[0]?.url}
+        recipeImage={framework.heroImageUrl}
         onClose={handleRatingSkip}
         onSubmit={handleRatingSubmit}
       />

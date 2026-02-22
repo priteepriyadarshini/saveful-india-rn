@@ -23,10 +23,10 @@ const transformRecipeForCard = (recipe: Recipe) => {
     id: recipe._id,
     title: recipe.title,
     heroImage: recipe.heroImageUrl 
-      ? [{ url: recipe.heroImageUrl, title: recipe.title }] 
+      ? [{ id: recipe._id, uid: '', title: recipe.title, url: recipe.heroImageUrl }] 
       : [],
     variantTags: recipe.components.flatMap(wrapper => 
-      (wrapper.variantTags || []).map(tag => ({ title: tag }))
+      (wrapper.variantTags || []).map(tag => ({ id: tag, uid: '', title: tag }))
     ),
   };
 };

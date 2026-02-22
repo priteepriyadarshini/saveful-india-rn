@@ -54,15 +54,13 @@ export default function SurveyResult({
       id: fw._id,
       title: fw.title,
       slug: fw.title.toLowerCase().replace(/\s+/g, '-'),
-      heroImage: fw.heroImageUrl,
-      iconImage: fw.iconImageUrl,
-      description: fw.description,
+      heroImageUrl: fw.heroImageUrl,
     }));
 
     return filterAllergiesByUserPreferences(
-      mappedFrameworks.slice(0, 3) as any[],
+      mappedFrameworks.slice(0, 3) as unknown as import('../../../../models/craft').IFramework[],
       userOnboarding?.allergies,
-    ) as IFramework[];
+    ) as unknown as IFramework[];
   }, [apiFrameworks, userOnboarding?.allergies]);
 
   const { sendAnalyticsEvent } = useAnalytics();

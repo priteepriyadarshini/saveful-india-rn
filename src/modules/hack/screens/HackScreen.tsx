@@ -14,19 +14,13 @@ import tw from "../../../common/tailwind";
 import { bodyMediumRegular, h2TextStyle } from "../../../theme/typography";
 import FocusAwareStatusBar from "../../../common/components/FocusAwareStatusBar";
 import HackCategory from "../components/HackCategory";
-import useContent from "../../../common/hooks/useContent";
-import { ICategory } from "../../../models/craft";
 import useAnalytics from "../../analytics/hooks/useAnalytics";
 import { hackApiService, HackCategory as ApiHackCategory } from "../api/hackApiService";
-import useEnvironment from "../../environment/hooks/useEnvironment";
 
 const windowWidth = Dimensions.get('window').width;
 const windowScreenWidth = Dimensions.get('screen').width;
 
 export default function HackScreen() {
-  const { getCategories } = useContent();
-  const env = useEnvironment();
-  const [categories, setCategories] = useState<ICategory[]>([]);
   const [apiCategories, setApiCategories] = useState<ApiHackCategory[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [useApiData, setUseApiData] = useState<boolean>(false);
@@ -40,20 +34,13 @@ export default function HackScreen() {
       if (apiData && apiData.length > 0) {
         setApiCategories(apiData);
         setUseApiData(true);
-        setIsLoading(false);
-        return;
       }
     } catch (error) {
-      // Silencing API fallback logs
-    }
-
-    const data = await getCategories();
-    if (data) {
-      setCategories(data.filter(item => item.groupHandle === 'hack'));
-      setUseApiData(false);
+      console.error('Error fetching hack categories:', error);
+    } finally {
       setIsLoading(false);
     }
-  }, [getCategories]);
+  }, []);
 
   useEffect(() => {
     getCategoriesData();
@@ -63,16 +50,11 @@ export default function HackScreen() {
   const ribbonImageHeight = useMemo(() => (windowScreenWidth * 1085) / 375, []);
 
   const renderedCategories = useMemo(() => {
-    if (useApiData) {
-      return apiCategories.map(item => {
-        const key = item._id || item.id || item.name;
-        return <HackCategory key={key} item={item} useApiData={true} />;
-      });
-    }
-    return categories.map(item => (
-      <HackCategory key={item.id} item={item} useApiData={false} />
-    ));
-  }, [useApiData, apiCategories, categories]);
+    return apiCategories.map(item => {
+      const key = item._id || item.id || item.name;
+      return <HackCategory key={key} item={item} useApiData={true} />;
+    });
+  }, [apiCategories]);
 
   return (
     <View style={tw`relative flex-1 bg-creme`}>

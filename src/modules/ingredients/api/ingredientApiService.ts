@@ -13,6 +13,13 @@ class IngredientApiService {
     return response.data;
   }
 
+  async getAllIngredients(country?: string): Promise<Ingredient[]> {
+    const baseUrl = this.getBaseUrl();
+    const params = country ? `?country=${encodeURIComponent(country)}` : '';
+    const response = await axios.get(`${baseUrl}/api/ingredients${params}`);
+    return response.data;
+  }
+
   async getIngredientsByIds(ids: string[]): Promise<Record<string, Ingredient>> {
     const results: Record<string, Ingredient> = {};
     const uniqueIds = Array.from(new Set(ids.filter(Boolean)));

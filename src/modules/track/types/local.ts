@@ -1,13 +1,4 @@
-
-export interface IAsset {
-  uri: string;
-  url?: string;
-}
-
-export interface ITag {
-  id: string;
-  title: string;
-}
+export type { IAsset, ITag } from '../../../models/craft';
 
 export interface IFramework {
   id: string;
@@ -17,6 +8,9 @@ export interface IFramework {
   thumbnailImageUrl?: string;
   slug?: string;
   ingredients?: IIngredient[];
+  variantTags?: import('../../../models/craft').ITag[];
+  description?: string;
+  iconImage?: string;
 }
 
 export interface IIngredient {

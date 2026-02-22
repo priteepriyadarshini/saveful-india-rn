@@ -85,7 +85,7 @@ export default function LeftoversComponent({
           </View>
         </View>
         {/* Meals from leftovers */}
-        <TrackPostMakeLeftovers meals={framework.useLeftoversIn} />
+        <TrackPostMakeLeftovers meals={(framework as any).useLeftoversIn ?? []} />
       </ScrollView>
       <View>
         <SecondaryButton

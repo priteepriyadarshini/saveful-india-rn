@@ -119,10 +119,7 @@ export default function PostMakeQ1({
                   // radishCardDrop,
                 ]}
                 resizeMode="cover"
-                source={bundledSource(
-                  framework.heroImage?.[0]?.url,
-                  env.useBundledContent,
-                )}
+                source={{ uri: framework.heroImageUrl }}
               />
             </View>
             <View style={tw.style('pt-16')}>

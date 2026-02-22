@@ -3,7 +3,8 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Dimensions, Pressable, ScrollView, Text, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import RenderHTML from 'react-native-render-html';
-import useContent from '../../../common/hooks/useContent';
+import { hackOrTipApiService } from '../../hackOrTip/api/hackOrTipApiService';
+import { transformHackOrTip } from '../../hackOrTip/helpers/transformers';
 import tw from '../../../common/tailwind';
 import { IHackOrTip } from '../../../models/craft';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
@@ -40,14 +41,14 @@ export default function HackOrTip({
     bottomSheetModalRef.current?.close();
   }, [bottomSheetModalRef]);
 
-  const { getHackOrTip } = useContent();
   const [hackOrTip, setHackOrTip] = React.useState<IHackOrTip>();
 
   const getHackOrTipData = async () => {
-    const data = await getHackOrTip(id);
-
-    if (data) {
-      setHackOrTip(data);
+    try {
+      const apiData = await hackOrTipApiService.getHackOrTipById(id);
+      setHackOrTip(transformHackOrTip(apiData));
+    } catch (error) {
+      console.error('Failed to load HackOrTip from API', error);
     }
   };
 

@@ -1,244 +1,139 @@
-import useEnvironment from '../../modules/environment/hooks/useEnvironment';
-import BundledContentService from '../../services/content/BundledContentService';
-import { ContentService } from '../../services/content/ContentService';
-import RealTimeContentService from '../../services/content/RealTimeContentService';
-import {
-  articleContentsApiResponseToArticleContentModels,
-  categoriesApiResponseToCategoryModels,
-  challengesApiResponseToChallengeModels,
-  frameworksApiResponseToFrameworkModels,
-  hackOrTipsApiResponseToHackOrTipModels,
-  ingredientsApiResponseToIngredientModels,
-  sponsorPanelsApiResponseToSponsorPanelModels,
-  videoContentsApiResponseToVideoContentModels,
-} from '../../services/content/converters/categoryConverters';
+import { recipeApiService } from '../../modules/recipe/api/recipeApiService';
+import { recipeToFramework } from '../../modules/recipe/adapters/recipeAdapter';
+import { hackApiService } from '../../modules/hack/api/hackApiService';
+import { ingredientApiService } from '../../modules/ingredients/api/ingredientApiService';
+import { hackOrTipApiService } from '../../modules/hackOrTip/api/hackOrTipApiService';
+import { transformIngredientToLegacyFormat } from '../../modules/ingredients/helpers/ingredientTransformers';
+import { transformHackOrTip } from '../../modules/hackOrTip/helpers/transformers';
+import { ICategory, IFramework, IIngredient, IHackOrTip, IChallenge, ISponsorPanel, IArticleContent, IVideoContent } from '../../models/craft';
 
 export default function useContent() {
-  const env = useEnvironment();
 
-  let contentService: ContentService;
-  contentService = new BundledContentService();
-  
-  const getArticleContents = async () => {
-    await contentService.loadContent();
-    const response = contentService.getArticleContents();
-
-    const models = articleContentsApiResponseToArticleContentModels(response);
-
-    if (models.length > 0) {
-      return models;
+  const getFrameworks = async (): Promise<IFramework[] | null> => {
+    try {
+      const recipes = await recipeApiService.getAllRecipes();
+      if (recipes && recipes.length > 0) {
+        return recipes.map(r => recipeToFramework(r as any));
+      }
+    } catch (error) {
+      console.error('useContent.getFrameworks error:', error);
     }
-
     return null;
   };
 
-  const getArticleContent = async (id: string) => {
-    await contentService.loadContent();
-    const response = contentService.getArticleContent(id);
-
-    const models = articleContentsApiResponseToArticleContentModels(response);
-
-    if (models.length > 0) {
-      return models[0];
+  const getFramework = async (id: string): Promise<IFramework | null> => {
+    try {
+      const recipe = await recipeApiService.getRecipeById(id);
+      if (recipe) return recipeToFramework(recipe);
+    } catch (error) {
+      console.error('useContent.getFramework error:', error);
     }
-
     return null;
   };
 
-  const getCategories = async () => {
-    await contentService.loadContent();
-    const response = contentService.getCategories();
-
-    const models = categoriesApiResponseToCategoryModels(response);
-
-    if (models.length > 0) {
-      return models;
+  const getFrameworkBySlug = async (slug: string): Promise<IFramework | null> => {
+    try {
+      const recipe = await recipeApiService.getRecipeBySlug(slug);
+      if (recipe) return recipeToFramework(recipe);
+    } catch (error) {
+      console.error('useContent.getFrameworkBySlug error:', error);
     }
-
     return null;
   };
 
-  const getCategory = async (id: string) => {
-    await contentService.loadContent();
-    const response = contentService.getCategory(id);
-
-    const models = categoriesApiResponseToCategoryModels(response);
-
-    if (models.length > 0) {
-      return models[0];
+  const getCategories = async (): Promise<ICategory[] | null> => {
+    try {
+      const cats = await hackApiService.getAllCategories();
+      if (cats && cats.length > 0) {
+        return cats.map(c => ({
+          id: c._id || c.id || '',
+          title: c.name,
+          groupHandle: 'hack',
+          groupId: '',
+          uid: c._id || c.id || '',
+        }));
+      }
+    } catch (error) {
+      console.error('useContent.getCategories error:', error);
     }
-
     return null;
   };
 
-  const getChallenges = async () => {
-    await contentService.loadContent();
-    const response = contentService.getChallenges();
-
-    const models = challengesApiResponseToChallengeModels(response);
-
-    if (models.length > 0) {
-      return models;
+  const getCategory = async (id: string): Promise<ICategory | null> => {
+    try {
+      const data = await hackApiService.getCategoryWithHacks(id);
+      if (data) {
+        const cat = data.category;
+        const catId = cat._id || cat.id || '';
+        return {
+          id: catId,
+          title: cat.name,
+          groupHandle: 'hack',
+          groupId: '',
+          uid: catId,
+          heroImage: cat.heroImageUrl
+            ? [{ id: catId, title: cat.name, url: cat.heroImageUrl, uid: catId }]
+            : [],
+        };
+      }
+    } catch (error) {
+      console.error('useContent.getCategory error:', error);
     }
-
     return null;
   };
 
-  const getChallenge = async (id: string) => {
-    await contentService.loadContent();
-    const response = contentService.getChallenge(id);
-
-    const models = challengesApiResponseToChallengeModels(response);
-
-    if (models.length > 0) {
-      return models[0];
+  const getIngredients = async (): Promise<IIngredient[] | null> => {
+    try {
+      const ings = await ingredientApiService.getAllIngredients();
+      if (ings && ings.length > 0) {
+        return ings.map(transformIngredientToLegacyFormat);
+      }
+    } catch (error) {
+      console.error('useContent.getIngredients error:', error);
     }
-
     return null;
   };
 
-  const getIngredients = async () => {
-    await contentService.loadContent();
-    const response = contentService.getIngredients();
-
-    const models = ingredientsApiResponseToIngredientModels(response);
-
-    if (models.length > 0) {
-      return models;
+  const getIngredient = async (id: string): Promise<IIngredient | null> => {
+    try {
+      const ing = await ingredientApiService.getIngredientById(id);
+      if (ing) return transformIngredientToLegacyFormat(ing);
+    } catch (error) {
+      console.error('useContent.getIngredient error:', error);
     }
-
     return null;
   };
 
-  const getIngredient = async (id: string) => {
-    await contentService.loadContent();
-    const response = contentService.getIngredient(id);
-
-    const models = ingredientsApiResponseToIngredientModels(response);
-
-    if (models.length > 0) {
-      return models[0];
+  const getHackOrTips = async (): Promise<IHackOrTip[] | null> => {
+    try {
+      const hots = await hackOrTipApiService.getAll();
+      if (hots && hots.length > 0) {
+        return hots.map(transformHackOrTip);
+      }
+    } catch (error) {
+      console.error('useContent.getHackOrTips error:', error);
     }
-
     return null;
   };
 
-  const getFrameworks = async () => {
-    await contentService.loadContent();
-    const response = contentService.getFrameworks();
-
-    const models = frameworksApiResponseToFrameworkModels(response);
-
-    if (models.length > 0) {
-      return models;
+  const getHackOrTip = async (id: string): Promise<IHackOrTip | null> => {
+    try {
+      const hot = await hackOrTipApiService.getHackOrTipById(id);
+      if (hot) return transformHackOrTip(hot);
+    } catch (error) {
+      console.error('useContent.getHackOrTip error:', error);
     }
-
     return null;
   };
 
-  const getFrameworkBySlug = async (slug: string) => {
-    await contentService.loadContent();
-    const response = contentService.getFrameworkBySlug(slug);
-
-    const models = frameworksApiResponseToFrameworkModels(response);
-
-    if (models.length > 0) {
-      return models[0];
-    }
-
-    return null;
-  };
-
-  const getFramework = async (id: string) => {
-    await contentService.loadContent();
-    const response = contentService.getFramework(id);
-
-    const models = frameworksApiResponseToFrameworkModels(response);
-
-    if (models.length > 0) {
-      return models[0];
-    }
-
-    return null;
-  };
-
-  const getHackOrTips = async () => {
-    await contentService.loadContent();
-    const response = contentService.getHackOrTips();
-
-    const models = hackOrTipsApiResponseToHackOrTipModels(response);
-
-    if (models.length > 0) {
-      return models;
-    }
-
-    return null;
-  };
-
-  const getHackOrTip = async (id: string) => {
-    await contentService.loadContent();
-    const response = contentService.getHackOrTip(id);
-
-    const models = hackOrTipsApiResponseToHackOrTipModels(response);
-
-    if (models.length > 0) {
-      return models[0];
-    }
-
-    return null;
-  };
-
-  const getSponsorPanels = async () => {
-    await contentService.loadContent();
-    const response = contentService.getSponsorPanels();
-
-    const models = sponsorPanelsApiResponseToSponsorPanelModels(response);
-
-    if (models.length > 0) {
-      return models;
-    }
-
-    return null;
-  };
-
-  const getSponsorPanel = async (id: string) => {
-    await contentService.loadContent();
-    const response = contentService.getSponsorPanel(id);
-
-    const models = sponsorPanelsApiResponseToSponsorPanelModels(response);
-
-    if (models.length > 0) {
-      return models[0];
-    }
-
-    return null;
-  };
-
-  const getVideoContents = async () => {
-    await contentService.loadContent();
-    const response = contentService.getVideoContents();
-
-    const models = videoContentsApiResponseToVideoContentModels(response);
-
-    if (models.length > 0) {
-      return models;
-    }
-
-    return null;
-  };
-
-  const getVideoContent = async (id: string) => {
-    await contentService.loadContent();
-    const response = contentService.getVideoContent(id);
-
-    const models = videoContentsApiResponseToVideoContentModels(response);
-
-    if (models.length > 0) {
-      return models[0];
-    }
-
-    return null;
-  };
+  const getChallenges = async (): Promise<IChallenge[] | null> => null;
+  const getChallenge = async (_id: string): Promise<IChallenge | null> => null;
+  const getSponsorPanels = async (): Promise<ISponsorPanel[] | null> => null;
+  const getSponsorPanel = async (_id: string): Promise<ISponsorPanel | null> => null;
+  const getArticleContents = async (): Promise<IArticleContent[] | null> => null;
+  const getArticleContent = async (_id: string): Promise<IArticleContent | null> => null;
+  const getVideoContents = async (): Promise<IVideoContent[] | null> => null;
+  const getVideoContent = async (_id: string): Promise<IVideoContent | null> => null;
 
   return {
     getArticleContents,

@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { IFramework } from '../../../models/craft';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Feather } from '@expo/vector-icons';
@@ -8,9 +9,7 @@ import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar'
 import SkeletonLoader from '../../../common/components/SkeletonLoader';
 import { bundledSource } from '../../../common/helpers/uriHelpers';
 import useArrayState from '../../../common/hooks/useArrayState';
-import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
-import { IFramework } from '../../../models/craft';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
 import useEnvironment from '../../../modules/environment/hooks/useEnvironment';
@@ -104,7 +103,6 @@ export default function PrepScreen({
     `mb-3 h-[311px] w-[${itemLength}px] overflow-hidden rounded-2lg`,
   ];
 
-  const { getFrameworkBySlug } = useContent();
   const [framework, setFramework] = React.useState<IFramework>();
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [isFirstPrepSession, setIsFirstPrepSession] =
@@ -226,19 +224,6 @@ export default function PrepScreen({
       }
     } catch (error) {
       console.error('Error fetching from recipe API:', error);
-    }
-
-    const data = await getFrameworkBySlug(slug);
-
-    if (data) {
-      setFramework(data);
-
-      // set default flavor
-      setSelectedFlavor(data.variantTags[0].id);
-      setIsLoading(false);
-
-      setDefaultRequiredIngredients();
-    } else {
       navigation.navigate('FrameworkNotFound');
     }
   };

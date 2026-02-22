@@ -5,15 +5,16 @@ import {
   GenericCarouselFlatlist 
 } from '../../../common/components/GenericCarousel';
 import tw from '../../../common/tailwind';
-import { IAsset, ITag, IFramework } from '../types/local';
+import { IAsset, ITag } from '../../../models/craft';
+import { IFramework } from '../types/local';
 import MealCard from '../../feed/components/MealCard';
 
 interface RenderItemProps {
   id: string;
   title: string;
-  heroImage: IAsset[];
-  variantTags: ITag[];
-  description: string;
+  heroImage?: IAsset[];
+  variantTags?: ITag[];
+  description?: string;
 }
 
 const windowWidth = Dimensions.get('window').width;
@@ -43,7 +44,7 @@ export default function MealCarousel({
               `${items.length === 1 ? 'w-full' : 'pl-5 pr-3'}`,
               contentContainerStyle,
             )}
-            data={items}
+            data={items as any[]}
             section={'Meal'}
             itemLength={itemLength}
             renderItem={(renderItem: {

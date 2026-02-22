@@ -1,7 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
 import { getAllIngredientsFromComponents } from '../../../common/helpers/filterIngredients';
-import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
 import { IFramework } from '../../../models/craft';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
@@ -38,7 +37,6 @@ export default function MakeItScreen({
     params: { id, variant, ingredients, mealId },
   },
 }: InitialNavigationStackParams<'MakeIt'>) {
-  const { getFramework } = useContent();
   const { sendAnalyticsEvent } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
   const isFocused = useIsFocused();
@@ -117,12 +115,6 @@ export default function MakeItScreen({
       }
     } catch (error) {
       console.error('Error fetching from recipe API:', error);
-    }
-
-    const data = await getFramework(id);
-
-    if (data) {
-      setFramework(data);
     }
   };
 
