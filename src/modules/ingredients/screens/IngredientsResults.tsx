@@ -13,6 +13,8 @@ import {
   subheadSmallUppercase,
 } from '../../../theme/typography';
 import { useGetRecipesByIngredientsQuery } from '../../recipe/api/recipeApi';
+import { useGetCurrentUserQuery } from '../../auth/api';
+import { useGetUserOnboardingQuery } from '../../intro/api/api';
 import { Recipe } from '../../recipe/models/recipe';
 
 const windowWidth = Dimensions.get('window').width;
@@ -41,8 +43,13 @@ export default function IngredientsResultsScreen({
     selectedIngredients.map((ing: any) => ing.id),
     [selectedIngredients]
   );
-  
-  const { data: recipes = [], isLoading } = useGetRecipesByIngredientsQuery(ingredientIds);
+
+  const { data: currentUser } = useGetCurrentUserQuery();
+  const { data: userOnboarding } = useGetUserOnboardingQuery();
+  const userCountry = currentUser?.country || userOnboarding?.suburb;
+  const { data: recipes = [], isLoading } = useGetRecipesByIngredientsQuery(
+    { ingredientIds, country: userCountry }
+  );
 
   // Sort recipes by number of matching ingredients
   const sortedRecipes = useMemo(() => {

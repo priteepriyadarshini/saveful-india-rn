@@ -12,6 +12,7 @@ import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
 import MealCard from '../../../modules/feed/components/MealCard';
 import { useGetUserOnboardingQuery } from '../../../modules/intro/api/api';
+import { useGetCurrentUserQuery } from '../../auth/api';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
 import { useGetFavouriteDetailsQuery } from '../../../modules/track/api/api';
 import { useGetCookedRecipesDetailsQuery, useGetTrendingRecipesQuery } from '../../../modules/analytics/api/api';
@@ -32,7 +33,8 @@ export default function MealsCarousel() {
   const cookedItems = cookedRecipesDetails?.cookedRecipes || [];
   const { data: favouriteDetails } = useGetFavouriteDetailsQuery();
   const favItems = favouriteDetails || [];
-  const { data: trendingData } = useGetTrendingRecipesQuery();
+  const { data: currentUser } = useGetCurrentUserQuery();
+  const { data: trendingData } = useGetTrendingRecipesQuery(currentUser?.country);
   const trendingItems = trendingData?.trending || [];
   const { data: userOnboarding } = useGetUserOnboardingQuery();
 

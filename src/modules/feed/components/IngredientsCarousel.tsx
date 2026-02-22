@@ -18,6 +18,7 @@ import { useGetUserOnboardingQuery } from '../../../modules/intro/api/api';
 import { useCurentRoute } from '../../route/context/CurrentRouteContext';
 import { FeedStackScreenProps } from '../navigation/FeedNavigation';
 import { useGetAllIngredientsQuery } from '../../ingredients/api/ingredientsApi';
+import { useGetCurrentUserQuery } from '../../auth/api';
 import { Ingredient } from '../../ingredients/api/types';
 import { isCurrentlyInSeason } from '../../ingredients/helpers/ingredientTransformers';
 
@@ -95,7 +96,8 @@ function IngredientCard({
 export default function IngredientsCarousel() {
   const flatListRef = React.useRef<any>(null);
 
-  const { data: apiIngredients, isLoading: isApiLoading } = useGetAllIngredientsQuery();
+  const { data: currentUser } = useGetCurrentUserQuery();
+  const { data: apiIngredients, isLoading: isApiLoading } = useGetAllIngredientsQuery(currentUser?.country);
   const { data: userOnboarding } = useGetUserOnboardingQuery();
   const [ingredients, setIngredients] = React.useState<Ingredient[]>([]);
 

@@ -15,13 +15,16 @@ const recipeApi = api.injectEndpoints({
     getRecipesByIngredient: builder.query<Recipe[], string>({
       query: (ingredientId) => `/api/api/recipe/ingredient/${ingredientId}`,
     }),
-    getRecipesByIngredients: builder.query<Recipe[], string[]>({
-      async queryFn(ingredientIds, _queryApi, _extraOptions, fetchWithBQ) {
+    getRecipesByIngredients: builder.query<Recipe[], { ingredientIds: string[]; country?: string }>({
+      async queryFn(arg, _queryApi, _extraOptions, fetchWithBQ) {
+        const ingredientIds: string[] = arg?.ingredientIds ?? [];
+        const country: string | undefined = arg?.country;
         try {
           // Fetch recipes for each ingredient
           const recipesByIngredient = await Promise.all(
             ingredientIds.map(async (ingredientId) => {
-              const result = await fetchWithBQ(`/api/api/recipe/ingredient/${ingredientId}`);
+              const params = country ? `?country=${encodeURIComponent(country)}` : '';
+              const result = await fetchWithBQ(`/api/api/recipe/ingredient/${ingredientId}${params}`);
               if (result.error) throw result.error;
               return result.data as Recipe[];
             })
@@ -40,7 +43,7 @@ const recipeApi = api.injectEndpoints({
       },
     }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {

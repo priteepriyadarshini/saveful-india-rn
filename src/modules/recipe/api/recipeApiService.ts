@@ -7,10 +7,11 @@ class RecipeApiService {
     return EnvironmentManager.shared.apiUrl();
   }
 
-  async getAllRecipes(): Promise<Recipe[]> {
+  async getAllRecipes(country?: string): Promise<Recipe[]> {
     try {
       const baseUrl = this.getBaseUrl();
-      const response = await axios.get(`${baseUrl}/api/api/recipe`);
+      const params = country ? `?country=${encodeURIComponent(country)}` : '';
+      const response = await axios.get(`${baseUrl}/api/api/recipe${params}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching recipes:', error);
@@ -30,9 +31,9 @@ class RecipeApiService {
   }
 
 
-  async getRecipeBySlug(slug: string): Promise<PopulatedRecipe | null> {
+  async getRecipeBySlug(slug: string, country?: string): Promise<PopulatedRecipe | null> {
     try {
-      const allRecipes = await this.getAllRecipes();
+      const allRecipes = await this.getAllRecipes(country);
       
       const recipe = allRecipes.find(r => {
         const recipeSlug = r.title.toLowerCase().replace(/\s+/g, '-');
@@ -50,10 +51,11 @@ class RecipeApiService {
     }
   }
 
-  async getRecipesByCategory(categoryId: string): Promise<Recipe[]> {
+  async getRecipesByCategory(categoryId: string, country?: string): Promise<Recipe[]> {
     try {
       const baseUrl = this.getBaseUrl();
-      const response = await axios.get(`${baseUrl}/api/api/recipe/category/${categoryId}`);
+      const params = country ? `?country=${encodeURIComponent(country)}` : '';
+      const response = await axios.get(`${baseUrl}/api/api/recipe/category/${categoryId}${params}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching recipes for category ${categoryId}:`, error);
@@ -62,10 +64,11 @@ class RecipeApiService {
   }
 
  
-  async getRecipesByIngredient(ingredientId: string): Promise<Recipe[]> {
+  async getRecipesByIngredient(ingredientId: string, country?: string): Promise<Recipe[]> {
     try {
       const baseUrl = this.getBaseUrl();
-      const response = await axios.get(`${baseUrl}/api/api/recipe/ingredient/${ingredientId}`);
+      const params = country ? `?country=${encodeURIComponent(country)}` : '';
+      const response = await axios.get(`${baseUrl}/api/api/recipe/ingredient/${ingredientId}${params}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching recipes for ingredient ${ingredientId}:`, error);
@@ -74,10 +77,10 @@ class RecipeApiService {
   }
 
   
-  async getRecipesByCategories(categoryIds: string[]): Promise<Recipe[]> {
+  async getRecipesByCategories(categoryIds: string[], country?: string): Promise<Recipe[]> {
     try {
     
-      const allRecipes = await this.getAllRecipes();
+      const allRecipes = await this.getAllRecipes(country);
       
       if (categoryIds.length === 0) {
         return allRecipes;

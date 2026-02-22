@@ -52,9 +52,9 @@ const analyticsApi = api
       }),
       providesTags: ['Analytics'],
     }),
-    getTrendingRecipes: builder.query<{ trending: { id: string; title: string; shortDescription?: string; heroImageUrl?: string; count: number }[] }, void>({
-      query: () => ({
-        url: '/api/analytics/trending',
+    getTrendingRecipes: builder.query<{ trending: { id: string; title: string; shortDescription?: string; heroImageUrl?: string; count: number }[] }, string | undefined>({
+      query: (country) => ({
+        url: country ? `/api/analytics/trending?country=${encodeURIComponent(country)}` : '/api/analytics/trending',
         method: 'GET',
       }),
       providesTags: ['Analytics'],

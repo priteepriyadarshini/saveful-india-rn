@@ -9,6 +9,8 @@ import { Dimensions, Text, View } from 'react-native';
 import { h7TextStyle } from '../../../theme/typography';
 import { recipeApiService } from '../../../modules/recipe/api/recipeApiService';
 import { Recipe } from '../../../modules/recipe/models/recipe';
+import { useGetCurrentUserQuery } from '../../auth/api';
+import { useGetUserOnboardingQuery } from '../../intro/api/api';
 
 // const flexRow = 'flex-row justify-between items-center px-5 py-4.5';
 
@@ -42,6 +44,10 @@ export default function Featuring({
   const [, setCurrentIndex] = React.useState<number>(0);
   const [isLoading, setIsLoading] = React.useState(true);
 
+  const { data: currentUser } = useGetCurrentUserQuery();
+  const { data: userOnboarding } = useGetUserOnboardingQuery();
+  const userCountry = currentUser?.country || userOnboarding?.suburb;
+
   const flatListRef = React.useRef<any>(null); // Reference to the FlatList component
   // Function to scroll the FlatList
   // const scrollCarousel = (offset: number) => {
@@ -55,7 +61,7 @@ export default function Featuring({
   const fetchRecipes = async () => {
     try {
       setIsLoading(true);
-      const data = await recipeApiService.getRecipesByIngredient(ingredientId);
+      const data = await recipeApiService.getRecipesByIngredient(ingredientId, userCountry);
       setRecipes(data);
     } catch (error) {
       console.error('Error fetching recipes for ingredient:', error);
@@ -68,7 +74,7 @@ export default function Featuring({
   useEffect(() => {
     fetchRecipes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ingredientId]);
+  }, [ingredientId, userCountry]);
 
   if (isLoading) {
     return null;

@@ -7,6 +7,8 @@ import useContent from '../../../common/hooks/useContent';
 import tw from '../../../common/tailwind';
 import { ICategory } from '../../../models/craft';
 import { useGetAllIngredientsQuery } from '../../ingredients/api/ingredientsApi';
+import { useGetCurrentUserQuery } from '../../auth/api';
+import { useGetUserOnboardingQuery } from '../api/api';
 import React, {
   useCallback,
   useEffect,
@@ -85,7 +87,10 @@ export default function OnboardingDietary({
   // const reducedMotion = useReducedMotion();
 
   
-  const { data: apiIngredients } = useGetAllIngredientsQuery();
+  const { data: currentUser } = useGetCurrentUserQuery();
+  const { data: userOnboarding } = useGetUserOnboardingQuery();
+  const userCountry = currentUser?.country || userOnboarding?.suburb;
+  const { data: apiIngredients } = useGetAllIngredientsQuery(userCountry);
   const [ingredients, setIngredients] = useState<{ id: string; title: string }[]>([]);
   const dietaryCategoryOptions = [
     { id: 'f74223f2-6285-479b-be97-8472ed79b835', title: 'Vegetarian' },

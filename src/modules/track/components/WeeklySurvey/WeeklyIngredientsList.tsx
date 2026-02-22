@@ -1,6 +1,7 @@
 import TextBoxInput from '../../../../common/components/Form/TextBoxInput';
 import PrimaryButton from '../../../../common/components/ThemeButtons/PrimaryButton';
 import {useGetAllIngredientsQuery} from '../../../ingredients/api/ingredientsApi';
+import { useGetCurrentUserQuery } from '../../../auth/api';
 import tw from '../../../../common/tailwind';
 import { IIngredient } from '../../types/local';
 import TrackLinearGradient from '../../../../modules/track/components/TrackLinearGradient';
@@ -39,8 +40,10 @@ export default function WeeklyIngredientsList<T extends FieldValues>(
     ITrackPostMakeIngredient[]
   >([]);
 
+  const { data: currentUser } = useGetCurrentUserQuery();
+
   // Fetch ingredients from the API instead of CraftCMS
-  const { data: apiIngredients, isLoading } = useGetAllIngredientsQuery();
+  const { data: apiIngredients, isLoading } = useGetAllIngredientsQuery(currentUser?.country);
   const [ingredients, setIngredients] = useState<IIngredient[]>([]);
 
   useEffect(() => {

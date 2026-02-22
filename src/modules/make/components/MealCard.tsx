@@ -7,14 +7,15 @@ import { mixpanelEventName } from '../../analytics/analytics';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
 import useEnvironment from '../../environment/hooks/useEnvironment';
 import { useCurentRoute } from '../../route/context/CurrentRouteContext';
-import React from 'react';
-import { Dimensions, Image, Pressable, Text, View } from 'react-native';
+import React, { useCallback } from 'react';
+import { Dimensions, Pressable, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 import { cardDrop } from '../../../theme/shadow';
 import { h5TextStyle, subheadMediumUppercase } from '../../../theme/typography';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { InitialStackParamList } from '../../navigation/navigator/InitialNavigator';
 
-export default function MealCard({
+const MealCard = React.memo(function MealCard({
   id,
   heroImage,
   title,
@@ -43,7 +44,7 @@ export default function MealCard({
   type InitialNav = NativeStackNavigationProp<InitialStackParamList, 'Root'>;
   const navigation = useNavigation<InitialNav>();
   
-  const onPress = async () => {
+  const onPress = useCallback(async () => {
     sendAnalyticsEvent({
       event: mixpanelEventName.actionClicked,
       properties: {
@@ -87,7 +88,7 @@ export default function MealCard({
         },
       });
     }
-  };
+  }, [id, title, navigation, newCurrentRoute, sendAnalyticsEvent, getFramework]);
 
   return (
     <Pressable
@@ -106,8 +107,10 @@ export default function MealCard({
       {sticker && sticker.length > 0 && sticker[0]?.image?.[0]?.url && (
         <Image
           style={tw`absolute left-6 top-4 z-10 h-[120px] w-[109px] overflow-hidden`}
-          resizeMode="contain"
-          source={bundledSource(sticker[0].image[0].url, env.useBundledContent)}
+          contentFit="contain"
+          source={{ uri: sticker[0].image[0].url }}
+          cachePolicy="memory-disk"
+          transition={200}
           accessibilityIgnoresInvertColors
         />
       )}
@@ -116,8 +119,11 @@ export default function MealCard({
           style={tw`h-[${
             ((Dimensions.get('screen').width - 80) * 262) / 305
           }px] w-full overflow-hidden rounded`}
-          resizeMode="cover"
-          source={bundledSource(heroImage[0].url, env.useBundledContent)}
+          contentFit="cover"
+          source={{ uri: heroImage[0].url }}
+          cachePolicy="memory-disk"
+          transition={200}
+          recyclingKey={id}
           accessibilityIgnoresInvertColors
         />
       )}
@@ -137,4 +143,6 @@ export default function MealCard({
       </View>
     </Pressable>
   );
-}
+});
+
+export default MealCard;

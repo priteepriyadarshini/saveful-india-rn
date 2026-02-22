@@ -1,3 +1,4 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -15,10 +16,12 @@ import FocusAwareStatusBar from "../../../common/components/FocusAwareStatusBar"
 import HackCategory from "../components/HackCategory";
 import useContent from "../../../common/hooks/useContent";
 import { ICategory } from "../../../models/craft";
-import { useEffect, useRef, useState } from "react";
 import useAnalytics from "../../analytics/hooks/useAnalytics";
 import { hackApiService, HackCategory as ApiHackCategory } from "../api/hackApiService";
 import useEnvironment from "../../environment/hooks/useEnvironment";
+
+const windowWidth = Dimensions.get('window').width;
+const windowScreenWidth = Dimensions.get('screen').width;
 
 export default function HackScreen() {
   const { getCategories } = useContent();
@@ -31,9 +34,8 @@ export default function HackScreen() {
   const offset = useRef(new Animated.Value(0)).current;
   const { sendScrollEventInitiation } = useAnalytics();
 
-  const getCategoriesData = async () => {
+  const getCategoriesData = useCallback(async () => {
     try {
-      // Try to fetch from API first
       const apiData = await hackApiService.getAllCategories();
       if (apiData && apiData.length > 0) {
         setApiCategories(apiData);
@@ -45,26 +47,32 @@ export default function HackScreen() {
       // Silencing API fallback logs
     }
 
-    // Fallback to static content
     const data = await getCategories();
-
     if (data) {
-      // Only hack categories
       setCategories(data.filter(item => item.groupHandle === 'hack'));
       setUseApiData(false);
       setIsLoading(false);
     }
-  };
+  }, [getCategories]);
 
   useEffect(() => {
     getCategoriesData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [getCategoriesData]);
 
-  // TODO: Loading skeleton
-  if (isLoading) {
-    return null;
-  }
+  const bgImageHeight = useMemo(() => (windowScreenWidth * 392) / 375, []);
+  const ribbonImageHeight = useMemo(() => (windowScreenWidth * 1085) / 375, []);
+
+  const renderedCategories = useMemo(() => {
+    if (useApiData) {
+      return apiCategories.map(item => {
+        const key = item._id || item.id || item.name;
+        return <HackCategory key={key} item={item} useApiData={true} />;
+      });
+    }
+    return categories.map(item => (
+      <HackCategory key={item.id} item={item} useApiData={false} />
+    ));
+  }, [useApiData, apiCategories, categories]);
 
   return (
     <View style={tw`relative flex-1 bg-creme`}>
@@ -72,27 +80,24 @@ export default function HackScreen() {
         source={require('../../../../assets/hacks/female-cook-cutting-ingredients.png')}
         resizeMode="cover"
         style={tw.style(
-          `absolute top-0 w-[${
-            Dimensions.get('window').width
-          }px] bg-eggplant h-[${
-            (Dimensions.get('screen').width * 392) / 375
-          }px]`,
+          `absolute top-0 w-[${windowWidth}px] bg-eggplant h-[${bgImageHeight}px]`,
         )}
       />
-      <ScrollView
-        scrollEventThrottle={16}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: offset } } }],
-          {
-            useNativeDriver: false,
-            listener: (event: NativeSyntheticEvent<NativeScrollEvent>) =>
-              sendScrollEventInitiation(event, 'Hack Page Interacted'),
-          },
-        )}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={tw`pt-15 z-10 flex-1`}>
-          <SafeAreaView style={tw`px-15 flex-1`}>
+      {!isLoading && (
+        <ScrollView
+          scrollEventThrottle={16}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: offset } } }],
+            {
+              useNativeDriver: false,
+              listener: (event: NativeSyntheticEvent<NativeScrollEvent>) =>
+                sendScrollEventInitiation(event, 'Hack Page Interacted'),
+            },
+          )}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={tw`pt-15 z-10`}>
+            <SafeAreaView style={tw`px-15`}>
             <Text style={tw.style(h2TextStyle, 'text-center text-white')}>
               Hacks
             </Text>
@@ -108,23 +113,15 @@ export default function HackScreen() {
             <View style={tw`absolute mt-[200px] h-full w-full bg-creme`}>
               <Image
                 source={require('../../../../assets/ribbons/curly-eggplant.png')}
-                style={tw`absolute w-[${Dimensions.get('window').width}px] h-[${
-                  (Dimensions.get('screen').width * 1085) / 375
-                }px] top-24`}
+                style={tw`absolute w-[${windowWidth}px] h-[${ribbonImageHeight}px] top-24`}
                 resizeMode="contain"
               />
             </View>
-            {useApiData
-              ? apiCategories.map(item => {
-                  const key = item._id || item.id || item.name;
-                  return <HackCategory key={key} item={item} useApiData={true} />;
-                })
-              : categories.map(item => {
-                  return <HackCategory key={item.id} item={item} useApiData={false} />;
-                })}
+            {renderedCategories}
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      )}
 
       <FocusAwareStatusBar statusBarStyle="light" />
     </View>

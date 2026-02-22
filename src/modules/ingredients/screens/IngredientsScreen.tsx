@@ -18,7 +18,9 @@ import {
   View,
 } from 'react-native';
 import { useGetAllIngredientsQuery } from '../api/ingredientsApi';
+import { useGetCurrentUserQuery } from '../../auth/api';
 import { transformIngredientsToLegacyFormat } from '../helpers/ingredientTransformers';
+import { skipToken } from '@reduxjs/toolkit/query/react';
 
 const windowWidth = Dimensions.get('window').width;
 const itemLength = windowWidth - 40;
@@ -47,8 +49,16 @@ export default function IngredientsScreen({
 
   const { data: userOnboarding } = useGetUserOnboardingQuery();
   
-  // Use API only - no Craft CMS fallback
-  const { data: apiIngredients, isLoading: isApiLoading } = useGetAllIngredientsQuery();
+  const { data: currentUser, isLoading: isCurrentUserLoading } = useGetCurrentUserQuery();
+
+  // Derive country: prefer user profile field, fall back to onboarding suburb (stores country name).
+  // Use skipToken while the user profile is still loading to avoid fetching all ingredients
+  // unfiltered during the brief window before currentUser resolves.
+  const userCountry = currentUser?.country || userOnboarding?.suburb;
+  const { data: apiIngredients, isLoading: isIngredientsLoading } = useGetAllIngredientsQuery(
+    !isCurrentUserLoading ? userCountry : skipToken,
+  );
+  const isApiLoading = isCurrentUserLoading || isIngredientsLoading;
   
   const [ingredients, setIngredients] = React.useState<IIngredient[]>([]);
   // Removed Craft frameworks dependency; use backend ingredients only
