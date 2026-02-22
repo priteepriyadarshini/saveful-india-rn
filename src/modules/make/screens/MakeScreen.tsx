@@ -76,6 +76,12 @@ export default function MakeScreen() {
     () => (
       <>
         <View style={tw`relative z-10`}>
+          <Image
+            style={tw`absolute top-0 w-[${windowWidth}px] h-[${(windowWidth * 241) / 375}px]`}
+            resizeMode="contain"
+            source={require('../../../../assets/placeholder/make-bg.png')}
+            accessibilityIgnoresInvertColors
+          />
           <SafeAreaView style={tw`pt-[25px]`}>
             <FeedSearchBarHeader
               onPress={onSearchTapped}
@@ -120,15 +126,6 @@ export default function MakeScreen() {
 
   return (
     <View style={tw`relative flex-1 bg-creme`}>
-      <Image
-        style={tw`absolute top-0 w-[${windowWidth}px] h-[${
-          (windowWidth * 241) / 375
-        }px]`}
-        resizeMode="contain"
-        source={require('../../../../assets/placeholder/make-bg.png')}
-        accessibilityIgnoresInvertColors
-      />
-
       <FlashList
         data={isLoading ? [] : frameworks}
         renderItem={renderItem}
