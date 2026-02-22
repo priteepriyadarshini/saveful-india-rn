@@ -286,6 +286,7 @@ export const SAVINGS = ({
   costSavingsPersonalBest,
   foodSaved,
   foodSavedPersonalBest,
+  currencySymbol = '₹',
 }: {
   spent: string;
   waste: string;
@@ -295,17 +296,19 @@ export const SAVINGS = ({
   costSavingsPersonalBest: number | null;
   foodSaved: number;
   foodSavedPersonalBest: number | null;
+  currencySymbol?: string;
 }): WeekResults => ({
   spent,
   waste,
   co2: co2Savings.toString(),
+  currencySymbol,
   currentWeekResults: [
     {
       id: 0,
       type: 'food',
       saved: `${(foodSaved / 1000).toFixed(2)}kg`,
       description:
-        foodSavedPersonalBest && foodSavedPersonalBest > foodSaved
+        foodSavedPersonalBest && foodSavedPersonalBest >= foodSaved
           ? `Your personal best is ${(foodSavedPersonalBest / 1000).toFixed(2)}kg`
           : 'New personal best!',
       isBest: !foodSavedPersonalBest || foodSavedPersonalBest < foodSaved,
@@ -316,10 +319,10 @@ export const SAVINGS = ({
     {
       id: 1,
       type: 'dollars',
-      saved: `₹${costSavings.toFixed(2)}`,
+      saved: `${currencySymbol}${costSavings.toFixed(2)}`,
       description:
-        costSavingsPersonalBest && costSavingsPersonalBest > costSavings
-          ? `Your personal best is ₹${costSavingsPersonalBest.toFixed(2)}`
+        costSavingsPersonalBest && costSavingsPersonalBest >= costSavings
+          ? `Your personal best is ${currencySymbol}${costSavingsPersonalBest.toFixed(2)}`
           : 'New personal best!',
       isBest: !costSavingsPersonalBest || costSavingsPersonalBest < costSavings,
       image: {
@@ -331,7 +334,7 @@ export const SAVINGS = ({
       type: 'co2',
       saved: `${(co2Savings / 1000).toFixed(2)}kg`,
       description:
-        co2SavingsPersonalBest && co2SavingsPersonalBest > co2Savings
+        co2SavingsPersonalBest && co2SavingsPersonalBest >= co2Savings
           ? `Your personal best is ${(co2SavingsPersonalBest / 1000).toFixed(2)}kg`
           : 'New personal best!',
       isBest: !co2SavingsPersonalBest || co2SavingsPersonalBest < co2Savings,
@@ -438,7 +441,7 @@ export const WEEKLYSURVEY = ({
       foodSaved && foodSaved.length > 0 && foodSaved?.charAt(0) === '-'
         ? 'more'
         : 'less',
-    value: `${Number(foodSaved ? foodSaved?.replace(/-/g, '') : '0').toFixed(
+    value: `${(Number(foodSaved ? foodSaved?.replace(/-/g, '') : '0') / 1000).toFixed(
       2,
     )}KG`,
     output: `potential ${
@@ -456,7 +459,7 @@ export const WEEKLYSURVEY = ({
       costSavings && costSavings.length > 0 && costSavings?.charAt(0) === '-'
         ? 'more'
         : 'less',
-    value: `${currencySymbol}${foodSaved ? costSavings?.replace(/-/g, '') : '0'}`,
+    value: `${currencySymbol}${Math.abs(Number(costSavings || 0)).toFixed(2)}`,
     output: `potential ${
       costSavings && costSavings.length > 0 && costSavings?.charAt(0) === '-'
         ? 'cost'
@@ -472,7 +475,7 @@ export const WEEKLYSURVEY = ({
       co2Savings && co2Savings.length > 0 && co2Savings?.charAt(0) === '-'
         ? 'more'
         : 'less',
-    value: `${Number(co2Savings ? co2Savings?.replace(/-/g, '') : '0').toFixed(
+    value: `${(Number(co2Savings ? co2Savings?.replace(/-/g, '') : '0') / 1000).toFixed(
       2,
     )}KG`,
     output: `potential CO2 ${
@@ -512,28 +515,28 @@ export const TIPSOFTHEWEEK = [
     id: 4,
     title: 'SHOP YOUR FRIDGE FIRST',
     description:
-      'Make it a habit to start by fossicking through your fridge to save food and coin. Try adding ‘eat me first’ labels to your containers and write your own use-by dates on them. If the date’s approaching and it doesn’t look like you’re going to eat it – just transfer it to the freezer.',
+      "Make it a habit to start by fossicking through your fridge to save food and coin. Try adding ‘eat me first’ labels to your containers and write your own use-by dates on them. If the date's approaching and it doesn't look like you're going to eat it – just transfer it to the freezer.",
   },
   {
     id: 5,
     title: 'REMIX YOUR MEAL',
     description:
-      'Get creative with what you’ve made and give those leftovers a makeover. Roast veggies can become frittatas, bowls, curries and more. Go-to chilli becomes enchiladas, nachos and tacos! Experiment and play it your way.',
+      "Get creative with what you've made and give those leftovers a makeover. Roast veggies can become frittatas, bowls, curries and more. Go-to chilli becomes enchiladas, nachos and tacos! Experiment and play it your way.",
   },
   {
     id: 6,
     title: 'FREEZE FRAME',
     description:
-      'If you’re finding well-intentioned leftovers aren’t getting eaten from your fridge, try freezing them first instead. Zero effort plus zero waste? Win win!',
+      "If you're finding well-intentioned leftovers aren't getting eaten from your fridge, try freezing them first instead. Zero effort plus zero waste? Win win!",
   },
 ];
 
 export const FAQ = [
   {
     id: 0,
-    title: 'How much food does the average Australian waste?',
+    title: 'How much food does the average person waste?',
     description:
-      'The average Australian wastes around 98kg of food every year^, despite 70 per cent of food binned being perfectly edible. The good news? Through small, everyday actions we can change this (and save ourselves money and time while doing it)!',
+      'According to the UN Environment Programme^, roughly 1 billion tonnes of food is wasted globally every year — around 132kg per person — despite much of it being perfectly edible. The good news? Through small, everyday actions we can all change this (and save ourselves money and time while doing it)!',
     isExpanded: false,
   },
   {
@@ -541,7 +544,7 @@ export const FAQ = [
     title:
       'What is the average amount of money spent on wasted food per household?',
     description:
-      'The average Australian household spends around $2,500* on food that ends up in the bin. That’s the same amount as a week’s accommodation for the fam in Byron Bay. So, let’s start saving right now.',
+      "Households around the world spend hundreds to thousands of dollars every year on food that ends up in the bin. Every bit of food you save means real money back in your pocket \u2013 so let's start saving right now.",
     isExpanded: false,
   },
   {
@@ -555,21 +558,21 @@ export const FAQ = [
     id: 3,
     title: 'What happens to the food I put in the compost/FOGO bin?',
     description:
-      'Putting food in the compost or Food Organics Garden Organics (FOGO) bin is better than putting it in the rubbish bin. But it still produces methane. The food in your compost or FOGO also has an energy cost (sun, water and transport). That’s why the goal is to put the food you buy into hungry tummies!',
+      "Putting food in the compost or Food Organics Garden Organics (FOGO) bin is better than putting it in the rubbish bin. But it still produces methane. The food in your compost or FOGO also has an energy cost (sun, water and transport). That's why the goal is to put the food you buy into hungry tummies!",
     isExpanded: false,
   },
   {
     id: 4,
     title: 'What happens to the food I put in landfill?',
     description:
-      'When your organic waste (like food, tea, coffee, and dairy) gets mixed with other types of garbage and isn’t exposed to oxygen, it produces more methane and nitrous oxide. These greenhouse gas emissions have a big impact on climate change. So, as an easy first step – you find out what your local council accepts in your FOGO bin and put what you can in there.',
+      "When your organic waste (like food, tea, coffee, and dairy) gets mixed with other types of garbage and isn't exposed to oxygen, it produces more methane and nitrous oxide. These greenhouse gas emissions have a big impact on climate change. So, as an easy first step – you find out what your local council accepts in your FOGO bin and put what you can in there.",
     isExpanded: false,
   },
   {
     id: 5,
     title: 'I feed my leftovers to my dog, is that waste?',
     description:
-      'No, surely? Yes, unfortunately. We know that your doggo is one of the most important creatures on the planet. But, according to leading food waste researchers, Fight Food Waste, all those lovely leftovers they’ve been chowing down on are technically considered food waste.',
+      "No, surely? Yes, unfortunately. We know that your doggo is one of the most important creatures on the planet. But, according to leading food waste researchers, Fight Food Waste, all those lovely leftovers they've been chowing down on are technically considered food waste.",
     isExpanded: false,
   },
 ];

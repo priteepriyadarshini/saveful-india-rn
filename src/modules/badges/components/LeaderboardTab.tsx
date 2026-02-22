@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,17 +14,63 @@ import { Ionicons } from '@expo/vector-icons';
 import tw from '../../../common/tailwind';
 import { useGetLeaderboardQuery } from '../api/api';
 import { LeaderboardEntry, TimeFilter, MetricFilter } from '../api/types';
+import { getCurrencySymbol } from '../../../common/utils/currency';
+import { useGetCurrentUserQuery } from '../../auth/api';
 import { bodyMediumRegular, h6TextStyle, bodySmallRegular, bodySmallBold, subheadSmallUppercase } from '../../../theme/typography';
 import { cardDrop } from '../../../theme/shadow';
 
 export default function LeaderboardTab() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [metricFilter, setMetricFilter] = useState<MetricFilter>('all');
-  const { data: leaderboard, isLoading, refetch, isFetching } = useGetLeaderboardQuery({ 
+  const { data: currentUser } = useGetCurrentUserQuery();
+
+  // When ranking by money, scope to the current user's country so that
+  // currencies with large nominal values (e.g. ₩) don't unfairly dominate.
+  const countryFilter = metricFilter === 'money' ? currentUser?.country : undefined;
+
+  const { data: leaderboardRaw, isLoading, refetch, isFetching } = useGetLeaderboardQuery({
     limit: 100,
     period: timeFilter,
-    metric: metricFilter 
+    metric: metricFilter,
+    country: countryFilter,
   });
+
+  // Sort client-side so rank badges (gold/silver/bronze) always reflect the
+  // selected metric, regardless of the order the backend returns entries.
+  const leaderboard = useMemo(() => {
+    if (!leaderboardRaw) return [];
+    const sorted = [...leaderboardRaw];
+    switch (metricFilter) {
+      case 'meals':
+        sorted.sort((a, b) => (b.mealsCooked || 0) - (a.mealsCooked || 0));
+        break;
+      case 'saved':
+        sorted.sort((a, b) => (b.foodSavedGrams || 0) - (a.foodSavedGrams || 0));
+        break;
+      case 'money':
+        sorted.sort((a, b) => (b.totalMoneySaved || 0) - (a.totalMoneySaved || 0));
+        break;
+      case 'badges':
+        sorted.sort((a, b) => (b.badgeCount || 0) - (a.badgeCount || 0));
+        break;
+      case 'co2':
+        sorted.sort((a, b) => (b.totalCo2SavedKg || 0) - (a.totalCo2SavedKg || 0));
+        break;
+      case 'all':
+      default:
+        // Composite: normalise each metric to 0-1, sum them
+        sorted.sort((a, b) => {
+          const score = (e: typeof a) =>
+            (e.mealsCooked || 0) +
+            (e.foodSavedGrams || 0) / 1000 +
+            (e.totalMoneySaved || 0) +
+            (e.badgeCount || 0) * 10 +
+            (e.totalCo2SavedKg || 0);
+          return score(b) - score(a);
+        });
+    }
+    return sorted;
+  }, [leaderboardRaw, metricFilter]);
 
   const timeFilters: { key: TimeFilter; label: string; icon: any }[] = [
     { key: 'today', label: 'Today', icon: 'today' },
@@ -174,7 +220,7 @@ export default function LeaderboardTab() {
                 <View style={tw`mb-1 flex-row items-center rounded-full bg-white px-2 py-1 shadow-sm`}>
                   <Ionicons name="cash" size={11} color={tw.color('orange') || '#F99C46'} />
                   <Text style={tw.style(bodySmallBold, 'ml-1 text-orange text-[10px]')}>
-                    ₹{(item.totalMoneySaved || 0).toFixed(0)}
+                    {getCurrencySymbol(item.country)}{(item.totalMoneySaved || 0).toFixed(0)}
                   </Text>
                 </View>
                 <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[8px]')}>
@@ -315,6 +361,16 @@ export default function LeaderboardTab() {
           })}
         </ScrollView>
       </View>
+
+      {/* Country-scoped notice when ranking by money */}
+      {metricFilter === 'money' && currentUser?.country && (
+        <View style={tw`flex-row items-center gap-2 bg-orange/10 px-4 py-2`}>
+          <Ionicons name="information-circle-outline" size={14} color={tw.color('orange') || '#E87722'} />
+          <Text style={tw.style(bodySmallRegular, 'text-orange flex-1')}>
+            {`Money rankings show your country only (${currentUser.country}) for a fair comparison.`}
+          </Text>
+        </View>
+      )}
 
       {/* Leaderboard List */}
       <FlatList

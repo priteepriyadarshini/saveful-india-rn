@@ -116,7 +116,7 @@ export default function ResultsScreen() {
               <Text style={tw.style(bodyMediumBold)}>
                 {`potential total food savings in dollars`}
               </Text>
-              {`  is calculated by multiplying your potential total food savings in kg from frameworks made by the average price of food per kg in Australia`}
+              {`  is calculated by multiplying your potential total food savings in kg from frameworks made by the average price of food per kg in your country`}
               <Text
                 style={tw.style(bodyMediumRegular, {
                   textAlignVertical: 'top',
@@ -152,7 +152,7 @@ export default function ResultsScreen() {
               <Text style={tw.style(bodyMediumBold)}>
                 {` potential food waste/savings to dollars`}
               </Text>
-              {` is figured out by multiplying your total food waste/saving x the average price of food per kg in Australia`}
+              {` is figured out by multiplying your total food waste/saving x the average price of food per kg in your country`}
               <Text
                 style={tw.style(bodyMediumRegular, {
                   textAlignVertical: 'top',
@@ -212,7 +212,7 @@ export default function ResultsScreen() {
               </Text>
             </Pressable> */}
             <Text style={tw.style(bodySmallRegular)}>
-              {`# Total average cost of food per kg sourced from Fight Food Waste’s Household Survey data.`}
+              {`# Total average cost of food per kg sourced from regional food waste data for your country.`}
             </Text>
           </View>
         </View>

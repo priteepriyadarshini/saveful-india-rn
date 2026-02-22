@@ -28,7 +28,7 @@ import {
   subheadSmallUppercase,
 } from '../../../theme/typography';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { SurveyStackParamList } from '../navigation/SurveyNavigator';
+import { InitialStackParamList } from '../../navigation/navigator/InitialNavigator';
 import { useGetCurrentUserQuery } from '../../auth/api';
 import { getCurrencySymbol } from '../../../common/utils/currency';
 
@@ -167,12 +167,15 @@ function FirstSurveyDate({ nextSurveyDate }: SurveyDateProps) {
 }
 
 export default function WeeklySurveyCarousel() {
-  const navigation = useNavigation<NativeStackNavigationProp<SurveyStackParamList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<InitialStackParamList>>();
 
   const { data: userSurveys } = useGetUserTrackSurveysQuery();
   const { data: eligibilityData } = useGetUserTrackSurveyEligibilityQuery();
   const { data: user } = useGetCurrentUserQuery();
-  const currencySymbol = getCurrencySymbol(user?.country);
+
+  const currencySymbol =
+    userSurveys?.[0]?.calculatedSavings?.currency_symbol ||
+    getCurrencySymbol(user?.country);
 
   const [currentIndex, setCurrentIndex] = React.useState<number>(0);
 
@@ -211,7 +214,7 @@ export default function WeeklySurveyCarousel() {
             </SecondaryButton>
           ) : (
             <FirstSurveyDate
-              nextSurveyDate={eligibilityData.next_survey_date}
+              nextSurveyDate={eligibilityData.next_survey_date ?? ''}
             />
           )}
         </View>
@@ -262,7 +265,7 @@ export default function WeeklySurveyCarousel() {
             </SecondaryButton>
           ) : (
             <CurrentSurveyCompleted
-              nextSurveyDate={eligibilityData.next_survey_date}
+              nextSurveyDate={eligibilityData.next_survey_date ?? ''}
             />
           )}
         </View>
@@ -304,7 +307,6 @@ export default function WeeklySurveyCarousel() {
             inactiveDotColor="eggplant/60"
             currentIndex={currentIndex}
           />
-          {/* <Feather name="arrow-right" size={20} color={tw.color('kale')} /> */}
         </View>
       </GenericCarouselWrapper>
 
@@ -322,7 +324,7 @@ export default function WeeklySurveyCarousel() {
         </View>
       ) : (
         <CurrentSurveyCompleted
-          nextSurveyDate={eligibilityData.next_survey_date}
+          nextSurveyDate={eligibilityData.next_survey_date ?? ''}
         />
       )}
     </View>

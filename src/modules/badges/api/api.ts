@@ -45,7 +45,7 @@ const badgesApi = api
       }),
 
       // Get leaderboard with user stats
-      getLeaderboard: builder.query<LeaderboardEntry[], { limit?: number; period?: TimeFilter; metric?: string }>({
+      getLeaderboard: builder.query<LeaderboardEntry[], { limit?: number; period?: TimeFilter; metric?: string; country?: string }>({
         query: params => {
           const mapPeriod = (p?: TimeFilter) => {
             if (!p) return 'ALL_TIME';
@@ -83,7 +83,10 @@ const badgesApi = api
           const limitParam = params.limit ?? 50;
           const periodParam = mapPeriod(params.period);
           const metricParam = mapMetric(params.metric);
-          const query = `?limit=${limitParam}&period=${periodParam}&metric=${metricParam}`;
+          let query = `?limit=${limitParam}&period=${periodParam}&metric=${metricParam}`;
+          if (params.country) {
+            query += `&country=${encodeURIComponent(params.country)}`;
+          }
           return {
             url: `/api/analytics/leaderboard${query}`,
             method: 'GET',

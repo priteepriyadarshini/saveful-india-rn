@@ -2,6 +2,8 @@ import { useCallback, useEffect } from 'react';
 import { useCheckMyMilestonesMutation, useLazyGetBadgeByIdQuery } from '../api/api';
 import { useBadgeNotification } from '../context/BadgeNotificationContext';
 import { Badge, MilestoneType, UserBadge } from '../api/types';
+import { useGetCurrentUserQuery } from '../../auth/api';
+import { getCurrencySymbol } from '../../../common/utils/currency';
 
 /**
  * Hook to check milestones and automatically show badge notifications
@@ -10,6 +12,8 @@ export const useBadgeChecker = () => {
   const [checkMilestones, { data, isLoading, isSuccess }] = useCheckMyMilestonesMutation();
   const [fetchBadgeById] = useLazyGetBadgeByIdQuery();
   const { queueBadgeNotifications } = useBadgeNotification();
+  const { data: currentUser } = useGetCurrentUserQuery();
+  const currencySymbol = getCurrencySymbol(currentUser?.country);
 
   // When new badges are awarded, show notifications
   useEffect(() => {
@@ -24,7 +28,7 @@ export const useBadgeChecker = () => {
             const badge: Badge = fetched as Badge;
 
             // Generate earned reason based on badge details
-            const earnedReason = buildEarnedReason(badge, userBadge);
+            const earnedReason = buildEarnedReason(badge, userBadge, currencySymbol);
 
             return {
               badge,
@@ -61,7 +65,7 @@ export const useBadgeChecker = () => {
 /**
  * Generate a human-readable reason for milestone badges
  */
-function buildEarnedReason(badge: Badge, userBadge: UserBadge): string {
+function buildEarnedReason(badge: Badge, userBadge: UserBadge, currencySymbol = '₹'): string {
   const threshold = badge.milestoneThreshold || userBadge.achievedValue || 0;
 
   // Challenge winner badges
@@ -95,7 +99,7 @@ function buildEarnedReason(badge: Badge, userBadge: UserBadge): string {
     case MilestoneType.MONEY_SAVED_100:
     case MilestoneType.MONEY_SAVED_250:
     case MilestoneType.MONEY_SAVED_500:
-      return `You've saved ₹${threshold}!`;
+      return `You've saved ${currencySymbol}${threshold}!`;
     case MilestoneType.FIRST_FOOD_SAVED:
       return `First food saved — great start!`;
     case MilestoneType.FOOD_SAVED_5KG:

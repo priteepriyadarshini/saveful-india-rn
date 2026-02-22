@@ -109,6 +109,7 @@ export interface UserBadge {
 export interface LeaderboardEntry {
   userId: string;
   userName: string;
+  country?: string;  // ISO country code – used to display correct currency symbol
   badgeCount: number;
   mealsCooked: number;
   foodSavedGrams: number;

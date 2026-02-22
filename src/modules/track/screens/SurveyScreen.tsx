@@ -10,6 +10,7 @@ import { mixpanelEventName } from '../../analytics/analytics';
 import { handleFormSubmitException, getSafeErrorMessage } from '../../forms/validation';
 import { useCurentRoute } from '../../route/context/CurrentRouteContext';
 import { useCreateUserTrackSurveyMutation, useGetUserTrackSurveyEligibilityQuery } from '../../../modules/track/api/api';
+import { useGetCurrentUserQuery } from '../../auth/api';
 import TrackSurvey from '../../../modules/track/components/TrackSurvey';
 import StartSurvey from '../components/WeeklySurvey/StartSurvey';
 import SurveyResult from '../components/WeeklySurvey/SurveyResult';
@@ -95,6 +96,8 @@ export default function SurveyScreen() {
   const [createUserTrackSurvey, { isSuccess, isLoading }] =
     useCreateUserTrackSurveyMutation();
 
+  const { data: currentUser } = useGetCurrentUserQuery();
+
   const { data: eligibilityData, isLoading: checkingEligibility } = 
     useGetUserTrackSurveyEligibilityQuery();
 
@@ -161,6 +164,7 @@ export default function SurveyScreen() {
           (i): i is string => !!i,
         ),
         noOfCooks: toInt(formData.noOfCooks),
+        country: currentUser?.country,
       }).unwrap();
 
       if (result) {
@@ -169,11 +173,21 @@ export default function SurveyScreen() {
             spent: result.calculatedSavings.cost_savings.toString(),
             waste: result.calculatedSavings.food_saved.toString(),
             co2Savings: result.calculatedSavings.co2_savings,
-            co2SavingsPersonalBest: result.isCo2PersonalBest ? result.calculatedSavings.co2_savings : null,
+            // When isCo2PersonalBest is true this is a new record — pass null so
+            // SAVINGS shows "New personal best!". When false, pass the prior best
+            // value so SAVINGS can show "Your personal best is X".
+            co2SavingsPersonalBest: result.isCo2PersonalBest
+              ? null
+              : (result.prev_personal_bests?.co2_savings ?? null),
             costSavings: result.calculatedSavings.cost_savings,
-            costSavingsPersonalBest: result.isCostPersonalBest ? result.calculatedSavings.cost_savings : null,
+            costSavingsPersonalBest: result.isCostPersonalBest
+              ? null
+              : (result.prev_personal_bests?.cost_savings ?? null),
             foodSaved: result.calculatedSavings.food_saved,
-            foodSavedPersonalBest: result.isFoodSavedPersonalBest ? result.calculatedSavings.food_saved : null,
+            foodSavedPersonalBest: result.isFoodSavedPersonalBest
+              ? null
+              : (result.prev_personal_bests?.food_saved ?? null),
+            currencySymbol: result.calculatedSavings.currency_symbol,
           }),
         );
 

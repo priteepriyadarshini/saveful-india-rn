@@ -13,10 +13,12 @@ export default function TrackSurveyBaseline({
   waste = '0',
   spent = '0',
   co2 = '0',
+  currencySymbol = '₹',
 }: {
   waste: string;
   spent: string;
   co2?: string;
+  currencySymbol?: string;
 }) {
   const TRACK = [
     {
@@ -29,7 +31,7 @@ export default function TrackSurveyBaseline({
     },
     {
       name: 'money',
-      value: `₹${Number(spent).toFixed(2)}`,
+      value: `${currencySymbol}${Number(spent).toFixed(2)}`,
       description: `food waste cost`,
       image: {
         uri: require('../../../../assets/placeholder/money.png'),

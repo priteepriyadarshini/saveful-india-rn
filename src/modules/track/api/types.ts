@@ -67,6 +67,7 @@ interface WeeklySavings {
   co2_savings: number;
   cost_savings: number;
   food_saved: number;
+  currency_symbol: string;
 }
 
 interface TrackSurveyResponse {
@@ -79,6 +80,12 @@ interface TrackSurveyResponse {
   preferredIngredients: string[];
   noOfCooks: number;
   calculatedSavings: WeeklySavings;
+  // Only populated on createSurvey responses
+  prev_personal_bests?: {
+    co2_savings: number;
+    cost_savings: number;
+    food_saved: number;
+  } | null;
   isBaseline: boolean;
   surveyWeek: string;
   surveyDay: number;
@@ -106,6 +113,7 @@ interface CreateTrackSurveyDto {
   preferredIngredients: string[];
   noOfCooks?: number;
   surveyDay?: number;
+  country?: string; // ISO country code e.g. IN, AU, US
 }
 
 interface WeeklySavingsSummary {

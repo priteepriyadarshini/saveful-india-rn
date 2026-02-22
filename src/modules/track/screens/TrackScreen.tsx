@@ -147,22 +147,7 @@ export default function TrackScreen() {
                   {`^ United Nations Environment Program’s Food Waste Index Report 2024: Think, Eat, Save. Tracking Food Waste to Halve Global Food waste.`}
                 </Text>
               </Pressable>
-              <Pressable
-                onPress={() =>
-                  WebBrowser.openBrowserAsync(
-                    'https://www.fial.com.au/sharing-knowledge/food-waste#FSES',
-                  )
-                }
-              >
-                <Text style={tw.style(bodySmallRegular, 'underline')}>
-                  {`\n* Food Innovation Australia Limited’s `}
-                  <Text
-                    style={tw.style(bodySmallRegular, 'font-sans-italic')}
-                  >
-                    {`National Food Waste Strategy Feasibility Study`}
-                  </Text>
-                </Text>
-              </Pressable>
+
             </View>
           </View>
         </View>

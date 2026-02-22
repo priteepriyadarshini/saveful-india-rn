@@ -70,7 +70,7 @@ export default function Partners({ offset }: { offset: Animated.Value }) {
             style={tw.style(bodyMediumRegular, 'mx-5 text-center text-midgray')}
           >
             Thanks to the support of these waste-fighting warriors, we can make
-            saving food, money, and time accessible for every Australian.
+            saving food, money, and time accessible for everyone.
           </Text>
           <ImageBackground
             style={tw`h-full w-full items-center`}

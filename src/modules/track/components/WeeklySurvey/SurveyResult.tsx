@@ -38,14 +38,12 @@ export default function SurveyResult({
   surveyResult: WeekResults;
   resetForm: () => void;
 }) {
-  
-  //const linkTo = useLinkTo();
+
   const navigation = useNavigation<NativeStackNavigationProp<SurveyStackParamList>>();
 
   const { data: userOnboarding } = useGetUserOnboardingQuery();
   const { data: userTrackSurveys } = useGetUserTrackSurveysQuery();
 
-  // Fetch framework categories from the API instead of CraftCMS
   const { data: apiFrameworks, isLoading: isLoadingFrameworks } = useGetAllFrameworkCategoriesQuery();
 
   // Convert API frameworks to IFramework format and filter by allergies
@@ -62,9 +60,9 @@ export default function SurveyResult({
     }));
 
     return filterAllergiesByUserPreferences(
-      mappedFrameworks.slice(0, 3),
+      mappedFrameworks.slice(0, 3) as any[],
       userOnboarding?.allergies,
-    );
+    ) as IFramework[];
   }, [apiFrameworks, userOnboarding?.allergies]);
 
   const { sendAnalyticsEvent } = useAnalytics();
@@ -134,6 +132,7 @@ export default function SurveyResult({
                   spent={surveyResult.spent}
                   waste={surveyResult.waste}
                   co2={surveyResult.co2}
+                  currencySymbol={surveyResult.currencySymbol}
                 />
 
                 {/* What this means */}

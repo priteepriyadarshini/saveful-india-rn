@@ -31,6 +31,7 @@ export interface WeekResults {
   spent: string;
   waste: string;
   co2?: string;
+  currencySymbol?: string;  // ISO-derived symbol e.g. ₹, A$, £
   currentWeekResults: Savings[];
 }
 

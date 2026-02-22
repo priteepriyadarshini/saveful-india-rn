@@ -4,6 +4,7 @@ import { useGetCurrentUserQuery } from '../../../modules/auth/api';
 import useEnvironment from '../../../modules/environment/hooks/useEnvironment';
 import { useGetUserOnboardingQuery } from '../../../modules/intro/api/api';
 import { useGetStatsQuery } from '../../../modules/track/api/api';
+import { getCurrencySymbol } from '../../../common/utils/currency';
 import React, { useEffect, useRef } from 'react';
 
 interface Props {
@@ -19,15 +20,14 @@ const MixPanelContext = React.createContext<[Mixpanel | undefined]>([
 const MixPanelContextProvider: React.FC<Props> = ({ children }) => {
   const { data: user, error: userError } = useGetCurrentUserQuery(undefined, {
     refetchOnMountOrArgChange: true,
-    // Don't retry on error to prevent crash loops
     refetchOnReconnect: false,
   });
   const { data: stats } = useGetStatsQuery(undefined, {
-    skip: !user, // Only fetch stats if user is loaded
+    skip: !user, 
   });
 
   const { data: userOnboarding } = useGetUserOnboardingQuery(undefined, {
-    skip: !user, // Only fetch onboarding if user is loaded
+    skip: !user,
   });
 
   const mixPanelRef = useRef<Mixpanel | undefined>(undefined);
@@ -65,12 +65,13 @@ const MixPanelContextProvider: React.FC<Props> = ({ children }) => {
           app_joined_at: unixTimestampToDate(userProperties.app_joined_at),
         });
         if (stats) {
+          const currencySymbol = getCurrencySymbol(user?.country);
           mixPanelRef.current?.getPeople().set({
             total_cooked: stats?.completed_meals_count ?? 0,
-            total_cost_savings: `$${stats?.total_cost_savings ?? 0}`,
+            total_cost_savings: `${currencySymbol}${stats?.total_cost_savings ?? 0}`,
             best_co2_savings:
               `${Number(stats?.best_co2_savings ?? 0).toFixed(1)}kg`,
-            best_cost_savings: `$${stats?.best_cost_savings ?? 0}` ,
+            best_cost_savings: `${currencySymbol}${stats?.best_cost_savings ?? 0}` ,
             best_food_savings:
               `${Number(stats?.best_food_savings ?? 0).toFixed(1)}kg`,
             food_savings_user:
@@ -125,7 +126,7 @@ const MixPanelContextProvider: React.FC<Props> = ({ children }) => {
       // sendMixPanelResetEvent();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, userOnboarding]);
+  }, [user, userOnboarding, stats]);
 
   return (
     <MixPanelContext.Provider value={[mixPanelRef.current]}>
