@@ -3,7 +3,7 @@ import { LocationMetadata } from '../../../modules/intro/api/types';
 import PostcodeAutocomplete from '../../../modules/intro/components/PostcodeAutocomplete';
 import React, { useState } from 'react';
 import { Control, UseFormSetValue } from 'react-hook-form';
-import { Image, ImageRequireSource, Text, View, Pressable, Modal, ScrollView, TouchableOpacity } from 'react-native';
+import { Image, ImageRequireSource, Text, TextInput, View, Pressable, Modal, ScrollView, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import {
   bodyLargeRegular,
@@ -47,6 +47,7 @@ export default function OnboardingItemHeader({
     useState<LocationMetadata | null>(null);
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('');
+  const [pincode, setPincode] = useState('');
 
   const countries = [
     { code: 'IN', name: 'India' },
@@ -172,15 +173,38 @@ export default function OnboardingItemHeader({
                 </Pressable>
               </View>
 
-              {/* <ControlledTextInput
-                  name="postcode"
-                  control={control}
-                  placeholder="Enter your postcode"
-                  textStyles={tw`text-center`}
-                  containerStyle={tw`mx-5`}
-                  inputMode="numeric"
-                  returnKeyType="done"
-                /> */}
+              {/* Pin/Post/Zip code input */}
+              <View style={tw`mt-4`}>
+                <Text
+                  style={[
+                    tw.style(
+                      subheadMediumUppercase,
+                      'pb-2 text-center text-stone',
+                    ),
+                  ]}
+                  maxFontSizeMultiplier={1}
+                >
+                  Your pin / post / zip code
+                </Text>
+                <View style={tw`mx-5`}>
+                  <TextInput
+                    style={tw.style(
+                      bodyMediumRegular,
+                      'overflow-hidden rounded-md border border-strokecream bg-white px-4 py-3 text-stone',
+                    )}
+                    placeholder="e.g. 752055"
+                    placeholderTextColor={tw.color('midgray')}
+                    keyboardType="number-pad"
+                    returnKeyType="done"
+                    maxLength={10}
+                    value={pincode}
+                    onChangeText={(text) => {
+                      setPincode(text);
+                      setValue('pincode', text);
+                    }}
+                  />
+                </View>
+              </View>
             </View>
           )}
         </View>

@@ -51,6 +51,7 @@ const schema = Yup.object({
   postcode: Yup.string().required('Please enter your postcode'),
   suburb: Yup.string().required('Please enter your suburb'),
   country: Yup.string().notRequired().nullable(),
+  pincode: Yup.string().required('Please enter your pin / post / zip code'),
   noOfAdults: Yup.number().required('Please enter the number of adults'),
   noOfChildren: Yup.number().required('Please enter the number of children'),
   dietaryRequirements: Yup.array().required(
@@ -67,6 +68,7 @@ interface FormData {
   postcode: string;
   suburb: string;
   country?: string | null;
+  pincode: string;
   noOfAdults: number;
   noOfChildren: number;
   dietaryRequirements: string[];
@@ -79,6 +81,7 @@ const defaultValues: FormData = {
   postcode: '',
   suburb: '',
   country: undefined,
+  pincode: '',
   noOfAdults: 0,
   noOfChildren: 0,
   dietaryRequirements: [],
@@ -167,6 +170,7 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
 
   const trackSurveyDay = watch('trackSurveyDay');
   const postcode = watch('postcode');
+  const pincode = watch('pincode');
   const {
     sendAnalyticsEvent,
     sendOnboardingEventAnalytics,
@@ -206,6 +210,7 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
         // now. Fall back to suburb (country display name) for legacy paths and
         // let getCurrencySymbol handle both formats.
         country: data.postcode || data.country || data.suburb || undefined,
+        pincode: data.pincode || undefined,
       };
       
       console.log('Updating dietary profile during onboarding:', dietaryProfileData);
@@ -438,7 +443,7 @@ export default function OnboardingCarousel({ data }: { data: CarouselItem[] }) {
               disabled={
                 (data[currentIndex].showSavedItems && savedItems.length < 1) ??
                 (data[currentIndex].showWeekPlanner && trackSurveyDay === '') ??
-                (data[currentIndex].showPostcodeInput && postcode === '')
+                (data[currentIndex].showPostcodeInput && (postcode === '' || pincode === ''))
               }
             >
               {data[currentIndex].buttonText}

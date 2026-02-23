@@ -15,9 +15,9 @@ export function isCurrentlyInSeason(inSeason: Month[] | null): boolean {
 }
 
 export function transformIngredientToLegacyFormat(ingredient: Ingredient): IIngredient {
-  const categoryId = typeof ingredient.categoryId === 'object' ? ingredient.categoryId._id : ingredient.categoryId;
-  const sponsorId = typeof ingredient.sponsorId === 'object' ? ingredient.sponsorId._id : ingredient.sponsorId;
-  const stickerId = typeof ingredient.stickerId === 'object' ? ingredient.stickerId._id : ingredient.stickerId;
+  const categoryId = ingredient.categoryId !== null && typeof ingredient.categoryId === 'object' ? ingredient.categoryId._id : ingredient.categoryId;
+  const sponsorId = ingredient.sponsorId !== null && typeof ingredient.sponsorId === 'object' ? ingredient.sponsorId._id : ingredient.sponsorId;
+  const stickerId = ingredient.stickerId !== null && typeof ingredient.stickerId === 'object' ? ingredient.stickerId._id : ingredient.stickerId;
   
   const heroImage: IAsset[] = ingredient.heroImageUrl ? [{
     id: ingredient._id,
@@ -28,7 +28,7 @@ export function transformIngredientToLegacyFormat(ingredient: Ingredient): IIngr
 
   // Transform parentIngredients
   const parentIngredient = ingredient.parentIngredients.map(parent => {
-    if (typeof parent === 'object') {
+    if (parent !== null && typeof parent === 'object') {
       return {
         id: parent._id,
         title: parent.name,
@@ -39,7 +39,7 @@ export function transformIngredientToLegacyFormat(ingredient: Ingredient): IIngr
 
   // Transform suitableDiets
   const suitableDiets = ingredient.suitableDiets.map(diet => {
-    if (typeof diet === 'object') {
+    if (diet !== null && typeof diet === 'object') {
       return { id: diet._id };
     }
     return { id: diet };
@@ -47,7 +47,7 @@ export function transformIngredientToLegacyFormat(ingredient: Ingredient): IIngr
 
   // Transform relatedHacks
   const relatedHacks = ingredient.relatedHacks.map(hack => {
-    if (typeof hack === 'object') {
+    if (hack !== null && typeof hack === 'object') {
       return { id: hack._id };
     }
     return { id: hack };

@@ -27,6 +27,7 @@ const introApi = api
           noOfAdults?: number;
           noOfChildren?: number;
           country?: string;
+          pincode?: string;
         }
       >({
         query: data => ({

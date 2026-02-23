@@ -56,6 +56,22 @@ export interface VerifyOtpData {
   otp: string;
 }
 
+export interface ForgotPasswordData {
+  email: string;
+}
+
+export interface ResetPasswordData {
+  email: string;
+  otp: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface PasswordResetResponse {
+  success: boolean;
+  message: string;
+}
+
 export interface OtpResponse {
   success: boolean;
   message: string;
@@ -84,6 +100,7 @@ export interface DietaryProfileUpdate {
   hasDiabetes?: boolean;
   otherAllergies?: string[];
   country?: string;
+  pincode?: string;
   noOfAdults?: number;
   noOfChildren?: number;
 }
@@ -395,6 +412,24 @@ const currentUserApi = api
         },
         providesTags: ['SessionTokens'],
       }),
+
+      // Forgot password – request OTP to email
+      forgotPassword: builder.mutation<PasswordResetResponse, ForgotPasswordData>({
+        query: data => ({
+          url: '/api/auth/forgot-password',
+          method: 'POST',
+          body: data,
+        }),
+      }),
+
+      // Reset password with OTP + new password
+      resetPassword: builder.mutation<PasswordResetResponse, ResetPasswordData>({
+        query: data => ({
+          url: '/api/auth/reset-password',
+          method: 'POST',
+          body: data,
+        }),
+      }),
     }),
   });
 
@@ -418,4 +453,6 @@ export const {
   useDeleteSessionMutation,
   useListSessionsQuery,
   useUpdateCurrentUserPasswordMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
 } = currentUserApi;

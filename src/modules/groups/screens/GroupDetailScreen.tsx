@@ -310,8 +310,8 @@ export default function GroupDetailScreen() {
           <View style={tw.style('mx-5 mt-4')}>
             {members && members.length > 0 ? (
               members.map((member) => {
-                const memberName = typeof member.userId === 'object' ? member.userId.name : 'User';
-                const memberId = typeof member.userId === 'object' ? member.userId._id : member.userId;
+                const memberName = member.userId !== null && typeof member.userId === 'object' ? member.userId.name : 'User';
+                const memberId = member.userId !== null && typeof member.userId === 'object' ? member.userId._id : member.userId;
                 const isMemberOwner = member.role === 'OWNER';
                 return (
                   <DebouncedPressable

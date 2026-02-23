@@ -1,23 +1,29 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Alert, ActivityIndicator, TouchableOpacity, Image, ImageBackground, Pressable, Modal } from 'react-native';
+import { View, Text, TextInput, Alert, ActivityIndicator, TouchableOpacity, Image, ImageBackground, Pressable } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BlurView } from 'expo-blur';
 import { Feather } from '@expo/vector-icons';
 import tw from '../../../common/tailwind';
 import PrimaryButton from '../../../common/components/ThemeButtons/PrimaryButton';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
-import { useLoginMutation, useRequestOTPMutation, SignupData } from '../../auth/api';
+import { useLoginMutation, useRequestOTPMutation, useForgotPasswordMutation, useResetPasswordMutation, useLazyGetCurrentUserQuery } from '../../auth/api';
 import { saveSessionData } from '../../auth/sessionSlice';
 import { useAppDispatch } from '../../../store/hooks';
-import { useLazyGetCurrentUserQuery } from '../../auth/api';
 import { TokenManager } from '../../pushNotifications/TokenManager';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
 import { bodyMediumRegular, h6TextStyle } from '../../../theme/typography';
+import { getSafeErrorMessage } from '../../../modules/forms/validation';
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function AuthScreen({ navigation }: any) {
   const dispatch = useAppDispatch();
   const { sendAnalyticsUserID, sendAliasUserID } = useAnalytics();
-  
+
+  // ── view: 'auth' | 'forgot' | 'resetPassword'
+  const [activeView, setActiveView] = useState<'auth' | 'forgot' | 'resetPassword'>('auth');
+
+  // Auth fields
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,136 +31,108 @@ export default function AuthScreen({ navigation }: any) {
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
+  // Forgot password fields
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [resetOTP, setResetOTP] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
   const [requestOTP, { isLoading: isRequestingOTP }] = useRequestOTPMutation();
+  const [forgotPassword, { isLoading: isForgotLoading }] = useForgotPasswordMutation();
+  const [resetPassword, { isLoading: isResetLoading }] = useResetPasswordMutation();
   const [loadCurrentUser] = useLazyGetCurrentUserQuery();
 
+  // ── Auth (Login / Signup) ─────────────────────────────────────────────────
   const handleAuth = async () => {
     try {
-      console.log('Starting auth...', { isLogin, email });
-      
       if (!email || !password) {
         Alert.alert('Error', 'Please enter email and password');
         return;
       }
 
       if (!isLogin) {
-        // Signup flow - request OTP
-        if (!name) {
-          Alert.alert('Error', 'Please enter your name');
-          return;
-        }
+        if (!name) { Alert.alert('Error', 'Please enter your name'); return; }
+        if (password !== confirmPassword) { Alert.alert('Error', 'Passwords do not match'); return; }
+        if (password.length < 6) { Alert.alert('Error', 'Password must be at least 6 characters'); return; }
 
-        if (password !== confirmPassword) {
-          Alert.alert('Error', 'Passwords do not match');
-          return;
-        }
-
-        if (password.length < 6) {
-          Alert.alert('Error', 'Password must be at least 6 characters');
-          return;
-        }
-
-        console.log('Requesting OTP for signup...');
         const result = await requestOTP({
-          email,
-          password,
-          confirmPassword,
-          name,
-          stateCode: 'IN-DL',
-          vegType: 'OMNI',
+          email, password, confirmPassword, name,
+          stateCode: 'IN-DL', vegType: 'OMNI',
         }).unwrap();
-        
-        console.log('OTP request result:', result);
 
         if (result.success) {
-          Alert.alert(
-            'OTP Sent',
-            `A verification code has been sent to ${email}`,
-            [
-              {
-                text: 'OK',
-                onPress: () => {
-                  // Navigate to OTP verification screen with all signup data
-                  navigation.navigate('OTPVerificationScreen', { 
-                    email, 
-                    name,
-                    password,
-                    confirmPassword,
-                    stateCode: 'IN-DL',
-                    vegType: 'OMNI',
-                  });
-                },
-              },
-            ]
-          );
+          Alert.alert('OTP Sent', `A verification code has been sent to ${email}`, [
+            { text: 'OK', onPress: () => navigation.navigate('OTPVerificationScreen', { email, name, password, confirmPassword, stateCode: 'IN-DL', vegType: 'OMNI' }) },
+          ]);
         }
       } else {
-        // Login flow - direct login
-        console.log('Attempting login...');
         const result = await login({ email, password }).unwrap();
-        console.log('Login result:', result);
 
         if (result.success && result.accessToken) {
-          console.log('✅ Auth successful, saving session...');
-          // Save session data
-          const sessionData = {
-            access_token: result.accessToken,
-            refresh_token: result.refreshToken,
-          };
-          await dispatch(saveSessionData(sessionData));
-          console.log('✅ Session saved');
+          await dispatch(saveSessionData({ access_token: result.accessToken, refresh_token: result.refreshToken }));
 
-          // Load user data - make this optional to prevent crash
           try {
-            console.log('📡 Fetching user data from /api/auth/me...');
-            const user = await loadCurrentUser({
-              accessToken: result.accessToken,
-            }).unwrap();
-            console.log('✅ User data received:', user);
+            await TokenManager.shared.uploadToken();
+          } catch { /* non-critical */ }
 
+          try {
+            const user = await loadCurrentUser({ accessToken: result.accessToken }).unwrap();
             if (user) {
-              // Initialize analytics
               try {
                 sendAliasUserID(user.id);
-                sendAnalyticsUserID(user.id, {
-                  id: user.id,
-                  first_name: user.first_name || name,
-                  email: user.email,
-                });
-              } catch (analyticsError) {
-                console.log('Analytics error (non-critical):', analyticsError);
-              }
-
-              console.log('✅ Authentication completed successfully');
+                sendAnalyticsUserID(user.id, { id: user.id, first_name: user.first_name || name, email: user.email });
+              } catch { /* analytics non-critical */ }
             }
           } catch (userError: any) {
-            console.error('❌ Failed to load user data:', userError);
-            console.error('Error details:', {
-              status: userError.status,
-              data: userError.data,
-              message: userError.message
-            });
-            
-            // Don't block login if user data fetch fails
-            // The session is already saved, so user should still be logged in
-            console.log('⚠️ Continuing with login despite user data fetch failure');
-            Alert.alert(
-              'Notice',
-              'Login successful! Some profile data may be unavailable.',
-              [{ text: 'OK' }]
-            );
+            Alert.alert('Notice', 'Login successful! Some profile data may be unavailable.', [{ text: 'OK' }]);
           }
         }
       }
     } catch (error: any) {
-      console.error('Auth error:', error);
-      const { getSafeErrorMessage } = require('../../../modules/forms/validation');
-      Alert.alert(
-        'Authentication Failed',
-        getSafeErrorMessage(error, 'Please check your credentials and try again')
-      );
+      Alert.alert('Authentication Failed', getSafeErrorMessage(error, 'Please check your credentials and try again'));
+    }
+  };
+
+  // ── Forgot Password – send OTP ────────────────────────────────────────────
+  const handleForgotPassword = async () => {
+    const trimmed = forgotEmail.trim();
+    if (!trimmed) {
+      Alert.alert('Error', 'Please enter your email address');
+      return;
+    }
+    if (!EMAIL_REGEX.test(trimmed)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+    try {
+      await forgotPassword({ email: trimmed.toLowerCase() }).unwrap();
+      setForgotEmail(trimmed.toLowerCase()); // normalise state so reset step uses same casing
+      setActiveView('resetPassword');
+    } catch (error: any) {
+      const msg = error?.data?.message || error?.message || 'Something went wrong. Please try again.';
+      Alert.alert('Error', msg);
+    }
+  };
+
+  // ── Reset Password – verify OTP + set new password ────────────────────────
+  const handleResetPassword = async () => {
+    if (!resetOTP.trim()) { Alert.alert('Error', 'Please enter the OTP sent to your email'); return; }
+    if (!newPassword) { Alert.alert('Error', 'Please enter a new password'); return; }
+    if (newPassword.length < 6) { Alert.alert('Error', 'Password must be at least 6 characters'); return; }
+    if (newPassword !== confirmNewPassword) { Alert.alert('Error', 'Passwords do not match'); return; }
+
+    try {
+      await resetPassword({ email: forgotEmail.trim().toLowerCase(), otp: resetOTP.trim(), newPassword, confirmPassword: confirmNewPassword }).unwrap();
+      Alert.alert('Success', 'Password reset successfully! Please sign in with your new password.', [
+        { text: 'Sign In', onPress: () => { setActiveView('auth'); setForgotEmail(''); setResetOTP(''); setNewPassword(''); setConfirmNewPassword(''); } },
+      ]);
+    } catch (error: any) {
+      const msg = error?.data?.message || error?.message || 'Reset failed. Please try again.';
+      Alert.alert('Error', msg);
     }
   };
 
@@ -164,9 +142,7 @@ export default function AuthScreen({ navigation }: any) {
     <ImageBackground
       style={tw`relative flex-1 bg-creme`}
       source={require('../../../../assets/intro/splash.png')}
-      imageStyle={{
-        resizeMode: 'contain',
-      }}
+      imageStyle={{ resizeMode: 'contain' }}
     >
       <SafeAreaView style={tw`flex-1 justify-between pb-2.5 pt-6`}>
         <KeyboardAwareScrollView
@@ -178,36 +154,31 @@ export default function AuthScreen({ navigation }: any) {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-            {/* Logo */}
-            <View style={tw`items-center pt-4 pb-4`}>
-              <Image
-                style={tw.style('h-[58px] w-[111px]')}
-                resizeMode="contain"
-                source={require('../../../../assets/intro/logo.png')}
-              />
-            </View>
+          {/* Logo */}
+          <View style={tw`items-center pt-4 pb-4`}>
+            <Image
+              style={tw.style('h-[58px] w-[111px]')}
+              resizeMode="contain"
+              source={require('../../../../assets/intro/logo.png')}
+            />
+          </View>
 
-            {/* Form Card */}
+          {/* ── AUTH FORM CARD (Login / Signup) ── */}
+          {activeView === 'auth' && (
             <View style={tw`mx-5 bg-white rounded-3xl px-5 py-5 shadow-lg mb-6`}>
-              {/* Title */}
               <View style={tw`mb-4`}>
                 <Text style={tw.style(h6TextStyle, 'text-center text-radish mb-2')}>
                   {isLogin ? 'WELCOME BACK' : 'JOIN SAVEFUL'}
                 </Text>
                 <Text style={tw.style(bodyMediumRegular, 'text-center text-stone')}>
-                  {isLogin 
-                    ? 'Sign in to continue your culinary journey' 
-                    : 'Create your account to get started'}
+                  {isLogin ? 'Sign in to continue your culinary journey' : 'Create your account to get started'}
                 </Text>
               </View>
 
-              {/* Form Fields */}
               <View style={tw`gap-3`}>
                 {!isLogin && (
                   <View>
-                    <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>
-                      Full Name *
-                    </Text>
+                    <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>Full Name *</Text>
                     <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
                       <Feather name="user" size={18} color="#666" style={tw`mr-2.5`} />
                       <TextInput
@@ -224,9 +195,7 @@ export default function AuthScreen({ navigation }: any) {
                 )}
 
                 <View>
-                  <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>
-                    Email Address *
-                  </Text>
+                  <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>Email Address *</Text>
                   <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
                     <Feather name="mail" size={18} color="#666" style={tw`mr-2.5`} />
                     <TextInput
@@ -244,9 +213,14 @@ export default function AuthScreen({ navigation }: any) {
                 </View>
 
                 <View>
-                  <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>
-                    Password *
-                  </Text>
+                  <View style={tw`flex-row justify-between items-center mb-1.5`}>
+                    <Text style={tw.style(bodyMediumRegular, 'text-stone')}>Password *</Text>
+                    {isLogin && (
+                      <TouchableOpacity onPress={() => { setForgotEmail(email); setActiveView('forgot'); }} disabled={isLoading}>
+                        <Text style={tw`text-sm font-semibold text-radish`}>Forgot Password?</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
                   <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
                     <Feather name="lock" size={18} color="#666" style={tw`mr-2.5`} />
                     <TextInput
@@ -260,20 +234,14 @@ export default function AuthScreen({ navigation }: any) {
                       editable={!isLoading}
                     />
                     <Pressable onPress={() => setShowPassword(!showPassword)}>
-                      <Feather 
-                        name={showPassword ? "eye-off" : "eye"} 
-                        size={18} 
-                        color="#666" 
-                      />
+                      <Feather name={showPassword ? 'eye-off' : 'eye'} size={18} color="#666" />
                     </Pressable>
                   </View>
                 </View>
 
                 {!isLogin && (
                   <View>
-                    <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>
-                      Confirm Password *
-                    </Text>
+                    <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>Confirm Password *</Text>
                     <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
                       <Feather name="lock" size={18} color="#666" style={tw`mr-2.5`} />
                       <TextInput
@@ -287,31 +255,19 @@ export default function AuthScreen({ navigation }: any) {
                         editable={!isLoading}
                       />
                       <Pressable onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                        <Feather 
-                          name={showConfirmPassword ? "eye-off" : "eye"} 
-                          size={18} 
-                          color="#666" 
-                        />
+                        <Feather name={showConfirmPassword ? 'eye-off' : 'eye'} size={18} color="#666" />
                       </Pressable>
                     </View>
                   </View>
                 )}
               </View>
 
-              {/* Submit Button */}
               <View style={tw`mt-4`}>
-                <PrimaryButton
-                  onPress={handleAuth}
-                  disabled={isLoading}
-                  buttonSize="large"
-                  width="full"
-                >
+                <PrimaryButton onPress={handleAuth} disabled={isLoading} buttonSize="large" width="full">
                   {isLoading ? (
                     <View style={tw`flex-row items-center justify-center gap-2`}>
                       <ActivityIndicator color="white" />
-                      <Text style={tw`text-white font-bold`}>
-                        {isLogin ? 'Signing in...' : 'Sending OTP...'}
-                      </Text>
+                      <Text style={tw`text-white font-bold`}>{isLogin ? 'Signing in...' : 'Sending OTP...'}</Text>
                     </View>
                   ) : (
                     isLogin ? 'Sign In' : 'Continue'
@@ -319,26 +275,169 @@ export default function AuthScreen({ navigation }: any) {
                 </PrimaryButton>
               </View>
 
-              {/* Toggle Login/Signup */}
-              <TouchableOpacity
-                onPress={() => setIsLogin(!isLogin)}
-                disabled={isLoading}
-                style={tw`pt-3 items-center`}
-              >
+              <TouchableOpacity onPress={() => setIsLogin(!isLogin)} disabled={isLoading} style={tw`pt-3 items-center`}>
                 <Text style={tw.style(bodyMediumRegular, 'text-center text-stone')}>
                   {isLogin ? "Don't have an account? " : 'Already have an account? '}
-                  <Text style={tw`font-bold text-radish`}>
-                    {isLogin ? 'Sign Up' : 'Sign In'}
-                  </Text>
+                  <Text style={tw`font-bold text-radish`}>{isLogin ? 'Sign Up' : 'Sign In'}</Text>
                 </Text>
               </TouchableOpacity>
             </View>
+          )}
 
-            {/* Spacer for bottom */}
-            <View />
+          {/* ── FORGOT PASSWORD CARD ── */}
+          {activeView === 'forgot' && (
+            <View style={tw`mx-5 bg-white rounded-3xl px-5 py-5 shadow-lg mb-6`}>
+              <View style={tw`mb-5`}>
+                <View style={tw`items-center mb-3`}>
+                  <View style={tw`w-14 h-14 rounded-full bg-orange-50 items-center justify-center`}>
+                    <Feather name="lock" size={26} color="#F7931E" />
+                  </View>
+                </View>
+                <Text style={tw.style(h6TextStyle, 'text-center text-radish mb-2')}>FORGOT PASSWORD</Text>
+                <Text style={tw.style(bodyMediumRegular, 'text-center text-stone')}>
+                  Enter your registered email and we'll send you a reset code.
+                </Text>
+              </View>
+
+              <View style={tw`gap-3`}>
+                <View>
+                  <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>Email Address *</Text>
+                  <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
+                    <Feather name="mail" size={18} color="#666" style={tw`mr-2.5`} />
+                    <TextInput
+                      style={tw`flex-1 text-base text-black`}
+                      placeholder="your@email.com"
+                      placeholderTextColor="#999"
+                      value={forgotEmail}
+                      onChangeText={setForgotEmail}
+                      autoCapitalize="none"
+                      keyboardType="email-address"
+                      autoComplete="email"
+                      editable={!isForgotLoading}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              <View style={tw`mt-4`}>
+                <PrimaryButton onPress={handleForgotPassword} disabled={isForgotLoading} buttonSize="large" width="full">
+                  {isForgotLoading ? (
+                    <View style={tw`flex-row items-center justify-center gap-2`}>
+                      <ActivityIndicator color="white" />
+                      <Text style={tw`text-white font-bold`}>Sending Code...</Text>
+                    </View>
+                  ) : (
+                    'Send Reset Code'
+                  )}
+                </PrimaryButton>
+              </View>
+
+              <TouchableOpacity onPress={() => setActiveView('auth')} disabled={isForgotLoading} style={tw`pt-3 items-center flex-row justify-center gap-1`}>
+                <Feather name="arrow-left" size={16} color="#666" />
+                <Text style={tw.style(bodyMediumRegular, 'text-stone')}>Back to Sign In</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* ── RESET PASSWORD CARD ── */}
+          {activeView === 'resetPassword' && (
+            <View style={tw`mx-5 bg-white rounded-3xl px-5 py-5 shadow-lg mb-6`}>
+              <View style={tw`mb-5`}>
+                <View style={tw`items-center mb-3`}>
+                  <View style={tw`w-14 h-14 rounded-full bg-orange-50 items-center justify-center`}>
+                    <Feather name="shield" size={26} color="#F7931E" />
+                  </View>
+                </View>
+                <Text style={tw.style(h6TextStyle, 'text-center text-radish mb-2')}>RESET PASSWORD</Text>
+                <Text style={tw.style(bodyMediumRegular, 'text-center text-stone')}>
+                  Enter the 6-digit code sent to{'\n'}
+                  <Text style={tw`font-semibold text-radish`}>{forgotEmail}</Text>
+                </Text>
+              </View>
+
+              <View style={tw`gap-3`}>
+                <View>
+                  <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>Verification Code *</Text>
+                  <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
+                    <Feather name="key" size={18} color="#666" style={tw`mr-2.5`} />
+                    <TextInput
+                      style={tw`flex-1 text-base text-black tracking-widest font-bold`}
+                      placeholder="000000"
+                      placeholderTextColor="#999"
+                      value={resetOTP}
+                      onChangeText={setResetOTP}
+                      keyboardType="number-pad"
+                      maxLength={6}
+                      editable={!isResetLoading}
+                    />
+                  </View>
+                </View>
+
+                <View>
+                  <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>New Password *</Text>
+                  <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
+                    <Feather name="lock" size={18} color="#666" style={tw`mr-2.5`} />
+                    <TextInput
+                      style={tw`flex-1 text-base text-black`}
+                      placeholder="New password (min. 6 chars)"
+                      placeholderTextColor="#999"
+                      value={newPassword}
+                      onChangeText={setNewPassword}
+                      secureTextEntry={!showNewPassword}
+                      autoComplete="new-password"
+                      editable={!isResetLoading}
+                    />
+                    <Pressable onPress={() => setShowNewPassword(!showNewPassword)}>
+                      <Feather name={showNewPassword ? 'eye-off' : 'eye'} size={18} color="#666" />
+                    </Pressable>
+                  </View>
+                </View>
+
+                <View>
+                  <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>Confirm New Password *</Text>
+                  <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
+                    <Feather name="lock" size={18} color="#666" style={tw`mr-2.5`} />
+                    <TextInput
+                      style={tw`flex-1 text-base text-black`}
+                      placeholder="Confirm new password"
+                      placeholderTextColor="#999"
+                      value={confirmNewPassword}
+                      onChangeText={setConfirmNewPassword}
+                      secureTextEntry={!showConfirmNewPassword}
+                      autoComplete="new-password"
+                      editable={!isResetLoading}
+                    />
+                    <Pressable onPress={() => setShowConfirmNewPassword(!showConfirmNewPassword)}>
+                      <Feather name={showConfirmNewPassword ? 'eye-off' : 'eye'} size={18} color="#666" />
+                    </Pressable>
+                  </View>
+                </View>
+              </View>
+
+              <View style={tw`mt-4`}>
+                <PrimaryButton onPress={handleResetPassword} disabled={isResetLoading} buttonSize="large" width="full">
+                  {isResetLoading ? (
+                    <View style={tw`flex-row items-center justify-center gap-2`}>
+                      <ActivityIndicator color="white" />
+                      <Text style={tw`text-white font-bold`}>Resetting...</Text>
+                    </View>
+                  ) : (
+                    'Reset Password'
+                  )}
+                </PrimaryButton>
+              </View>
+
+              <TouchableOpacity onPress={() => setActiveView('forgot')} disabled={isResetLoading} style={tw`pt-3 items-center flex-row justify-center gap-1`}>
+                <Feather name="arrow-left" size={16} color="#666" />
+                <Text style={tw.style(bodyMediumRegular, 'text-stone')}>Change email</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View />
         </KeyboardAwareScrollView>
       </SafeAreaView>
-      
+
       <FocusAwareStatusBar statusBarStyle="dark" />
     </ImageBackground>
   );
