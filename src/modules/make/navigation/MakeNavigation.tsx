@@ -23,8 +23,15 @@ export type MakeStackParamList = {
       title: string;
       quantity: string;
       preparation?: string;
+      ingredientId?: string;
     }[];
     mealId: string;
+    /** Pre-computed scaled quantities from Prep screen (ingredient ID/name → scaled qty) */
+    scaledQuantities?: Record<string, string>;
+    /** User-chosen serving count (undefined = original) */
+    desiredServings?: number;
+    /** AI cooking notes for the adjusted servings */
+    cookingNotes?: string;
   };
 };
 

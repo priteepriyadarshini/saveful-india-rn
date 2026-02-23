@@ -106,7 +106,6 @@ class RecipeApiService {
         })
       );
 
-      // If no matches found, try a more defensive check where cat may have nested objects
       if (!filtered || filtered.length === 0) {
         return allRecipes.filter(recipe => {
           if (!Array.isArray(recipe.frameworkCategories)) return false;
@@ -121,6 +120,42 @@ class RecipeApiService {
       return filtered;
     } catch (error) {
       console.error('Error filtering recipes by categories:', error);
+      throw error;
+    }
+  }
+
+ 
+  async scaleServings(params: {
+    originalServings: number;
+    desiredServings: number;
+    recipeTitle?: string;
+    ingredients: {
+      ingredientName: string;
+      originalQuantity: string;
+      preparation?: string;
+      ingredientId?: string;
+    }[];
+  }): Promise<{
+    originalServings: number;
+    desiredServings: number;
+    scaledIngredients: {
+      ingredientName: string;
+      originalQuantity: string;
+      scaledQuantity: string;
+      ingredientId?: string;
+      preparation?: string;
+    }[];
+    cookingNotes?: string;
+  }> {
+    try {
+      const baseUrl = this.getBaseUrl();
+      const response = await axios.post(
+        `${baseUrl}/api/api/recipe/scale-servings`,
+        params,
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error scaling servings:', error);
       throw error;
     }
   }

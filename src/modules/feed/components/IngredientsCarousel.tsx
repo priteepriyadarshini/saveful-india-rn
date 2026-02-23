@@ -21,6 +21,7 @@ import { useGetAllIngredientsQuery } from '../../ingredients/api/ingredientsApi'
 import { useGetCurrentUserQuery } from '../../auth/api';
 import { Ingredient } from '../../ingredients/api/types';
 import { isCurrentlyInSeason } from '../../ingredients/helpers/ingredientTransformers';
+import { skipToken } from '@reduxjs/toolkit/query/react';
 
 interface RenderItemProps {
   _id: string;
@@ -96,8 +97,11 @@ function IngredientCard({
 export default function IngredientsCarousel() {
   const flatListRef = React.useRef<any>(null);
 
-  const { data: currentUser } = useGetCurrentUserQuery();
-  const { data: apiIngredients, isLoading: isApiLoading } = useGetAllIngredientsQuery(currentUser?.country);
+  const { data: currentUser, isLoading: isCurrentUserLoading } = useGetCurrentUserQuery();
+  // Use skipToken while the user profile is loading to avoid an initial unfiltered fetch.
+  const { data: apiIngredients, isLoading: isApiLoading } = useGetAllIngredientsQuery(
+    !isCurrentUserLoading ? currentUser?.country : skipToken,
+  );
   const { data: userOnboarding } = useGetUserOnboardingQuery();
   const [ingredients, setIngredients] = React.useState<Ingredient[]>([]);
 

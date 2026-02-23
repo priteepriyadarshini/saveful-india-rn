@@ -30,6 +30,7 @@ interface ICarouselItem extends IFrameworkComponentStep {
     title: string;
     quantity: string;
     preparation?: string;
+    ingredientId?: string;
   }[];
 }
 
@@ -42,6 +43,7 @@ export default function MakeItCarousel({
   mealId,
   onScroll,
   completedSteps,
+  scaledQuantities,
 }: {
   frameworkId: string;
   recipeName?: string;
@@ -51,8 +53,9 @@ export default function MakeItCarousel({
   mealId: string;
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   completedSteps: () => void;
+  scaledQuantities?: Map<string, string>;
 }) {
-  //const linkTo = useLinkTo();
+
   const navigation = useNavigation<InitialNavigationStackParams<'MakeIt'>['navigation']>();
 
   const { sendAnalyticsEvent, sendFailedEventAnalytics } = useAnalytics();
@@ -179,6 +182,7 @@ export default function MakeItCarousel({
               isLoading={isCompleting || isCreateFeedbackLoading}
               onCompleteCook={onCompleteCook}
               scrollToItem={scrollToItem}
+              scaledQuantities={scaledQuantities}
             />
           );
         }}

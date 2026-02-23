@@ -30,7 +30,8 @@ import TutorialModal from '../../../modules/prep/components/TutorialModal';
 import { PREPTUTORIAL } from '../../../modules/prep/data/data';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
 //import { useCreateUserMealMutation } from 'modules/track/api/api';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import PrepServingSelector, { parseServingsFromPortions } from '../components/PrepServingSelector';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
@@ -113,6 +114,13 @@ export default function PrepScreen({
   const selectFlavor = (item: string) => {
     setSelectedFlavor(item);
   };
+
+  // --- Serving Scale State ---
+  const [isScaling, setIsScaling] = useState(false);
+  const [isScaled, setIsScaled] = useState(false);
+  const [scaledQuantities, setScaledQuantities] = useState<Record<string, string>>({});
+  const [desiredServings, setDesiredServings] = useState<number | null>(null);
+  const [cookingNotes, setCookingNotes] = useState<string | undefined>(undefined);
 
   const [allRequiredIngredients, setAllRequiredIngredients] = useArrayState<
     {
@@ -252,6 +260,95 @@ export default function PrepScreen({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
+  // Collect all unique ingredients with quantities for serving scale API
+  const allIngredientsForScaling = useMemo(() => {
+    if (!framework) return [];
+    const seen = new Set<string>();
+    const result: { id: string; title: string; quantity?: string; preparation?: string }[] = [];
+
+    framework.components
+      .filter(comp =>
+        comp.includedInVariants?.some(v => v.id === selectedFlavor),
+      )
+      .forEach(comp => {
+        comp.requiredIngredients.forEach(ri => {
+          ri.recommendedIngredient.forEach(ing => {
+            if (!seen.has(ing.id)) {
+              seen.add(ing.id);
+              result.push({ id: ing.id, title: ing.title, quantity: ri.quantity, preparation: ri.preparation });
+            }
+          });
+          ri.alternativeIngredients.forEach(ai => {
+            ai.ingredient.forEach(ing => {
+              if (!seen.has(ing.id)) {
+                seen.add(ing.id);
+                result.push({ id: ing.id, title: ing.title, quantity: ai.quantity, preparation: ai.preparation });
+              }
+            });
+          });
+        });
+        comp.optionalIngredients.forEach(oi => {
+          oi.ingredient.forEach(ing => {
+            if (!seen.has(ing.id)) {
+              seen.add(ing.id);
+              result.push({ id: ing.id, title: ing.title, quantity: oi.quantity, preparation: oi.preparation });
+            }
+          });
+        });
+      });
+
+    return result;
+  }, [framework, selectedFlavor]);
+
+  // Handler: user pressed OK on the serving selector
+  const handleConfirmServings = useCallback(
+    async (servings: number) => {
+      if (!framework || allIngredientsForScaling.length === 0) return;
+
+      setIsScaling(true);
+      setIsScaled(false);
+      setCookingNotes(undefined);
+
+      try {
+        const { recipeApiService } = await import('../../recipe/api/recipeApiService');
+        const originalServings = parseServingsFromPortions(framework.portions);
+        const response = await recipeApiService.scaleServings({
+          originalServings,
+          desiredServings: servings,
+          recipeTitle: framework.title,
+          ingredients: allIngredientsForScaling.map(ing => ({
+            ingredientName: ing.title,
+            originalQuantity: ing.quantity ?? '',
+            preparation: ing.preparation,
+            ingredientId: ing.id,
+          })),
+        });
+
+        const newScaled: Record<string, string> = {};
+        response.scaledIngredients.forEach((si) => {
+          if (si.ingredientId) {
+            newScaled[si.ingredientId] = si.scaledQuantity;
+          }
+          // Also store by name for fallback lookups
+          if (si.ingredientName) {
+            newScaled[`name:${si.ingredientName.toLowerCase()}`] = si.scaledQuantity;
+          }
+        });
+
+        setScaledQuantities(newScaled);
+        setDesiredServings(servings);
+        setCookingNotes(response.cookingNotes ?? undefined);
+        setIsScaled(true);
+      } catch (error) {
+        console.error('Serving scale error:', error);
+        Alert.alert('Scaling Error', 'Could not adjust servings. The original recipe will be used.');
+      } finally {
+        setIsScaling(false);
+      }
+    },
+    [framework, allIngredientsForScaling],
+  );
+
   const [createUserMeal, { isLoading: isCreateUserMealLoading }] =
     useCreateUserMealMutation();
 
@@ -305,6 +402,14 @@ export default function PrepScreen({
             ...allOptionalIngredients.flatMap(item => item),
           ],
           mealId: result.id,
+          // Pass pre-computed scaled quantities so MakeIt doesn't need to call AI again
+          ...(isScaled && Object.keys(scaledQuantities).length > 0
+            ? {
+                scaledQuantities,
+                desiredServings: desiredServings ?? undefined,
+                cookingNotes,
+              }
+            : {}),
         });
       }
     } catch (error: unknown) {
@@ -313,11 +418,15 @@ export default function PrepScreen({
   }, [
     allOptionalIngredients,
     allRequiredIngredients,
+    cookingNotes,
     createUserMeal,
+    desiredServings,
     framework,
     isCreateUserMealLoading,
+    isScaled,
     navigation,
     newCurrentRoute,
+    scaledQuantities,
     selectedFlavor,
     sendAnalyticsEvent,
   ]);
@@ -418,6 +527,15 @@ export default function PrepScreen({
             heroImage={framework.heroImage}
           />
 
+          {/* Dynamic Serving Size Selector — user adjusts portions here before cooking */}
+          <PrepServingSelector
+            originalPortions={framework.portions}
+            onConfirmServings={handleConfirmServings}
+            isLoading={isScaling}
+            isScaled={isScaled}
+            cookingNotes={cookingNotes}
+          />
+
           <PrepCarousel
             shortDescription={framework.shortDescription}
             description={framework.description}
@@ -460,6 +578,7 @@ export default function PrepScreen({
                   allRequiredIngredients={allRequiredIngredients}
                   setAllRequiredIngredients={setAllRequiredIngredients}
                   setAllOptionalIngredients={setAllOptionalIngredients}
+                  scaledQuantities={isScaled ? scaledQuantities : undefined}
                 />
               );
             })}

@@ -61,6 +61,8 @@ interface IPrepComponent extends IFrameworkComponent {
       }[],
     ) => void;
   };
+  /** Pre-computed scaled quantities: ingredient ID or name key → scaled qty string */
+  scaledQuantities?: Record<string, string>;
 }
 
 export default function PrepComponent({
@@ -78,6 +80,7 @@ export default function PrepComponent({
   allRequiredIngredients,
   setAllRequiredIngredients,
   setAllOptionalIngredients,
+  scaledQuantities,
 }: IPrepComponent) {
   const [selectedOptionalIngredients, setSelectedOptionalIngredients] =
     useState<string[]>([]);
@@ -173,6 +176,7 @@ export default function PrepComponent({
                   quantity={item.quantity}
                   preparation={item.preparation}
                   alternativeIngredients={item.alternativeIngredients}
+                  scaledQuantities={scaledQuantities}
                   setSelectedRequiredIngredients={(item, index) => {
                     const selectedRequiredIngredients =
                       allRequiredIngredients[componentIndex];
@@ -221,6 +225,7 @@ export default function PrepComponent({
                       ingredient={optionalIngredient}
                       index={index}
                       onIngredientChecked={onOptionalIngredientChecked}
+                      scaledQuantities={scaledQuantities}
                     />
                   );
                 })}
@@ -303,8 +308,10 @@ export default function PrepComponent({
           <View
             style={tw.style(
               'absolute bottom-0 left-0 right-0 overflow-hidden rounded-t-2.5xl border border-strokecream bg-white',
+              'max-h-[80%]',
             )}
           >
+            {/* Fixed header */}
             <View style={tw.style('px-5')}>
               <View style={tw.style('items-end py-4')}>
                 <Pressable onPress={handlePresentModalDismiss}>
@@ -341,7 +348,16 @@ export default function PrepComponent({
                   )}
                 </View>
               </View>
+            </View>
 
+            {/* Scrollable ingredient list */}
+            <ScrollView
+              style={tw`flex-1`}
+              contentContainerStyle={tw`px-5`}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={true}
+              nestedScrollEnabled={true}
+            >
               <OptionalIngredientsList
                 ingredients={(() => {
                   const mapped = optionalIngredients.map(item => ({
@@ -360,17 +376,18 @@ export default function PrepComponent({
                 selectedOptionalIngredients={selectedOptionalIngredients}
                 setSelectedOptionalIngredients={onOptionalIngredientChecked}
               />
+            </ScrollView>
 
-              <View style={tw.style('px-0', paddingBottom)}>
-                <PrimaryButton
-                  onPress={() => {
-                    handlePresentModalDismiss();
-                  }}
-                  width="full"
-                >
-                  {'Add to your meal'}
-                </PrimaryButton>
-              </View>
+            {/* Fixed footer button */}
+            <View style={tw.style('px-5', paddingBottom)}>
+              <PrimaryButton
+                onPress={() => {
+                  handlePresentModalDismiss();
+                }}
+                width="full"
+              >
+                {'Add to your meal'}
+              </PrimaryButton>
             </View>
           </View>
         </View>

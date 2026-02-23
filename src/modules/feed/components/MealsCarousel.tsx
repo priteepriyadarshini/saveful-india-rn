@@ -17,6 +17,7 @@ import { useCurentRoute } from '../../../modules/route/context/CurrentRouteConte
 import { useGetFavouriteDetailsQuery } from '../../../modules/track/api/api';
 import { useGetCookedRecipesDetailsQuery, useGetTrendingRecipesQuery } from '../../../modules/analytics/api/api';
 import React, { useEffect, useState } from 'react';
+import { skipToken } from '@reduxjs/toolkit/query/react';
 import { Dimensions, ImageBackground, Text, View } from 'react-native';
 import { h6TextStyle } from '../../../theme/typography';
 
@@ -33,8 +34,11 @@ export default function MealsCarousel() {
   const cookedItems = cookedRecipesDetails?.cookedRecipes || [];
   const { data: favouriteDetails } = useGetFavouriteDetailsQuery();
   const favItems = favouriteDetails || [];
-  const { data: currentUser } = useGetCurrentUserQuery();
-  const { data: trendingData } = useGetTrendingRecipesQuery(currentUser?.country);
+  const { data: currentUser, isLoading: isCurrentUserLoading } = useGetCurrentUserQuery();
+  // Use skipToken while the user profile is loading to avoid an initial unfiltered trending fetch.
+  const { data: trendingData } = useGetTrendingRecipesQuery(
+    !isCurrentUserLoading ? currentUser?.country : skipToken,
+  );
   const trendingItems = trendingData?.trending || [];
   const { data: userOnboarding } = useGetUserOnboardingQuery();
 

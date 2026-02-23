@@ -8,6 +8,7 @@ export default function OptionalIngredient({
   ingredient,
   index,
   onIngredientChecked,
+  scaledQuantities,
 }: {
   ingredient: {
     id: string;
@@ -20,7 +21,16 @@ export default function OptionalIngredient({
   };
   index: number;
   onIngredientChecked: (ingredientId: string) => void;
+  /** Pre-computed scaled quantities from AI */
+  scaledQuantities?: Record<string, string>;
 }) {
+  const ingredientId = ingredient.ingredient[0]?.id;
+  const scaledQty = scaledQuantities
+    ? (scaledQuantities[ingredientId] ||
+       scaledQuantities[`name:${ingredient.ingredient[0]?.title?.toLowerCase()}`])
+    : undefined;
+  const isScaled = !!scaledQty && scaledQty !== ingredient.quantity;
+
   return (
     <View
       key={ingredient.id}
@@ -30,15 +40,29 @@ export default function OptionalIngredient({
       )}
     >
       {(ingredient.quantity || ingredient.preparation) && (
-        <Text style={tw.style(bodyMediumRegular)}>
-          {ingredient.quantity}
-          {ingredient.quantity && ingredient.preparation
-            ? `, ${ingredient.preparation}`
-            : ''}
-          {!ingredient.quantity && ingredient.preparation
-            ? `${ingredient.preparation}`
-            : ''}
-        </Text>
+        isScaled ? (
+          <View style={tw.style('flex-row items-center gap-2')}>
+            <Text style={tw.style(bodyMediumRegular, 'text-[#FF6B35]')}>
+              {scaledQty}
+              {ingredient.preparation
+                ? `, ${ingredient.preparation}`
+                : ''}
+            </Text>
+            <Text style={tw.style('font-sans text-xs text-midgray line-through')}>
+              {ingredient.quantity}
+            </Text>
+          </View>
+        ) : (
+          <Text style={tw.style(bodyMediumRegular)}>
+            {ingredient.quantity}
+            {ingredient.quantity && ingredient.preparation
+              ? `, ${ingredient.preparation}`
+              : ''}
+            {!ingredient.quantity && ingredient.preparation
+              ? `${ingredient.preparation}`
+              : ''}
+          </Text>
+        )
       )}
       <View style={tw.style('flex-row justify-between')}>
         <Text style={tw.style(bodyLargeMedium, 'pb-3.5')}>

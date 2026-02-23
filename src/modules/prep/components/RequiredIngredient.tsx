@@ -11,6 +11,7 @@ export default function RequiredIngredient({
   quantity,
   preparation,
   alternativeIngredients,
+  scaledQuantities,
   //
   setSelectedRequiredIngredients,
 }: {
@@ -32,6 +33,8 @@ export default function RequiredIngredient({
     quantity: string;
     preparation?: string;
   }[];
+  /** Pre-computed scaled quantities from AI */
+  scaledQuantities?: Record<string, string>;
   //
   setSelectedRequiredIngredients: (
     ingredient: {
@@ -48,6 +51,14 @@ export default function RequiredIngredient({
     useState(quantity);
   const [selectedIngredientPreparation, setSelectedIngredientPreparation] =
     useState(preparation);
+
+  // Resolve scaled quantity for this ingredient
+  const ingredientId = recommendedIngredient[0]?.id;
+  const scaledQty = scaledQuantities
+    ? (scaledQuantities[ingredientId] ||
+       scaledQuantities[`name:${recommendedIngredient[0]?.title?.toLowerCase()}`])
+    : undefined;
+  const isScaled = !!scaledQty && scaledQty !== selectedIngredientQuantity;
 
   // Initialize state with the required ingredient
   const [selectedAlternativeIngredient, setSelectedAlternativeIngredient] =
@@ -126,15 +137,31 @@ export default function RequiredIngredient({
         <View style={tw.style('mx-5 border-t border-strokecream pt-1')} />
       )}
       {(selectedIngredientQuantity || selectedIngredientPreparation) && (
-        <Text style={tw.style(bodyMediumRegular, 'px-5')}>
-          {selectedIngredientQuantity}
-          {selectedIngredientQuantity && selectedIngredientPreparation
-            ? `, ${selectedIngredientPreparation}`
-            : ''}
-          {!selectedIngredientQuantity && selectedIngredientPreparation
-            ? `${selectedIngredientPreparation}`
-            : ''}
-        </Text>
+        <View style={tw.style('px-5')}>
+          {isScaled ? (
+            <View style={tw.style('flex-row items-center gap-2')}>
+              <Text style={tw.style(bodyMediumRegular, 'text-[#FF6B35]')}>
+                {scaledQty}
+                {selectedIngredientPreparation
+                  ? `, ${selectedIngredientPreparation}`
+                  : ''}
+              </Text>
+              <Text style={tw.style('font-sans text-xs text-midgray line-through')}>
+                {selectedIngredientQuantity}
+              </Text>
+            </View>
+          ) : (
+            <Text style={tw.style(bodyMediumRegular)}>
+              {selectedIngredientQuantity}
+              {selectedIngredientQuantity && selectedIngredientPreparation
+                ? `, ${selectedIngredientPreparation}`
+                : ''}
+              {!selectedIngredientQuantity && selectedIngredientPreparation
+                ? `${selectedIngredientPreparation}`
+                : ''}
+            </Text>
+          )}
+        </View>
       )}
 
       {alternativeIngredients && alternativeIngredients?.length > 0 ? (

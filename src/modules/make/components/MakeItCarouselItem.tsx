@@ -17,6 +17,7 @@ interface ICarouselItem extends IFrameworkComponentStep {
     title: string;
     quantity: string;
     preparation?: string;
+    ingredientId?: string;
   }[];
 }
 
@@ -27,6 +28,7 @@ export default function MakeItCarouselItem({
   isLoading,
   onCompleteCook,
   scrollToItem,
+  scaledQuantities,
 }: {
   item: ICarouselItem;
   index: number;
@@ -34,6 +36,7 @@ export default function MakeItCarouselItem({
   isLoading: boolean;
   onCompleteCook: () => void;
   scrollToItem: (index: number) => void;
+  scaledQuantities?: Map<string, string>;
 }) {
   const [isIngredientsActive, setIsIngredientsActive] =
     useState<boolean>(false);
@@ -161,6 +164,7 @@ export default function MakeItCarouselItem({
           ingredients={item.ingredients}
           setIsIngredientsActive={setIsIngredientsActive}
           isIngredientsActive={isIngredientsActive}
+          scaledQuantities={scaledQuantities}
         />
       )}
     </View>

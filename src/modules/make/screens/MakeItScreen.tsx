@@ -17,7 +17,7 @@ import { useIsFocused } from '@react-navigation/native';
 import TutorialModal from '../../../modules/prep/components/TutorialModal';
 import { MAKETUTORIAL } from '../../../modules/prep/data/data';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -34,7 +34,7 @@ const StorageKey = 'MakeTutorial';
 
 export default function MakeItScreen({
   route: {
-    params: { id, variant, ingredients, mealId },
+    params: { id, variant, ingredients, mealId, scaledQuantities: scaledQuantitiesRecord, desiredServings, cookingNotes: cookingNotesParam },
   },
 }: InitialNavigationStackParams<'MakeIt'>) {
   const { sendAnalyticsEvent } = useAnalytics();
@@ -51,6 +51,12 @@ export default function MakeItScreen({
   >([]);
   const [isTTSEnabled, setIsTTSEnabled] = useState(false);
   const [isIngredientsActive, setIsIngredientsActive] = useState<boolean>(false);
+
+  // Convert the pre-computed scaled quantities from nav params (Record) into a Map
+  const scaledQuantities = useMemo(() => {
+    if (!scaledQuantitiesRecord) return new Map<string, string>();
+    return new Map(Object.entries(scaledQuantitiesRecord));
+  }, [scaledQuantitiesRecord]);
 
   const getFrameworksData = async () => {
     try {
@@ -343,6 +349,8 @@ export default function MakeItScreen({
                 items={makeItSteps}
               />
 
+              {/* Serving Size Selector removed — now on Prep screen */}
+
               <MakeItCarousel
                 frameworkId={framework?.id || id}
                 recipeName={framework?.title}
@@ -354,6 +362,7 @@ export default function MakeItScreen({
                 mealId={mealId}
                 completedSteps={completedSteps}
                 onScroll={onScroll}
+                scaledQuantities={scaledQuantities}
               />
             </View>
           </SafeAreaView>
@@ -368,6 +377,7 @@ export default function MakeItScreen({
           ingredients={makeItSteps[currentIndex].ingredients}
           setIsIngredientsActive={setIsIngredientsActive}
           isIngredientsActive={isIngredientsActive}
+          scaledQuantities={scaledQuantities}
         />
       )}
 

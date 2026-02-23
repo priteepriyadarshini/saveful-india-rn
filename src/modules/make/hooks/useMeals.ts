@@ -34,7 +34,7 @@ const extractCategoryId = (category: any): string => {
 
 export default function useMeals(filters: string[]) {
   const { data: userOnboarding } = useGetUserOnboardingQuery();
-  const { data: currentUser } = useGetCurrentUserQuery();
+  const { data: currentUser, isLoading: isCurrentUserLoading } = useGetCurrentUserQuery();
 
   // Prefer user profile country; fall back to onboarding suburb (which stores country name).
   const userCountry = currentUser?.country || userOnboarding?.suburb;
@@ -44,6 +44,8 @@ export default function useMeals(filters: string[]) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const getFrameworksData = useCallback(async () => {
+    // Wait until the user profile has resolved so we have the correct country before fetching.
+    if (isCurrentUserLoading) return;
     try {
       const recipes = await recipeApiService.getAllRecipes(userCountry);
       const convertedFrameworks = recipesToFrameworks(recipes);
@@ -63,7 +65,7 @@ export default function useMeals(filters: string[]) {
       setFrameworks([]);
       setIsLoading(false);
     }
-  }, [userOnboarding?.allergies, userCountry]);
+  }, [userOnboarding?.allergies, userCountry, isCurrentUserLoading]);
 
   useEffect(() => {
     getFrameworksData();
@@ -145,7 +147,7 @@ export default function useMeals(filters: string[]) {
 
     applyFilters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, [filters, userCountry, userOnboarding?.allergies]);
 
   return { frameworks, isLoading };
 }

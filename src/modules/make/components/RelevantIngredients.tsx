@@ -10,26 +10,33 @@ import {
   bodyMediumRegular,
   subheadLargeUppercase,
 } from '../../../theme/typography';
+import { getScaledQuantityForIngredient } from '../hooks/useServingScale';
 
 export default function RelevantIngredients({
   ingredients,
   isIngredientsActive,
   setIsIngredientsActive,
+  scaledQuantities,
 }: {
   ingredients: {
     id: string;
     title: string;
     quantity?: string;
     preparation?: string;
+    ingredientId?: string;
   }[];
   isIngredientsActive: boolean;
   setIsIngredientsActive: (value: boolean) => void;
+  /** Map of ingredient ID -> scaled quantity from AI serving scale */
+  scaledQuantities?: Map<string, string>;
 }) {
   const toggleIngredients = (value: boolean) => {
     /* Adding LayoutAnimation causes warning, trying to fix this  */
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsIngredientsActive(value);
   };
+
+  const hasScaledQuantities = scaledQuantities && scaledQuantities.size > 0;
 
   return (
     <View
@@ -47,12 +54,24 @@ export default function RelevantIngredients({
         }}
       >
         <View style={tw`flex-row items-center justify-between gap-3 pb-2`}>
-          <Text
-            style={tw.style(subheadLargeUppercase, 'text-strokecream')}
-            maxFontSizeMultiplier={1}
-          >
-            Ingredients
-          </Text>
+          <View style={tw`flex-row items-center gap-2`}>
+            <Text
+              style={tw.style(subheadLargeUppercase, 'text-strokecream')}
+              maxFontSizeMultiplier={1}
+            >
+              Ingredients
+            </Text>
+            {hasScaledQuantities && (
+              <View style={tw`rounded-full bg-[#FF6B35] bg-opacity-25 px-2 py-0.5`}>
+                <Text
+                  style={tw.style('font-sans text-[10px] text-[#FF6B35]')}
+                  maxFontSizeMultiplier={1}
+                >
+                  Scaled
+                </Text>
+              </View>
+            )}
+          </View>
           <Feather
             name={isIngredientsActive ? 'chevrons-down' : 'chevrons-up'}
             size={24}
@@ -72,26 +91,57 @@ export default function RelevantIngredients({
             duration={300}
             style={tw`pb-4`}
           >
-            {ingredients.map((ingredient, index) => (
-              <View
-                key={index}
-                style={tw`relative flex-row items-start justify-start gap-3 border-b border-creme py-5`}
-              >
-                <Text style={tw.style(bodyMediumRegular, 'w-21 text-creme')}>
-                  {ingredient.quantity ?? ''}
-                </Text>
-                <View style={tw`shrink gap-1`}>
-                  <Text style={tw.style(bodyLargeBold, 'text-creme')}>
-                    {ingredient.title}
-                  </Text>
-                  {ingredient.preparation && (
-                    <Text style={tw.style(bodyMediumRegular, 'text-creme')}>
-                      {ingredient.preparation}
+            {ingredients.map((ingredient, index) => {
+              const displayQuantity = hasScaledQuantities
+                ? getScaledQuantityForIngredient(
+                    scaledQuantities,
+                    ingredient.ingredientId || ingredient.id,
+                    ingredient.title,
+                    ingredient.quantity ?? '',
+                  )
+                : (ingredient.quantity ?? '');
+
+              const isScaled =
+                hasScaledQuantities &&
+                displayQuantity !== (ingredient.quantity ?? '');
+
+              return (
+                <View
+                  key={index}
+                  style={tw`relative flex-row items-start justify-start gap-3 border-b border-creme py-5`}
+                >
+                  <View style={tw`w-21`}>
+                    <Text
+                      style={tw.style(
+                        bodyMediumRegular,
+                        isScaled ? 'text-[#FF6B35]' : 'text-creme',
+                      )}
+                    >
+                      {displayQuantity}
                     </Text>
-                  )}
+                    {isScaled && (
+                      <Text
+                        style={tw.style(
+                          'font-sans text-xs text-strokecream line-through opacity-60',
+                        )}
+                      >
+                        {ingredient.quantity}
+                      </Text>
+                    )}
+                  </View>
+                  <View style={tw`shrink gap-1`}>
+                    <Text style={tw.style(bodyLargeBold, 'text-creme')}>
+                      {ingredient.title}
+                    </Text>
+                    {ingredient.preparation && (
+                      <Text style={tw.style(bodyMediumRegular, 'text-creme')}>
+                        {ingredient.preparation}
+                      </Text>
+                    )}
+                  </View>
                 </View>
-              </View>
-            ))}
+              );
+            })}
           </Animatable.View>
         </ScrollView>
       )}
