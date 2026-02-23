@@ -9,7 +9,6 @@ import { PermissionStatus } from 'expo-modules-core';
 import useAccessToken from "../../auth/hooks/useSessionToken";
 import useNotifications from "../../notifications/hooks/useNotifications";
 import { useGetCurrentUserQuery } from "../../auth/api";
-import { useGetUserOnboardingQuery } from "../../intro/api/api";
 import useAuthListener from "../../auth/hooks/useAuthListener";
 import { useAppDispatch } from "../../../store/hooks";
 import { clearSessionData } from "../../auth/sessionSlice";
@@ -86,16 +85,11 @@ function InitialNavigator() {
       }
     }
   }, [userError, accessToken, dispatch]);
-  const { data: userOnboarding } = useGetUserOnboardingQuery(
-    undefined,
-    {
-      skip: !accessToken,
-      refetchOnMountOrArgChange: true,
-    },
-  );
-  
-  // Check if user has completed onboarding: either country is set OR onboarding record exists
-  const hasCompletedOnboarding = !!(currentUser?.country || userOnboarding);
+  // Onboarding is complete once the user has a country set.
+  // This is written by PUT /auth/dietary-profile at the end of the onboarding
+  // carousel, so it is the single authoritative signal — no separate onboarding
+  // query is needed here.
+  const hasCompletedOnboarding = !!currentUser?.country;
 
   const { permissionStatus, registerForNotifications } = useNotifications();
 

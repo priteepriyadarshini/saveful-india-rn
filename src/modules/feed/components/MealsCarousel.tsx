@@ -35,12 +35,14 @@ export default function MealsCarousel() {
   const { data: favouriteDetails } = useGetFavouriteDetailsQuery();
   const favItems = favouriteDetails || [];
   const { data: currentUser, isLoading: isCurrentUserLoading } = useGetCurrentUserQuery();
+  const { data: userOnboarding } = useGetUserOnboardingQuery();
+  // Prefer user profile country; fall back to onboarding suburb (which stores country name).
+  const userCountry = currentUser?.country || userOnboarding?.suburb;
   // Use skipToken while the user profile is loading to avoid an initial unfiltered trending fetch.
   const { data: trendingData } = useGetTrendingRecipesQuery(
-    !isCurrentUserLoading ? currentUser?.country : skipToken,
+    !isCurrentUserLoading ? userCountry : skipToken,
   );
   const trendingItems = trendingData?.trending || [];
-  const { data: userOnboarding } = useGetUserOnboardingQuery();
 
   const MEAL_TYPES = [
     {

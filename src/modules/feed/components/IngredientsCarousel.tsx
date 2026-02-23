@@ -98,11 +98,13 @@ export default function IngredientsCarousel() {
   const flatListRef = React.useRef<any>(null);
 
   const { data: currentUser, isLoading: isCurrentUserLoading } = useGetCurrentUserQuery();
+  const { data: userOnboarding } = useGetUserOnboardingQuery();
+  // Prefer user profile country; fall back to onboarding suburb (which stores country name).
+  const userCountry = currentUser?.country || userOnboarding?.suburb;
   // Use skipToken while the user profile is loading to avoid an initial unfiltered fetch.
   const { data: apiIngredients, isLoading: isApiLoading } = useGetAllIngredientsQuery(
-    !isCurrentUserLoading ? currentUser?.country : skipToken,
+    !isCurrentUserLoading ? userCountry : skipToken,
   );
-  const { data: userOnboarding } = useGetUserOnboardingQuery();
   const [ingredients, setIngredients] = React.useState<Ingredient[]>([]);
 
   useEffect(() => {

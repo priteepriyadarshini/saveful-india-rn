@@ -2,7 +2,6 @@ import { useLinkTo } from '@react-navigation/native';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
 import tw from '../../../common/tailwind';
 import { useGetCurrentUserQuery } from '../../../modules/auth/api';
-import { useGetUserOnboardingQuery } from '../../../modules/intro/api/api';
 import OnboardingCarousel from '../../../modules/intro/components/OnboardingCarousel';
 import RotatingLoading from '../../../modules/intro/components/RotatingLoading';
 import ONBOARDING from '../../../modules/intro/data/onboarding';
@@ -13,17 +12,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function OnboardingScreen() {
   const linkTo = useLinkTo();
 
-  const { data: user } = useGetCurrentUserQuery(undefined, {
+  const { data: user, isLoading } = useGetCurrentUserQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
 
-  const { data: userOnboarding, isLoading } = useGetUserOnboardingQuery();
-
+  // Redirect to feed if the user has already completed onboarding.
+  // country is set by PUT /auth/dietary-profile at the end of the carousel,
+  // so its presence is the reliable onboarding-completion signal.
   useEffect(() => {
-    if (userOnboarding) {
+    if (user?.country) {
       linkTo('/feed');
     }
-  }, [userOnboarding, linkTo]);
+  }, [user?.country, linkTo]);
 
   if (isLoading) {
     return (

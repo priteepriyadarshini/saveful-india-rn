@@ -3,6 +3,7 @@ import { filterAllergiesByUserPreferences } from '../../../common/helpers/filter
 import tw from '../../../common/tailwind';
 import { IFramework } from '../../../models/craft';
 import { useGetUserOnboardingQuery } from '../../../modules/intro/api/api';
+import { useGetCurrentUserQuery } from '../../auth/api';
 import MealCard from './MealCard';
 import React, { useEffect } from 'react';
 import { Dimensions, View } from 'react-native';
@@ -14,6 +15,9 @@ const itemLength = windowWidth - 40;
 
 export default function MealsList({ filters }: { filters: string[] }) {
   const { data: userOnboarding } = useGetUserOnboardingQuery();
+  const { data: currentUser } = useGetCurrentUserQuery();
+  // Prefer user profile country; fall back to onboarding suburb (which stores country name).
+  const userCountry = currentUser?.country || userOnboarding?.suburb;
   const [frameworks, setFrameworks] = React.useState<IFramework[]>([]);
   const [allFrameworks, setAllFrameworks] = React.useState<IFramework[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
@@ -21,7 +25,7 @@ export default function MealsList({ filters }: { filters: string[] }) {
   const getFrameworksData = async () => {
     try {
       // Fetch recipes from the new API
-      const recipes = await recipeApiService.getAllRecipes();
+      const recipes = await recipeApiService.getAllRecipes(userCountry);
       
       // Convert recipes to framework format for UI compatibility
       const convertedFrameworks = recipesToFrameworks(recipes);
@@ -48,7 +52,7 @@ export default function MealsList({ filters }: { filters: string[] }) {
  useEffect(() => {
     getFrameworksData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userOnboarding]);
+  }, [userOnboarding, userCountry]);
 
   // When filters change, fetch server-side filtered recipes to avoid ID mismatches
   useEffect(() => {
@@ -59,7 +63,7 @@ export default function MealsList({ filters }: { filters: string[] }) {
       }
 
       try {
-        const recipes = await recipeApiService.getRecipesByCategories(filters);
+        const recipes = await recipeApiService.getRecipesByCategories(filters, userCountry);
         const converted = recipesToFrameworks(recipes);
         const filtered = filterAllergiesByUserPreferences(
           converted,

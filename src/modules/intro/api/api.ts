@@ -114,22 +114,37 @@ const introApi = api
           trackSurveyDay?: string;
         }
       >({
+        // POST /api/auth/onboarding doesn't exist on the backend.
+        // The dietary-profile endpoint is the canonical way to persist these
+        // fields; map legacy field names (suburb→country, postcode→pincode).
+        // trackSurveyDay has no backend storage yet, so it is omitted.
         query: params => ({
-          url: '/api/auth/onboarding',
-          method: 'POST',
+          url: '/api/auth/dietary-profile',
+          method: 'PUT',
           body: {
-            postcode: params.postcode,
-            suburb: params.suburb,
+            country: params.suburb,
+            pincode: params.postcode,
             noOfAdults: params.noOfAdults,
             noOfChildren: params.noOfChildren,
-            dietaryRequirements: params.dietaryRequirements,
-            allergies: params.allergies,
-            tastePreference: params.tastePreference,
-            trackSurveyDay: params.trackSurveyDay,
+            otherAllergies: params.allergies,
           },
         }),
-        invalidatesTags: ['Onboarding'],
-        transformResponse: r => (r as OnboardingResponse).onboarding,
+        invalidatesTags: ['Onboarding', 'CurrentUser'],
+        // dietary-profile returns the updated profile, not an Onboarding shape.
+        // Re-use the cached onboarding object — the tags invalidation above will
+        // trigger a fresh getUserOnboarding fetch to keep the cache in sync.
+        transformResponse: (_r, _meta, params) => ({
+          suburb: params.suburb ?? '',
+          postcode: params.postcode ?? '',
+          no_of_people: {
+            adults: params.noOfAdults ?? 0,
+            children: params.noOfChildren ?? 0,
+          },
+          dietary_requirements: params.dietaryRequirements ?? [],
+          allergies: params.allergies ?? [],
+          taste_preference: params.tastePreference ?? [],
+          track_survey_day: params.trackSurveyDay ?? 'monday',
+        }),
       }),
       deleteUserOnboarding: builder.mutation<void, void>({
         query: () => ({
