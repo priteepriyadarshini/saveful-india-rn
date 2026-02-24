@@ -26,7 +26,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 
   android: {
     package: 'com.saveful.app',
-    permissions: ['ACCESS_NETWORK_STATE'],
+    permissions: ['ACCESS_NETWORK_STATE', 'RECORD_AUDIO'],
     splash: {
       image: './assets/splash.png',
       resizeMode: 'contain',
@@ -70,7 +70,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       CADisableMinimumFrameDurationOnPhone: true,
       NSPhotoLibraryUsageDescription: 'The app accesses your photos to let you add a profile image.',
       NSCameraUsageDescription: 'The app accesses your camera to let you add a profile image.',
-      NSMicrophoneUsageDescription: 'We do not access your microphone',
+      NSMicrophoneUsageDescription: 'The app needs microphone access to add inventory items by voice.',
+      NSSpeechRecognitionUsageDescription: 'The app uses speech recognition to convert your voice into inventory items.',
       ITSAppUsesNonExemptEncryption: false,
       LSApplicationQueriesSchemes: ['otpauth'],
       OneSignal_disable_badge_clearing: true,
@@ -157,9 +158,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       local: {
         android: {
           title: 'Local (Android)',
-          apiUrl: process.env.LOCAL_URL ?? 'http://192.168.0.193:3000',
-          webUrl: process.env.WEB_URL ?? 'http://192.168.0.193:3000',
-          socketUrl: process.env.SOCKET_URL ?? 'wss://http://192.168.0.193:3000/socket/app',  
+          apiUrl: process.env.LOCAL_URL ?? 'http://10.222.112.105:3000',
+          webUrl: process.env.WEB_URL ?? 'http://10.222.112.105:3000',
+          socketUrl: process.env.SOCKET_URL ?? 'wss://http://10.222.112.105:3000/socket/app',  
         },
         ios: {
           title: 'Local (iOS)',
@@ -177,6 +178,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-localization',
     'expo-font',
     'expo-secure-store',
+    [
+      'expo-speech-recognition',
+      {
+        microphonePermission: 'The app needs microphone access to add inventory items by voice.',
+        speechRecognitionPermission: 'The app uses speech recognition to convert your voice into inventory items.',
+      },
+    ],
     '@react-native-community/datetimepicker',
     'expo-web-browser',
     [

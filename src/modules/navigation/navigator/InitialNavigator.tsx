@@ -22,6 +22,9 @@ import SurveyStackNavigator, {
 import IngredientsStackNavigator, { 
   IngredientsStackParamList 
 } from "../../ingredients/navigation/IngredientsNavigator";
+import InventoryStackNavigator, {
+  InventoryStackParamList
+} from "../../inventory/navigation/InventoryNavigator";
 import HackVideoScreen from "../../hack/screens/HackVideoScreen";
 import MakeItScreen from "../../make/screens/MakeItScreen";
 import AuthScreen from "../../intro/screens/AuthScreen";
@@ -38,6 +41,7 @@ export type InitialStackParamList = {
   Onboarding: undefined;
   Root: NavigatorScreenParams<RootStackParamList> | undefined;
   Ingredients: NavigatorScreenParams<IngredientsStackParamList> | undefined;
+  Inventory: NavigatorScreenParams<InventoryStackParamList> | undefined;
   Survey: NavigatorScreenParams<SurveyStackParamList> | undefined;
   MakeIt: {
     id: string;
@@ -185,6 +189,11 @@ function InitialNavigator() {
       <InitialNavigationStack.Screen 
         name="Ingredients" 
         component={IngredientsStackNavigator}
+        options={{ headerShown: false }}
+      />
+      <InitialNavigationStack.Screen 
+        name="Inventory" 
+        component={InventoryStackNavigator}
         options={{ headerShown: false }}
       />
       <InitialNavigationStack.Screen 

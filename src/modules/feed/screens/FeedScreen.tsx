@@ -67,6 +67,17 @@ export default function FeedScreen() {
     navigation.navigate('Leaderboard');
   }, [navigation, newCurrentRoute, sendAnalyticsEvent]);
 
+  const onInventoryTapped = useCallback(() => {
+    sendAnalyticsEvent({
+      event: mixpanelEventName.actionClicked,
+      properties: {
+        location: newCurrentRoute,
+        action: 'inventory_icon_pressed',
+      },
+    });
+    navigation.navigate('Inventory');
+  }, [navigation, newCurrentRoute, sendAnalyticsEvent]);
+
   const onShoppingListTapped = useCallback(() => {
     sendAnalyticsEvent({
       event: mixpanelEventName.actionClicked,
@@ -105,25 +116,38 @@ export default function FeedScreen() {
           {/* Survey Notification - appears when there are pending surveys */}
          
           
-          {/* Icons - Top Right */}
-          <View style={tw`flex-row items-center justify-end px-5 mb-3`}>
+          {/* Icons Row */}
+          <View style={tw`flex-row items-center justify-between px-5 mb-3`}>
+            {/* Left - Inventory */}
             <Pressable
-              onPress={onShoppingListTapped}
-              style={tw`h-10 w-10 items-center justify-center rounded-full bg-white shadow-lg mr-3`}
-              accessibilityRole="button"
-              accessibilityLabel="Open shopping list"
-            >
-              <Ionicons name="list" size={20} color={tw.color('eggplant')} />
-            </Pressable>
-            
-            <Pressable
-              onPress={onLeaderboardTapped}
+              onPress={onInventoryTapped}
               style={tw`h-10 w-10 items-center justify-center rounded-full bg-white shadow-lg`}
               accessibilityRole="button"
-              accessibilityLabel="Open leaderboard"
+              accessibilityLabel="Open digital inventory"
             >
-              <Ionicons name="trophy" size={20} color={tw.color('eggplant')} />
+              <Ionicons name="cube-outline" size={20} color={tw.color('eggplant')} />
             </Pressable>
+
+            {/* Right - Shopping List & Leaderboard */}
+            <View style={tw`flex-row items-center`}>
+              <Pressable
+                onPress={onShoppingListTapped}
+                style={tw`h-10 w-10 items-center justify-center rounded-full bg-white shadow-lg mr-3`}
+                accessibilityRole="button"
+                accessibilityLabel="Open shopping list"
+              >
+                <Ionicons name="list" size={20} color={tw.color('eggplant')} />
+              </Pressable>
+              
+              <Pressable
+                onPress={onLeaderboardTapped}
+                style={tw`h-10 w-10 items-center justify-center rounded-full bg-white shadow-lg`}
+                accessibilityRole="button"
+                accessibilityLabel="Open leaderboard"
+              >
+                <Ionicons name="trophy" size={20} color={tw.color('eggplant')} />
+              </Pressable>
+            </View>
           </View>
 
           <FeedSearchBarHeader
