@@ -11,6 +11,7 @@ import { useAppDispatch } from '../../../store/hooks';
 import { useLazyGetCurrentUserQuery } from '../../auth/api';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
 import { bodyMediumRegular, h6TextStyle, bodySmallRegular } from '../../../theme/typography';
+import { cardDrop } from '../../../theme/shadow';
 export default function OTPVerificationScreen({ route, navigation }: any) {
   const { email, name, password, confirmPassword, stateCode, vegType } = route.params;
   const dispatch = useAppDispatch();
@@ -215,15 +216,21 @@ export default function OTPVerificationScreen({ route, navigation }: any) {
             </View>
 
             {/* OTP Card */}
-            <View style={tw`mx-4 bg-white rounded-3xl px-6 py-8 shadow-lg mb-6`}>
+            <View style={tw.style('mx-4 mb-6 overflow-hidden rounded-2xl border border-strokecream bg-white', cardDrop)}>
+              <ImageBackground
+                source={require('../../../../assets/ribbons/ingredients-ribbons/eggplant-light2.png')}
+                resizeMode="cover"
+                imageStyle={{ opacity: 0.1 }}
+              >
+              <View style={tw`px-5 py-5`}>
               {/* Back Button */}
               <TouchableOpacity
                 onPress={() => navigation.goBack()}
-                style={tw`flex-row items-center mb-4`}
+                style={tw`mb-4 flex-row items-center self-start rounded-full border border-strokecream bg-creme px-3 py-2`}
                 disabled={isLoading}
               >
-                <Feather name="arrow-left" size={20} color="#666" />
-                <Text style={tw.style(bodyMediumRegular, 'text-stone ml-2')}>Back</Text>
+                <Feather name="arrow-left" size={16} color={tw.color('stone') || '#6D6D72'} />
+                <Text style={tw.style(bodySmallRegular, 'ml-1.5 text-stone')}>Back</Text>
               </TouchableOpacity>
 
               {/* Title */}
@@ -310,7 +317,10 @@ export default function OTPVerificationScreen({ route, navigation }: any) {
                       <Text style={tw`text-white font-bold`}>Verifying...</Text>
                     </View>
                   ) : (
-                    'Verify & Create Account'
+                    <View style={tw`flex-row items-center justify-center gap-2`}>
+                      <Feather name="check-circle" size={16} color="white" />
+                      <Text style={tw`font-sans-bold text-white`}>Verify & Create Account</Text>
+                    </View>
                   )}
                 </PrimaryButton>
               </View>
@@ -319,15 +329,20 @@ export default function OTPVerificationScreen({ route, navigation }: any) {
               <TouchableOpacity
                 onPress={handleResendOTP}
                 disabled={isLoading || timer > 0}
-                style={tw`pt-3 items-center py-3`}
+                style={tw.style(
+                  'items-center rounded-full border px-4 py-2.5',
+                  timer > 0 || isLoading ? 'border-strokecream bg-creme' : 'border-eggplant bg-white',
+                )}
               >
                 <Text style={tw.style(bodyMediumRegular, 'text-center text-stone')}>
                   Didn't receive the code?{' '}
-                  <Text style={tw`font-bold ${timer > 0 ? 'text-gray-400' : 'text-eggplant underline'}`}>
+                  <Text style={tw`font-sans-semibold ${timer > 0 ? 'text-stone' : 'text-eggplant'}`}>
                     Resend
                   </Text>
                 </Text>
               </TouchableOpacity>
+              </View>
+              </ImageBackground>
             </View>
 
             {/* Spacer for bottom */}

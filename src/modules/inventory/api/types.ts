@@ -166,6 +166,13 @@ export interface WasteClassification {
   disposalTip: string;
 }
 
+export interface NewRecipeMatchesResponse {
+  hasNewMatches: boolean;
+  newMatchCount: number;
+  topNewMatch: MealSuggestion | null;
+  newMatches: MealSuggestion[];
+}
+
 export interface GetInventoryQueryParams {
   storageLocation?: StorageLocation;
   freshnessStatus?: FreshnessStatus;

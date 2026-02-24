@@ -13,7 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import tw from '../../../common/tailwind';
-import { h5TextStyle, bodyMediumRegular, subheadSmallUppercase } from '../../../theme/typography';
+import { h5TextStyle, subheadSmallUppercase } from '../../../theme/typography';
 import LeaderboardTab from '../components/LeaderboardTab';
 import AllBadgesTab from '../components/AllBadgesTab';
 import ChallengeBadgesTab from '../components/ChallengeBadgesTab';
@@ -67,7 +67,7 @@ export default function LeaderboardScreen() {
       </View>
       <View style={tw`flex-1`}>
         <LinearGradient
-          colors={['#4b2177', '#4b2177']}
+          colors={[tw.color('eggplant') || '#4B2176', tw.color('eggplant') || '#4B2176']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
@@ -75,7 +75,7 @@ export default function LeaderboardScreen() {
             <View style={tw`flex-row items-center justify-between px-5 py-4`}>
               <Pressable
                 onPress={() => navigation.goBack()}
-                style={tw`h-10 w-10 items-center justify-center rounded-full bg-white/20`}
+                style={tw`h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/15`}
                 accessibilityRole="button"
                 accessibilityLabel="Go back"
               >
@@ -87,7 +87,7 @@ export default function LeaderboardScreen() {
               <Pressable
                 onPress={handleCheckBadges}
                 disabled={isCheckingMilestones}
-                style={tw`h-10 w-10 items-center justify-center rounded-full bg-white/20`}
+                style={tw`h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/15`}
                 accessibilityRole="button"
                 accessibilityLabel="Check for new badges"
               >
@@ -99,9 +99,13 @@ export default function LeaderboardScreen() {
               </Pressable>
             </View>
 
-            {/* Enhanced Tabs */}
-            <View style={tw`px-3 pb-3 pt-1`}>
-              <View style={tw`flex-row gap-2`}>
+            <View style={tw`px-4 pb-3 pt-0.5`}>
+              <View
+                style={tw.style('overflow-hidden rounded-2xl border border-white/20 p-1', {
+                  backgroundColor: 'rgba(255, 252, 249, 0.14)',
+                })}
+              >
+                <View style={tw`flex-row`}>
                 {tabs.map((tab) => {
                   const isActive = activeTab === tab.key;
                   return (
@@ -109,8 +113,9 @@ export default function LeaderboardScreen() {
                       key={tab.key}
                       onPress={() => setActiveTab(tab.key)}
                       style={tw.style(
-                        'flex-1 items-center rounded-xl py-3.5',
-                        isActive ? 'bg-white shadow-md' : 'bg-white/20'
+                        'flex-1 items-center rounded-xl py-3',
+                        tab.key !== 'challengeBadges' ? 'mr-1.5' : '',
+                        isActive ? 'bg-white' : 'bg-transparent'
                       )}
                       accessibilityRole="tab"
                       accessibilityState={{ selected: isActive }}
@@ -123,7 +128,7 @@ export default function LeaderboardScreen() {
                       <Text
                         style={tw.style(
                           subheadSmallUppercase,
-                          'mt-1.5',
+                          'mt-1',
                           isActive ? 'text-eggplant' : 'text-white'
                         )}
                         numberOfLines={1}
@@ -133,6 +138,7 @@ export default function LeaderboardScreen() {
                     </TouchableOpacity>
                   );
                 })}
+                </View>
               </View>
             </View>
           </SafeAreaView>

@@ -32,6 +32,7 @@ import {
   StorageLocation,
   InventoryItemSource,
 } from '../api/types';
+import useRecipeMatchNotification from '../hooks/useRecipeMatchNotification';
 
 const STORAGE_OPTIONS: { key: StorageLocation; label: string; icon: string }[] = [
   { key: StorageLocation.FRIDGE, label: 'Fridge', icon: 'snow-outline' },
@@ -50,6 +51,7 @@ export default function VoiceAddScreen() {
 
   const [voiceAdd, { isLoading: isParsing }] = useVoiceAddMutation();
   const [voiceConfirm, { isLoading: isConfirming }] = useVoiceConfirmMutation();
+  const { notifyIfNewMatches } = useRecipeMatchNotification();
 
   useSpeechRecognitionEvent('result', (event) => {
     if (event.results?.[0]?.transcript) {
@@ -147,6 +149,9 @@ export default function VoiceAddScreen() {
         })),
       }).unwrap();
 
+      // Check for new recipe matches in the background
+      notifyIfNewMatches().catch(() => {});
+
       Alert.alert(
         'Added!',
         `${parsedItems.length} item(s) added to your kitchen inventory.`,
@@ -155,7 +160,7 @@ export default function VoiceAddScreen() {
     } catch (error) {
       Alert.alert('Error', 'Failed to add items. Please try again.');
     }
-  }, [parsedItems, voiceConfirm, navigation]);
+  }, [parsedItems, voiceConfirm, navigation, notifyIfNewMatches]);
 
   return (
     <SafeAreaView style={tw`flex-1 bg-creme`} edges={['top']}>
@@ -304,7 +309,7 @@ export default function VoiceAddScreen() {
           {parsedItems.length > 0 && (
             <View>
             <Text style={tw.style(bodyMediumBold, 'text-gray-800 mb-3')}>
-              Found {parsedItems.length} item(s) — review & confirm:
+              Found {parsedItems.length} item(s) - review & confirm:
             </Text>
 
             {parsedItems.map((item, index) => (

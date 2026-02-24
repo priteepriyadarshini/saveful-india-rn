@@ -9,7 +9,6 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import tw from '../../../common/tailwind';
 import { useGetMyBadgesQuery } from '../api/api';
@@ -51,13 +50,34 @@ export default function ChallengeBadgesTab() {
     });
   }, [userBadges]);
 
+  const renderListHeader = () => (
+    <View style={tw`mx-4 mb-3 mt-1 overflow-hidden rounded-2xl border border-strokecream bg-white`}>
+      <ImageBackground
+        source={require('../../../../assets/ribbons/ingredients-ribbons/lemon2.png')}
+        resizeMode="cover"
+        imageStyle={{ opacity: 0.14 }}
+      >
+        <View style={tw`flex-row items-center justify-between px-4 py-3`}>
+          <View style={tw`flex-row items-center`}>
+            <Ionicons name="trophy-outline" size={16} color={tw.color('eggplant') || '#4B2176'} />
+            <Text style={tw.style(subheadSmallUppercase, 'ml-1.5 text-eggplant')}>
+              Challenge Badges
+            </Text>
+          </View>
+          <View style={tw`rounded-full border border-strokecream bg-creme px-2.5 py-1`}>
+            <Text style={tw.style(bodySmallBold, 'text-eggplant')}>{challengeBadges.length}</Text>
+          </View>
+        </View>
+      </ImageBackground>
+    </View>
+  );
+
   const renderBadgeItem = ({ item }: { item: UserBadge }) => {
     const badge = typeof item.badgeId === 'object' ? item.badgeId as Badge : null;
     
     if (!badge) return null;
 
     const metadata = item.metadata;
-    const gradientColors: readonly [string, string] = ['#F3E5F5', '#FFFFFF'] as const;
 
     return (
       <View style={tw.style('mx-4 mb-4 overflow-hidden rounded-2xl bg-white border border-strokecream', cardDrop)}>
@@ -67,12 +87,7 @@ export default function ChallengeBadgesTab() {
           style={tw`overflow-hidden`}
           imageStyle={{ opacity: 0.08 }}
         >
-          <LinearGradient
-            colors={gradientColors}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={tw`p-5`}
-          >
+          <View style={tw`p-4`}>
           <View style={tw`flex-row items-start`}>
             {/* Badge Image with Elegant Frame */}
             <View style={tw`mr-4 items-center`}>
@@ -115,7 +130,7 @@ export default function ChallengeBadgesTab() {
 
               {/* Challenge Metadata */}
               {metadata?.challengeName && (
-                <View style={tw`mb-3 flex-row items-center rounded-full bg-white/90 px-3 py-2 shadow-sm`}>
+                <View style={tw`mb-3 flex-row items-center rounded-full border border-strokecream bg-white px-3 py-2`}>
                   <Ionicons name="flame" size={14} color={tw.color('eggplant-vibrant')} />
                   <Text style={tw.style(bodySmallBold, 'ml-2 flex-1 text-xs text-eggplant')} numberOfLines={1}>
                     {metadata.challengeName}
@@ -126,7 +141,7 @@ export default function ChallengeBadgesTab() {
               {/* Stats Pills */}
               <View style={tw`mb-3 flex-row flex-wrap items-center gap-2`}>
                 {metadata?.rank && (
-                  <View style={tw`flex-row items-center rounded-full bg-lemon/40 px-3 py-1.5`}>
+                  <View style={tw`flex-row items-center rounded-full border border-lemon bg-lemon/40 px-3 py-1.5`}>
                     <Ionicons name="trophy" size={12} color={tw.color('orange')} />
                     <Text style={tw.style(bodySmallBold, 'ml-1.5 text-xs text-orange')}>
                       Rank #{metadata.rank}
@@ -140,7 +155,7 @@ export default function ChallengeBadgesTab() {
                 )}
                 
                 {item.achievedValue !== undefined && item.achievedValue > 0 && (
-                  <View style={tw`flex-row items-center rounded-full bg-mint/30 px-3 py-1.5`}>
+                  <View style={tw`flex-row items-center rounded-full border border-mint bg-mint/30 px-3 py-1.5`}>
                     <Ionicons name="checkmark-circle" size={12} color={tw.color('kale')} />
                     <Text style={tw.style(bodySmallBold, 'ml-1.5 text-xs text-kale')}>
                       {item.achievedValue} pts
@@ -149,7 +164,7 @@ export default function ChallengeBadgesTab() {
                 )}
                 
                 {badge.rarityScore > 0 && (
-                  <View style={tw`flex-row items-center rounded-full bg-radish/30 px-3 py-1.5`}>
+                  <View style={tw`flex-row items-center rounded-full border border-radish bg-radish/30 px-3 py-1.5`}>
                     <Ionicons name="diamond" size={10} color={tw.color('eggplant')} />
                     <Text style={tw.style(bodySmallBold, 'ml-1.5 text-xs text-eggplant')}>
                       {badge.rarityScore}
@@ -167,7 +182,7 @@ export default function ChallengeBadgesTab() {
               </View>
             </View>
           </View>
-        </LinearGradient>
+        </View>
         </ImageBackground>
       </View>
     );
@@ -201,7 +216,8 @@ export default function ChallengeBadgesTab() {
         data={challengeBadges}
         renderItem={renderBadgeItem}
         keyExtractor={item => item._id}
-        contentContainerStyle={tw`py-4`}
+        contentContainerStyle={tw`pb-5 pt-3`}
+        ListHeaderComponent={renderListHeader}
         ListEmptyComponent={renderEmptyState}
         refreshControl={
           <RefreshControl

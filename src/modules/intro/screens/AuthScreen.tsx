@@ -11,8 +11,9 @@ import { saveSessionData } from '../../auth/sessionSlice';
 import { useAppDispatch } from '../../../store/hooks';
 import { TokenManager } from '../../pushNotifications/TokenManager';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
-import { bodyMediumRegular, h6TextStyle } from '../../../theme/typography';
+import { bodyMediumRegular, bodySmallRegular, h6TextStyle, subheadSmallUppercase } from '../../../theme/typography';
 import { getSafeErrorMessage } from '../../../modules/forms/validation';
+import { cardDrop } from '../../../theme/shadow';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -165,9 +166,38 @@ export default function AuthScreen({ navigation }: any) {
 
           {/* ── AUTH FORM CARD (Login / Signup) ── */}
           {activeView === 'auth' && (
-            <View style={tw`mx-5 bg-white rounded-3xl px-5 py-5 shadow-lg mb-6`}>
-              <View style={tw`mb-4`}>
-                <Text style={tw.style(h6TextStyle, 'text-center text-radish mb-2')}>
+            <View style={tw.style('mx-4 mb-6 overflow-hidden rounded-2xl border border-strokecream bg-white', cardDrop)}>
+              <ImageBackground
+                source={require('../../../../assets/ribbons/ingredients-ribbons/eggplant-light2.png')}
+                resizeMode="cover"
+                imageStyle={{ opacity: 0.1 }}
+              >
+              <View style={tw`px-4 pb-4 pt-4`}>
+                <View style={tw`mb-3 rounded-xl border border-strokecream bg-creme p-1`}>
+                  <View style={tw`flex-row`}>
+                    <TouchableOpacity
+                      onPress={() => setIsLogin(true)}
+                      disabled={isLoading}
+                      style={tw.style('flex-1 items-center rounded-lg py-2.5', isLogin ? 'bg-white' : 'bg-transparent')}
+                    >
+                      <Text style={tw.style(subheadSmallUppercase, isLogin ? 'text-eggplant' : 'text-stone')}>
+                        Sign In
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => setIsLogin(false)}
+                      disabled={isLoading}
+                      style={tw.style('flex-1 items-center rounded-lg py-2.5', !isLogin ? 'bg-white' : 'bg-transparent')}
+                    >
+                      <Text style={tw.style(subheadSmallUppercase, !isLogin ? 'text-eggplant' : 'text-stone')}>
+                        Sign Up
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <View style={tw`mb-4`}>
+                <Text style={tw.style(h6TextStyle, 'text-center text-eggplant mb-2')}>
                   {isLogin ? 'WELCOME BACK' : 'JOIN SAVEFUL'}
                 </Text>
                 <Text style={tw.style(bodyMediumRegular, 'text-center text-stone')}>
@@ -179,12 +209,12 @@ export default function AuthScreen({ navigation }: any) {
                 {!isLogin && (
                   <View>
                     <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>Full Name *</Text>
-                    <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
-                      <Feather name="user" size={18} color="#666" style={tw`mr-2.5`} />
+                    <View style={tw`flex-row items-center rounded-xl border border-strokecream bg-creme px-3 py-2.5`}>
+                      <Feather name="user" size={18} color={tw.color('stone') || '#6D6D72'} style={tw`mr-2.5`} />
                       <TextInput
                         style={tw`flex-1 text-base text-black`}
                         placeholder="Enter your full name"
-                        placeholderTextColor="#999"
+                        placeholderTextColor={tw.color('stone') || '#6D6D72'}
                         value={name}
                         onChangeText={setName}
                         autoCapitalize="words"
@@ -196,12 +226,12 @@ export default function AuthScreen({ navigation }: any) {
 
                 <View>
                   <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>Email Address *</Text>
-                  <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
-                    <Feather name="mail" size={18} color="#666" style={tw`mr-2.5`} />
+                  <View style={tw`flex-row items-center rounded-xl border border-strokecream bg-creme px-3 py-2.5`}>
+                    <Feather name="mail" size={18} color={tw.color('stone') || '#6D6D72'} style={tw`mr-2.5`} />
                     <TextInput
                       style={tw`flex-1 text-base text-black`}
                       placeholder="your@email.com"
-                      placeholderTextColor="#999"
+                      placeholderTextColor={tw.color('stone') || '#6D6D72'}
                       value={email}
                       onChangeText={setEmail}
                       autoCapitalize="none"
@@ -216,17 +246,21 @@ export default function AuthScreen({ navigation }: any) {
                   <View style={tw`flex-row justify-between items-center mb-1.5`}>
                     <Text style={tw.style(bodyMediumRegular, 'text-stone')}>Password *</Text>
                     {isLogin && (
-                      <TouchableOpacity onPress={() => { setForgotEmail(email); setActiveView('forgot'); }} disabled={isLoading}>
-                        <Text style={tw`text-sm font-semibold text-radish`}>Forgot Password?</Text>
+                      <TouchableOpacity
+                        onPress={() => { setForgotEmail(email); setActiveView('forgot'); }}
+                        disabled={isLoading}
+                        style={tw`rounded-full border border-strokecream bg-white px-2.5 py-1`}
+                      >
+                        <Text style={tw.style(subheadSmallUppercase, 'text-eggplant')}>Forgot Password?</Text>
                       </TouchableOpacity>
                     )}
                   </View>
-                  <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
-                    <Feather name="lock" size={18} color="#666" style={tw`mr-2.5`} />
+                  <View style={tw`flex-row items-center rounded-xl border border-strokecream bg-creme px-3 py-2.5`}>
+                    <Feather name="lock" size={18} color={tw.color('stone') || '#6D6D72'} style={tw`mr-2.5`} />
                     <TextInput
                       style={tw`flex-1 text-base text-black`}
                       placeholder="Enter your password"
-                      placeholderTextColor="#999"
+                      placeholderTextColor={tw.color('stone') || '#6D6D72'}
                       value={password}
                       onChangeText={setPassword}
                       secureTextEntry={!showPassword}
@@ -234,7 +268,7 @@ export default function AuthScreen({ navigation }: any) {
                       editable={!isLoading}
                     />
                     <Pressable onPress={() => setShowPassword(!showPassword)}>
-                      <Feather name={showPassword ? 'eye-off' : 'eye'} size={18} color="#666" />
+                      <Feather name={showPassword ? 'eye-off' : 'eye'} size={18} color={tw.color('stone') || '#6D6D72'} />
                     </Pressable>
                   </View>
                 </View>
@@ -242,12 +276,12 @@ export default function AuthScreen({ navigation }: any) {
                 {!isLogin && (
                   <View>
                     <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>Confirm Password *</Text>
-                    <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
-                      <Feather name="lock" size={18} color="#666" style={tw`mr-2.5`} />
+                    <View style={tw`flex-row items-center rounded-xl border border-strokecream bg-creme px-3 py-2.5`}>
+                      <Feather name="lock" size={18} color={tw.color('stone') || '#6D6D72'} style={tw`mr-2.5`} />
                       <TextInput
                         style={tw`flex-1 text-base text-black`}
                         placeholder="Confirm your password"
-                        placeholderTextColor="#999"
+                        placeholderTextColor={tw.color('stone') || '#6D6D72'}
                         value={confirmPassword}
                         onChangeText={setConfirmPassword}
                         secureTextEntry={!showConfirmPassword}
@@ -255,7 +289,7 @@ export default function AuthScreen({ navigation }: any) {
                         editable={!isLoading}
                       />
                       <Pressable onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                        <Feather name={showConfirmPassword ? 'eye-off' : 'eye'} size={18} color="#666" />
+                        <Feather name={showConfirmPassword ? 'eye-off' : 'eye'} size={18} color={tw.color('stone') || '#6D6D72'} />
                       </Pressable>
                     </View>
                   </View>
@@ -270,30 +304,45 @@ export default function AuthScreen({ navigation }: any) {
                       <Text style={tw`text-white font-bold`}>{isLogin ? 'Signing in...' : 'Sending OTP...'}</Text>
                     </View>
                   ) : (
-                    isLogin ? 'Sign In' : 'Continue'
+                    <View style={tw`flex-row items-center justify-center gap-2`}>
+                      <Feather name={isLogin ? 'log-in' : 'arrow-right'} size={16} color="white" />
+                      <Text style={tw`font-sans-bold text-white`}>{isLogin ? 'Sign In' : 'Continue'}</Text>
+                    </View>
                   )}
                 </PrimaryButton>
               </View>
 
-              <TouchableOpacity onPress={() => setIsLogin(!isLogin)} disabled={isLoading} style={tw`pt-3 items-center`}>
-                <Text style={tw.style(bodyMediumRegular, 'text-center text-stone')}>
+              <TouchableOpacity
+                onPress={() => setIsLogin(!isLogin)}
+                disabled={isLoading}
+                style={tw`mt-3 items-center rounded-full border border-strokecream bg-creme px-4 py-2.5`}
+              >
+                <Text style={tw.style(bodySmallRegular, 'text-center text-stone')}>
                   {isLogin ? "Don't have an account? " : 'Already have an account? '}
-                  <Text style={tw`font-bold text-radish`}>{isLogin ? 'Sign Up' : 'Sign In'}</Text>
+                  <Text style={tw`font-sans-semibold text-eggplant`}>{isLogin ? 'Sign Up' : 'Sign In'}</Text>
                 </Text>
               </TouchableOpacity>
+              </View>
+              </ImageBackground>
             </View>
           )}
 
           {/* ── FORGOT PASSWORD CARD ── */}
           {activeView === 'forgot' && (
-            <View style={tw`mx-5 bg-white rounded-3xl px-5 py-5 shadow-lg mb-6`}>
+            <View style={tw.style('mx-4 mb-6 overflow-hidden rounded-2xl border border-strokecream bg-white', cardDrop)}>
+              <ImageBackground
+                source={require('../../../../assets/ribbons/ingredients-ribbons/lemon2.png')}
+                resizeMode="cover"
+                imageStyle={{ opacity: 0.1 }}
+              >
+              <View style={tw`px-4 py-4`}>
               <View style={tw`mb-5`}>
                 <View style={tw`items-center mb-3`}>
-                  <View style={tw`w-14 h-14 rounded-full bg-orange-50 items-center justify-center`}>
-                    <Feather name="lock" size={26} color="#F7931E" />
+                  <View style={tw`w-14 h-14 rounded-full bg-creme border border-strokecream items-center justify-center`}>
+                    <Feather name="lock" size={24} color={tw.color('orange') || '#F99C46'} />
                   </View>
                 </View>
-                <Text style={tw.style(h6TextStyle, 'text-center text-radish mb-2')}>FORGOT PASSWORD</Text>
+                <Text style={tw.style(h6TextStyle, 'text-center text-eggplant mb-2')}>FORGOT PASSWORD</Text>
                 <Text style={tw.style(bodyMediumRegular, 'text-center text-stone')}>
                   Enter your registered email and we'll send you a reset code.
                 </Text>
@@ -302,12 +351,12 @@ export default function AuthScreen({ navigation }: any) {
               <View style={tw`gap-3`}>
                 <View>
                   <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>Email Address *</Text>
-                  <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
-                    <Feather name="mail" size={18} color="#666" style={tw`mr-2.5`} />
+                  <View style={tw`flex-row items-center rounded-xl border border-strokecream bg-creme px-3 py-2.5`}>
+                    <Feather name="mail" size={18} color={tw.color('stone') || '#6D6D72'} style={tw`mr-2.5`} />
                     <TextInput
                       style={tw`flex-1 text-base text-black`}
                       placeholder="your@email.com"
-                      placeholderTextColor="#999"
+                      placeholderTextColor={tw.color('stone') || '#6D6D72'}
                       value={forgotEmail}
                       onChangeText={setForgotEmail}
                       autoCapitalize="none"
@@ -327,43 +376,58 @@ export default function AuthScreen({ navigation }: any) {
                       <Text style={tw`text-white font-bold`}>Sending Code...</Text>
                     </View>
                   ) : (
-                    'Send Reset Code'
+                    <View style={tw`flex-row items-center justify-center gap-2`}>
+                      <Feather name="send" size={16} color="white" />
+                      <Text style={tw`font-sans-bold text-white`}>Send Reset Code</Text>
+                    </View>
                   )}
                 </PrimaryButton>
               </View>
 
-              <TouchableOpacity onPress={() => setActiveView('auth')} disabled={isForgotLoading} style={tw`pt-3 items-center flex-row justify-center gap-1`}>
-                <Feather name="arrow-left" size={16} color="#666" />
-                <Text style={tw.style(bodyMediumRegular, 'text-stone')}>Back to Sign In</Text>
+              <TouchableOpacity
+                onPress={() => setActiveView('auth')}
+                disabled={isForgotLoading}
+                style={tw`mt-3 items-center flex-row justify-center gap-1 rounded-full border border-strokecream bg-creme px-4 py-2.5`}
+              >
+                <Feather name="arrow-left" size={15} color={tw.color('stone') || '#6D6D72'} />
+                <Text style={tw.style(bodySmallRegular, 'text-stone')}>Back to Sign In</Text>
               </TouchableOpacity>
+              </View>
+              </ImageBackground>
             </View>
           )}
 
           {/* ── RESET PASSWORD CARD ── */}
           {activeView === 'resetPassword' && (
-            <View style={tw`mx-5 bg-white rounded-3xl px-5 py-5 shadow-lg mb-6`}>
+            <View style={tw.style('mx-4 mb-6 overflow-hidden rounded-2xl border border-strokecream bg-white', cardDrop)}>
+              <ImageBackground
+                source={require('../../../../assets/ribbons/ingredients-ribbons/mint2.png')}
+                resizeMode="cover"
+                imageStyle={{ opacity: 0.1 }}
+              >
+              <View style={tw`px-4 py-4`}>
               <View style={tw`mb-5`}>
                 <View style={tw`items-center mb-3`}>
-                  <View style={tw`w-14 h-14 rounded-full bg-orange-50 items-center justify-center`}>
-                    <Feather name="shield" size={26} color="#F7931E" />
+                  <View style={tw`w-14 h-14 rounded-full bg-creme border border-strokecream items-center justify-center`}>
+                    <Feather name="shield" size={24} color={tw.color('kale') || '#3A7E52'} />
                   </View>
                 </View>
-                <Text style={tw.style(h6TextStyle, 'text-center text-radish mb-2')}>RESET PASSWORD</Text>
+                <Text style={tw.style(h6TextStyle, 'text-center text-eggplant mb-2')}>RESET PASSWORD</Text>
                 <Text style={tw.style(bodyMediumRegular, 'text-center text-stone')}>
                   Enter the 6-digit code sent to{'\n'}
-                  <Text style={tw`font-semibold text-radish`}>{forgotEmail}</Text>
+                  <Text style={tw`font-semibold text-eggplant`}>{forgotEmail}</Text>
                 </Text>
               </View>
 
               <View style={tw`gap-3`}>
                 <View>
                   <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>Verification Code *</Text>
-                  <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
-                    <Feather name="key" size={18} color="#666" style={tw`mr-2.5`} />
+                  <View style={tw`flex-row items-center rounded-xl border border-strokecream bg-creme px-3 py-2.5`}>
+                    <Feather name="key" size={18} color={tw.color('stone') || '#6D6D72'} style={tw`mr-2.5`} />
                     <TextInput
                       style={tw`flex-1 text-base text-black tracking-widest font-bold`}
                       placeholder="000000"
-                      placeholderTextColor="#999"
+                      placeholderTextColor={tw.color('stone') || '#6D6D72'}
                       value={resetOTP}
                       onChangeText={setResetOTP}
                       keyboardType="number-pad"
@@ -375,12 +439,12 @@ export default function AuthScreen({ navigation }: any) {
 
                 <View>
                   <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>New Password *</Text>
-                  <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
-                    <Feather name="lock" size={18} color="#666" style={tw`mr-2.5`} />
+                  <View style={tw`flex-row items-center rounded-xl border border-strokecream bg-creme px-3 py-2.5`}>
+                    <Feather name="lock" size={18} color={tw.color('stone') || '#6D6D72'} style={tw`mr-2.5`} />
                     <TextInput
                       style={tw`flex-1 text-base text-black`}
                       placeholder="New password (min. 6 chars)"
-                      placeholderTextColor="#999"
+                      placeholderTextColor={tw.color('stone') || '#6D6D72'}
                       value={newPassword}
                       onChangeText={setNewPassword}
                       secureTextEntry={!showNewPassword}
@@ -388,19 +452,19 @@ export default function AuthScreen({ navigation }: any) {
                       editable={!isResetLoading}
                     />
                     <Pressable onPress={() => setShowNewPassword(!showNewPassword)}>
-                      <Feather name={showNewPassword ? 'eye-off' : 'eye'} size={18} color="#666" />
+                      <Feather name={showNewPassword ? 'eye-off' : 'eye'} size={18} color={tw.color('stone') || '#6D6D72'} />
                     </Pressable>
                   </View>
                 </View>
 
                 <View>
                   <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>Confirm New Password *</Text>
-                  <View style={tw`flex-row items-center bg-creme rounded-xl px-3 py-2.5`}>
-                    <Feather name="lock" size={18} color="#666" style={tw`mr-2.5`} />
+                  <View style={tw`flex-row items-center rounded-xl border border-strokecream bg-creme px-3 py-2.5`}>
+                    <Feather name="lock" size={18} color={tw.color('stone') || '#6D6D72'} style={tw`mr-2.5`} />
                     <TextInput
                       style={tw`flex-1 text-base text-black`}
                       placeholder="Confirm new password"
-                      placeholderTextColor="#999"
+                      placeholderTextColor={tw.color('stone') || '#6D6D72'}
                       value={confirmNewPassword}
                       onChangeText={setConfirmNewPassword}
                       secureTextEntry={!showConfirmNewPassword}
@@ -408,7 +472,7 @@ export default function AuthScreen({ navigation }: any) {
                       editable={!isResetLoading}
                     />
                     <Pressable onPress={() => setShowConfirmNewPassword(!showConfirmNewPassword)}>
-                      <Feather name={showConfirmNewPassword ? 'eye-off' : 'eye'} size={18} color="#666" />
+                      <Feather name={showConfirmNewPassword ? 'eye-off' : 'eye'} size={18} color={tw.color('stone') || '#6D6D72'} />
                     </Pressable>
                   </View>
                 </View>
@@ -422,15 +486,24 @@ export default function AuthScreen({ navigation }: any) {
                       <Text style={tw`text-white font-bold`}>Resetting...</Text>
                     </View>
                   ) : (
-                    'Reset Password'
+                    <View style={tw`flex-row items-center justify-center gap-2`}>
+                      <Feather name="check-circle" size={16} color="white" />
+                      <Text style={tw`font-sans-bold text-white`}>Reset Password</Text>
+                    </View>
                   )}
                 </PrimaryButton>
               </View>
 
-              <TouchableOpacity onPress={() => setActiveView('forgot')} disabled={isResetLoading} style={tw`pt-3 items-center flex-row justify-center gap-1`}>
-                <Feather name="arrow-left" size={16} color="#666" />
-                <Text style={tw.style(bodyMediumRegular, 'text-stone')}>Change email</Text>
+              <TouchableOpacity
+                onPress={() => setActiveView('forgot')}
+                disabled={isResetLoading}
+                style={tw`mt-3 items-center flex-row justify-center gap-1 rounded-full border border-strokecream bg-creme px-4 py-2.5`}
+              >
+                <Feather name="arrow-left" size={15} color={tw.color('stone') || '#6D6D72'} />
+                <Text style={tw.style(bodySmallRegular, 'text-stone')}>Change email</Text>
               </TouchableOpacity>
+              </View>
+              </ImageBackground>
             </View>
           )}
 

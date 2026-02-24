@@ -237,63 +237,67 @@ export default function InventoryScreen() {
           </Pressable>
         </View>
       ) : (
-        <ScrollView
+        <ImageBackground
           style={tw`flex-1`}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+          source={require('../../../../assets/ribbons/lemon.png')}
         >
-          <ImageBackground
-            style={tw`w-full py-6 pb-30`}
-            source={require('../../../../assets/ribbons/lemon.png')}
-          >
-            <View style={tw`px-5 pt-1 pb-2 flex-row gap-2`}>
-              <Pressable
-                onPress={() => navigation.navigate('InventoryMealSuggestions')}
-                style={tw`flex-1 flex-row items-center justify-center gap-1.5 rounded-full border border-eggplant bg-white px-3 py-2`}
-              >
-                <Ionicons name="restaurant-outline" size={14} color={tw.color('eggplant-vibrant') || '#7E42FF'} />
-                <Text style={tw.style(subheadMediumUppercase, 'text-eggplant-vibrant')}>
-                  What can I cook?
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => navigation.navigate('InventoryWasteAnalytics')}
-                style={tw`flex-1 flex-row items-center justify-center gap-1.5 rounded-full border border-eggplant bg-white px-3 py-2`}
-              >
-                <Ionicons name="pie-chart-outline" size={14} color={tw.color('eggplant-vibrant') || '#7E42FF'} />
-                <Text style={tw.style(subheadMediumUppercase, 'text-eggplant-vibrant')}>
-                  Waste Tracker
-                </Text>
-              </Pressable>
-            </View>
-
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={tw`mb-3`}
-              contentContainerStyle={tw`px-5 gap-1`}
+          {/* Quick Actions — fixed above scroll */}
+          <View style={tw`px-5 pt-4 pb-2 flex-row gap-2`}>
+            <Pressable
+              onPress={() => navigation.navigate('InventoryMealSuggestions')}
+              style={tw`flex-1 flex-row items-center justify-center gap-1.5 rounded-full border border-eggplant bg-white px-3 py-2`}
             >
-              {STORAGE_TABS.map((tab) => {
-                const isActive = activeTab === tab.key;
-                const count =
-                  tab.key === 'all'
-                    ? allItems.length
-                    : (grouped?.[tab.key as StorageLocation] || []).length;
+              <Ionicons name="restaurant-outline" size={14} color={tw.color('eggplant-vibrant') || '#7E42FF'} />
+              <Text style={tw.style(subheadMediumUppercase, 'text-eggplant-vibrant')}>
+                What can I cook?
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => navigation.navigate('InventoryWasteAnalytics')}
+              style={tw`flex-1 flex-row items-center justify-center gap-1.5 rounded-full border border-eggplant bg-white px-3 py-2`}
+            >
+              <Ionicons name="pie-chart-outline" size={14} color={tw.color('eggplant-vibrant') || '#7E42FF'} />
+              <Text style={tw.style(subheadMediumUppercase, 'text-eggplant-vibrant')}>
+                Waste Tracker
+              </Text>
+            </Pressable>
+          </View>
 
-                return (
-                  <Pill
-                    key={tab.key}
-                    text={`${tab.label} (${count})`}
-                    size="small"
-                    kind="vibrant"
-                    isActive={isActive}
-                    setIsActive={() => setActiveTab(tab.key)}
-                  />
-                );
-              })}
-            </ScrollView>
+         
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={tw`mb-2 max-h-10`}
+            contentContainerStyle={tw`px-5 gap-1 items-center`}
+          >
+            {STORAGE_TABS.map((tab) => {
+              const isActive = activeTab === tab.key;
+              const count =
+                tab.key === 'all'
+                  ? allItems.length
+                  : (grouped?.[tab.key as StorageLocation] || []).length;
 
+              return (
+                <Pill
+                  key={tab.key}
+                  text={`${tab.label} (${count})`}
+                  size="small"
+                  kind="vibrant"
+                  isActive={isActive}
+                  setIsActive={() => setActiveTab(tab.key)}
+                />
+              );
+            })}
+          </ScrollView>
+
+       
+          <ScrollView
+            style={tw`flex-1`}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
             {displayedItems.length === 0 ? (
               <View style={tw`items-center justify-center px-10 mt-10`}>
                 <Image
@@ -302,7 +306,7 @@ export default function InventoryScreen() {
                   resizeMode="contain"
                 />
                 <Text style={tw.style(bodyMediumBold, 'text-stone text-center mt-4')}>
-                 Empty Inventory
+                  Empty Inventory
                 </Text>
                 <Text style={tw.style(bodyMediumRegular, 'text-stone mt-1 text-center')}>
                   Add ingredients using the + button or speak to add them by voice
@@ -312,7 +316,7 @@ export default function InventoryScreen() {
                 </View>
               </View>
             ) : (
-              <View style={tw`px-5 gap-2`}>
+              <View style={tw`px-5 pt-1 pb-10 gap-1.5`}>
                 {displayedItems.map((item) => (
                   <InventoryItemCard
                     key={item._id}
@@ -324,8 +328,8 @@ export default function InventoryScreen() {
                 ))}
               </View>
             )}
-          </ImageBackground>
-        </ScrollView>
+          </ScrollView>
+        </ImageBackground>
       )}
 
       {/* Modals */}
@@ -365,69 +369,69 @@ function InventoryItemCard({
 
   return (
     <View
-      style={tw`flex-row items-center bg-white rounded-xl border border-gray-100 p-3 shadow-sm`}
+      style={tw`flex-row items-center bg-white rounded-lg border border-gray-100 px-2.5 py-2 shadow-sm`}
     >
       {/* Image / Icon */}
-      <View style={tw`w-12 h-12 rounded-lg bg-gray-100 items-center justify-center mr-3`}>
+      <View style={tw`w-10 h-10 rounded-md bg-gray-100 items-center justify-center mr-2.5`}>
         {item.heroImageUrl ? (
           <Image
             source={{ uri: item.heroImageUrl }}
-            style={tw`w-12 h-12 rounded-lg`}
+            style={tw`w-10 h-10 rounded-md`}
             resizeMode="cover"
           />
         ) : (
-          <Ionicons name="nutrition-outline" size={24} color="#9CA3AF" />
+          <Ionicons name="nutrition-outline" size={20} color="#9CA3AF" />
         )}
       </View>
 
       {/* Info */}
       <View style={tw`flex-1`}>
-        <Text style={tw.style(bodyMediumBold, 'text-gray-900')} numberOfLines={1}>
+        <Text style={tw.style(bodyMediumBold, 'text-gray-900 text-sm')} numberOfLines={1}>
           {item.name}
         </Text>
         <View style={tw`flex-row items-center flex-wrap gap-0.5`}>
-          <Text style={tw.style(bodyMediumRegular, 'text-gray-500 text-xs')}>
+          <Text style={tw.style(bodyMediumRegular, 'text-gray-500 text-[11px]')}>
             {item.quantity} {item.unit}
           </Text>
           {item.isStaple && (
             <View style={tw`flex-row items-center gap-0.5`}>
-              <Text style={tw.style(bodyMediumRegular, 'text-gray-400 text-xs')}> · </Text>
-              <Ionicons name="star" size={10} color="#F59E0B" />
-              <Text style={tw.style(bodyMediumRegular, 'text-amber-500 text-xs')}>Staple</Text>
+              <Text style={tw.style(bodyMediumRegular, 'text-gray-400 text-[11px]')}> · </Text>
+              <Ionicons name="star" size={9} color="#F59E0B" />
+              <Text style={tw.style(bodyMediumRegular, 'text-amber-500 text-[11px]')}>Staple</Text>
             </View>
           )}
         </View>
         <View style={tw`flex-row items-center gap-1 mt-0.5`}>
           <View
             style={[
-              tw`w-2 h-2 rounded-full`,
+              tw`w-1.5 h-1.5 rounded-full`,
               { backgroundColor: freshnessColor },
             ]}
           />
-          <Text style={[tw`text-xs`, { color: freshnessColor }]}>
+          <Text style={[tw`text-[11px]`, { color: freshnessColor }]}>
             {formatExpiryDate(item.expiresAt)}
           </Text>
         </View>
       </View>
 
-      <View style={tw`flex-row gap-1`}>
+      <View style={tw`flex-row gap-1`}> 
         <Pressable
           onPress={onEdit}
-          style={tw`w-8 h-8 items-center justify-center rounded-full bg-blue-50`}
+          style={tw`w-7 h-7 items-center justify-center rounded-full bg-blue-50`}
         >
-          <Ionicons name="pencil-outline" size={16} color="#3B82F6" />
+          <Ionicons name="pencil-outline" size={14} color="#3B82F6" />
         </Pressable>
         <Pressable
           onPress={onDiscard}
-          style={tw`w-8 h-8 items-center justify-center rounded-full bg-amber-50`}
+          style={tw`w-7 h-7 items-center justify-center rounded-full bg-amber-50`}
         >
-          <Ionicons name="trash-outline" size={16} color="#F59E0B" />
+          <Ionicons name="trash-outline" size={14} color="#F59E0B" />
         </Pressable>
         <Pressable
           onPress={onDelete}
-          style={tw`w-8 h-8 items-center justify-center rounded-full bg-red-50`}
+          style={tw`w-7 h-7 items-center justify-center rounded-full bg-red-50`}
         >
-          <Ionicons name="close-outline" size={16} color="#EF4444" />
+          <Ionicons name="close-outline" size={14} color="#EF4444" />
         </Pressable>
       </View>
     </View>

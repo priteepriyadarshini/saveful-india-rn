@@ -10,7 +10,6 @@ import {
   Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import tw from '../../../common/tailwind';
 import { useCheckMyMilestonesMutation, useGetMyBadgesQuery } from '../api/api';
@@ -52,6 +51,38 @@ export default function AllBadgesTab() {
       void maybeCheckMilestones();
     }
   }, [isLoading, maybeCheckMilestones]);
+
+  const unseenCount = (userBadges || []).filter((item) => !item.isViewed).length;
+
+  const renderListHeader = () => (
+    <View style={tw`mx-4 mb-3 mt-1 overflow-hidden rounded-2xl border border-strokecream bg-white`}>
+      <ImageBackground
+        source={require('../../../../assets/ribbons/ingredients-ribbons/eggplant-light2.png')}
+        resizeMode="cover"
+        imageStyle={{ opacity: 0.12 }}
+      >
+        <View style={tw`flex-row items-center justify-between px-4 py-3`}>
+          <View style={tw`flex-row items-center`}>
+            <Ionicons name="medal-outline" size={16} color={tw.color('eggplant') || '#4B2176'} />
+            <Text style={tw.style(subheadSmallUppercase, 'ml-1.5 text-eggplant')}>
+              My Badges
+            </Text>
+          </View>
+
+          <View style={tw`flex-row items-center gap-2`}>
+            <View style={tw`rounded-full border border-strokecream bg-creme px-2.5 py-1`}>
+              <Text style={tw.style(bodySmallBold, 'text-eggplant')}>{(userBadges || []).length}</Text>
+            </View>
+            {unseenCount > 0 && (
+              <View style={tw`rounded-full bg-radish px-2.5 py-1`}>
+                <Text style={tw.style(bodySmallBold, 'text-eggplant')}>{unseenCount} new</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </ImageBackground>
+    </View>
+  );
 
   const renderBadgeItem = ({ item }: { item: UserBadge }) => {
     const badge = typeof item.badgeId === 'object' ? item.badgeId as Badge : null;
@@ -142,7 +173,7 @@ export default function AllBadgesTab() {
     return (
       <Pressable 
         onPress={handleBadgePress}
-        style={tw.style('mx-4 mb-4 overflow-hidden rounded-2xl bg-white border border-strokecream', cardDrop)}
+        style={tw.style('mx-4 mb-3 overflow-hidden rounded-2xl border border-strokecream bg-white', cardDrop)}
       >
         <ImageBackground
           source={config.ribbonPattern}
@@ -150,12 +181,7 @@ export default function AllBadgesTab() {
           style={tw`overflow-hidden`}
           imageStyle={{ opacity: 0.08 }}
         >
-          <LinearGradient
-            colors={config.gradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={tw`p-5`}
-          >
+          <View style={tw`p-4`}>
           <View style={tw`flex-row items-start`}>
             {/* Badge Image with Elegant Frame */}
             <View style={tw`mr-4 items-center`}>
@@ -194,22 +220,22 @@ export default function AllBadgesTab() {
 
             {/* Badge Details */}
             <View style={tw`flex-1`}>
-              <View style={tw`mb-2 flex-row items-start justify-between`}>
+              <View style={tw`mb-1.5 flex-row items-start justify-between`}>
                 <Text style={tw.style(h6TextStyle, 'flex-1 text-black')} numberOfLines={2}>
                   {badge.name}
                 </Text>
               </View>
               
               <Text
-                style={tw.style(bodySmallRegular, 'mb-3 text-stone')}
+                style={tw.style(bodySmallRegular, 'mb-2.5 text-stone')}
                 numberOfLines={2}
               >
                 {badge.description}
               </Text>
 
               {/* Stats Pills */}
-              <View style={tw`mb-3 flex-row flex-wrap items-center gap-2`}>
-                <View style={tw`flex-row items-center rounded-full bg-white/80 px-3 py-1.5 shadow-sm`}>
+              <View style={tw`mb-2.5 flex-row flex-wrap items-center gap-2`}>
+                <View style={tw`flex-row items-center rounded-full border border-strokecream bg-white px-3 py-1.5`}>
                   <Ionicons name="ribbon" size={12} color={config.iconColor} />
                   <Text style={tw.style(bodySmallRegular, 'ml-1.5 text-xs text-black')}>
                     {badge.category.replace(/_/g, ' ')}
@@ -217,7 +243,7 @@ export default function AllBadgesTab() {
                 </View>
                 
                 {badge.isSponsorBadge && badge.sponsorName && (
-                  <View style={tw`flex-row items-center rounded-full bg-pink-100 px-3 py-1.5`}>
+                  <View style={tw`flex-row items-center rounded-full border border-radish bg-radish/20 px-3 py-1.5`}>
                     <Ionicons name="business" size={12} color="#E91E63" />
                     <Text style={tw.style(bodySmallBold, 'ml-1.5 text-xs', { color: '#E91E63' })}>
                       {badge.sponsorName}
@@ -226,7 +252,7 @@ export default function AllBadgesTab() {
                 )}
                 
                 {item.achievedValue !== undefined && item.achievedValue > 0 && (
-                  <View style={tw`flex-row items-center rounded-full bg-mint/30 px-3 py-1.5`}>
+                  <View style={tw`flex-row items-center rounded-full border border-mint bg-mint/20 px-3 py-1.5`}>
                     <Ionicons name="checkmark-circle" size={12} color={tw.color('kale')} />
                     <Text style={tw.style(bodySmallBold, 'ml-1.5 text-xs text-kale')}>
                       {item.achievedValue}
@@ -235,7 +261,7 @@ export default function AllBadgesTab() {
                 )}
                 
                 {badge.rarityScore > 0 && (
-                  <View style={tw`flex-row items-center rounded-full bg-lemon/30 px-3 py-1.5`}>
+                  <View style={tw`flex-row items-center rounded-full border border-lemon bg-lemon/30 px-3 py-1.5`}>
                     <Ionicons name="diamond" size={10} color={tw.color('orange')} />
                     <Text style={tw.style(bodySmallBold, 'ml-1.5 text-xs text-orange')}>
                       {badge.rarityScore}
@@ -253,7 +279,7 @@ export default function AllBadgesTab() {
               </View>
             </View>
           </View>
-        </LinearGradient>
+        </View>
         </ImageBackground>
       </Pressable>
     );
@@ -287,7 +313,8 @@ export default function AllBadgesTab() {
         data={userBadges || []}
         renderItem={renderBadgeItem}
         keyExtractor={item => item._id}
-        contentContainerStyle={tw`py-4`}
+        contentContainerStyle={tw`pb-5 pt-3`}
+        ListHeaderComponent={renderListHeader}
         ListEmptyComponent={renderEmptyState}
         refreshControl={
           <RefreshControl

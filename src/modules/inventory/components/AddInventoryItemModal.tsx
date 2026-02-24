@@ -21,6 +21,7 @@ import {
 import { useAddInventoryItemMutation } from '../api/inventoryApi';
 import { useGetAllIngredientsQuery } from '../../ingredients/api/ingredientsApi';
 import { StorageLocation, AddInventoryItemDto } from '../api/types';
+import useRecipeMatchNotification from '../hooks/useRecipeMatchNotification';
 
 const STORAGE_OPTIONS: { key: StorageLocation; label: string; icon: string }[] = [
   { key: StorageLocation.FRIDGE, label: 'Fridge', icon: 'snow-outline' },
@@ -48,6 +49,7 @@ export default function AddInventoryItemModal({ visible, onClose }: Props) {
 
   const [addItem, { isLoading }] = useAddInventoryItemMutation();
   const { data: allIngredients } = useGetAllIngredientsQuery(undefined);
+  const { notifyIfNewMatches } = useRecipeMatchNotification();
 
   // Filter ingredients for autocomplete
   const filteredIngredients =
@@ -90,6 +92,8 @@ export default function AddInventoryItemModal({ visible, onClose }: Props) {
       await addItem(dto).unwrap();
       resetForm();
       onClose();
+      // Check for new recipe matches in the background
+      notifyIfNewMatches().catch(() => {});
     } catch (error) {
       console.error('Failed to add item:', error);
     }

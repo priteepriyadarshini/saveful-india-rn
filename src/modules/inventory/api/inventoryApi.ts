@@ -11,6 +11,7 @@ import {
   MealSuggestion,
   WasteAnalytics,
   WasteClassification,
+  NewRecipeMatchesResponse,
   GetInventoryQueryParams,
 } from './types';
 
@@ -64,6 +65,29 @@ const inventoryApi = api
           params: params || undefined,
         }),
         providesTags: ['MealSuggestions'],
+      }),
+
+      getMealSuggestionsQuick: builder.query<
+        MealSuggestion[],
+        { country?: string; limit?: number; ingredientId?: string } | void
+      >({
+        query: (params) => ({
+          url: '/api/inventory/suggestions/quick',
+          method: 'GET',
+          params: params || undefined,
+        }),
+        providesTags: ['MealSuggestions'],
+      }),
+
+      checkNewRecipeMatches: builder.mutation<
+        NewRecipeMatchesResponse,
+        { country?: string } | void
+      >({
+        query: (params) => ({
+          url: '/api/inventory/suggestions/notify',
+          method: 'POST',
+          params: params || undefined,
+        }),
       }),
 
       getWasteAnalytics: builder.query<WasteAnalytics, void>({
@@ -208,6 +232,7 @@ export const {
   useGetInventoryGroupedQuery,
   useGetExpiringItemsQuery,
   useGetMealSuggestionsQuery,
+  useGetMealSuggestionsQuickQuery,
   useGetWasteAnalyticsQuery,
   useGetOutOfStockStaplesQuery,
   // Mutations
@@ -219,6 +244,7 @@ export const {
   useDeleteInventoryItemMutation,
   useDiscardInventoryItemMutation,
   useClassifyWasteMutation,
+  useCheckNewRecipeMatchesMutation,
 } = inventoryApi;
 
 export default inventoryApi;
