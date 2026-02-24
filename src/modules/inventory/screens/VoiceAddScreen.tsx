@@ -7,6 +7,7 @@ import {
   ScrollView,
   Alert,
   TextInput,
+  ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -157,105 +158,119 @@ export default function VoiceAddScreen() {
   }, [parsedItems, voiceConfirm, navigation]);
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-white`} edges={['top']}>
+    <SafeAreaView style={tw`flex-1 bg-creme`} edges={['top']}>
       {/* Header */}
-      <View style={tw`px-5 pt-3 pb-2 flex-row items-center`}>
+      <View style={tw`px-5 pt-3 pb-3 flex-row items-center bg-white border-b border-strokecream`}>
         <Pressable onPress={() => navigation.goBack()} style={tw`mr-3`}>
           <Ionicons name="arrow-back" size={24} color="#111827" />
         </Pressable>
-        <Text style={tw.style(h6TextStyle, 'text-gray-900')}>
-          Add by Voice
-        </Text>
-      </View>
-
-      <ScrollView
-        style={tw`flex-1`}
-        contentContainerStyle={tw`px-5 pb-20`}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Voice Input Section */}
-        <View style={tw`items-center mt-6 mb-4`}>
-          {isSpeechRecognitionAvailable ? (
-            <>
-              <Pressable
-                onPress={isListening ? stopListening : startListening}
-                style={tw.style(
-                  'w-24 h-24 rounded-full items-center justify-center',
-                  isListening ? 'bg-red-100' : 'bg-green-100',
-                )}
-              >
-                <Ionicons
-                  name={isListening ? 'stop' : 'mic'}
-                  size={40}
-                  color={isListening ? '#EF4444' : '#16A34A'}
-                />
-              </Pressable>
-              <Text style={tw.style(bodyMediumRegular, 'text-gray-500 mt-3 text-center')}>
-                {isListening
-                  ? 'Listening... Tap to stop'
-                  : 'Tap the mic and tell us what you have'}
-              </Text>
-            </>
-          ) : (
-            <View style={tw`bg-amber-50 rounded-xl px-4 py-3 w-full`}>
-              <View style={tw`flex-row items-center gap-2 mb-1`}>
-                <Ionicons name="warning-outline" size={18} color="#D97706" />
-                <Text style={tw.style(bodyMediumBold, 'text-amber-700 text-sm')}>
-                  Voice input unavailable
-                </Text>
-              </View>
-              <Text style={tw.style(bodyMediumRegular, 'text-amber-600 text-xs')}>
-                Speech recognition requires a development build. Use text input below instead.
-              </Text>
-            </View>
-          )}
-          <Text style={tw.style(bodyMediumRegular, 'text-gray-400 text-xs mt-1 text-center')}>
-            e.g. "I have 2 kg tomatoes, 500 gram paneer, 1 litre milk"
+        <View style={tw`flex-1`}>
+          <Text style={tw.style(h6TextStyle, 'text-gray-900')}>
+            Add by Voice
+          </Text>
+          <Text style={tw.style(bodyMediumRegular, 'text-gray-500 text-xs')}>
+            Speak your ingredients and review before adding
           </Text>
         </View>
+      </View>
+
+      <ImageBackground
+        style={tw`flex-1`}
+        source={require('../../../../assets/ribbons/lemon.png')}
+      >
+        <ScrollView
+          style={tw`flex-1`}
+          contentContainerStyle={tw`px-5 pt-4 pb-20`}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Voice Input Section */}
+          <View style={tw`items-center mb-4 rounded-2xl border border-strokecream bg-white px-4 py-5`}> 
+            {isSpeechRecognitionAvailable ? (
+              <>
+                <Pressable
+                  onPress={isListening ? stopListening : startListening}
+                  style={tw.style(
+                    'w-28 h-28 rounded-full items-center justify-center border-4',
+                    isListening
+                      ? 'bg-red-100 border-red-200'
+                      : 'bg-eggplant border-eggplant-vibrant',
+                  )}
+                >
+                  <Ionicons
+                    name={isListening ? 'stop' : 'mic'}
+                    size={42}
+                    color={isListening ? '#EF4444' : 'white'}
+                  />
+                </Pressable>
+                <Text style={tw.style(bodyMediumBold, 'text-gray-800 mt-3 text-center')}>
+                  {isListening ? 'Listening now…' : 'Tap to start voice input'}
+                </Text>
+                <Text style={tw.style(bodyMediumRegular, 'text-gray-500 mt-1 text-center text-xs')}>
+                  {isListening
+                    ? 'Tap again to stop and parse'
+                    : 'Say all ingredients in one sentence'}
+                </Text>
+              </>
+            ) : (
+              <View style={tw`bg-amber-50 rounded-xl px-4 py-3 w-full border border-amber-200`}>
+                <View style={tw`flex-row items-center gap-2 mb-1`}>
+                  <Ionicons name="warning-outline" size={18} color="#D97706" />
+                  <Text style={tw.style(bodyMediumBold, 'text-amber-700 text-sm')}>
+                    Voice input unavailable
+                  </Text>
+                </View>
+                <Text style={tw.style(bodyMediumRegular, 'text-amber-600 text-xs')}>
+                  Speech recognition requires a development build. Use text input below instead.
+                </Text>
+              </View>
+            )}
+            <Text style={tw.style(bodyMediumRegular, 'text-gray-400 text-xs mt-2 text-center')}>
+              e.g. "2 kg tomatoes, 500 g paneer, 1 litre milk"
+            </Text>
+          </View>
 
         {/* Transcript Display */}
-        {transcript ? (
-          <View style={tw`bg-gray-50 rounded-xl p-4 mb-4`}>
+          {transcript ? (
+            <View style={tw`bg-white border border-strokecream rounded-xl p-4 mb-4`}>
             <Text style={tw.style(bodyMediumRegular, 'text-gray-400 text-xs mb-1')}>
               I heard:
             </Text>
             <Text style={tw.style(bodyMediumBold, 'text-gray-800')}>
               "{transcript}"
             </Text>
-          </View>
-        ) : null}
+            </View>
+          ) : null}
 
         {/* Manual Text Input (fallback) */}
-        <View style={tw`mb-4`}>
-          <Text style={tw.style(bodyMediumRegular, 'text-gray-500 text-xs mb-1')}>
-            Or type manually:
-          </Text>
-          <TextInput
-            value={manualText}
-            onChangeText={setManualText}
-            placeholder="2 kg tomatoes, 500g paneer, 1L milk..."
-            placeholderTextColor="#9CA3AF"
-            multiline
-            style={tw.style(
-              bodyMediumRegular,
-              'bg-gray-50 rounded-xl px-4 py-3 text-gray-800 min-h-[60px]',
-            )}
-          />
-        </View>
+          <View style={tw`mb-4`}>
+            <Text style={tw.style(bodyMediumRegular, 'text-gray-600 text-xs mb-1')}>
+              Or type manually:
+            </Text>
+            <TextInput
+              value={manualText}
+              onChangeText={setManualText}
+              placeholder="2 kg tomatoes, 500g paneer, 1L milk..."
+              placeholderTextColor="#9CA3AF"
+              multiline
+              style={tw.style(
+                bodyMediumRegular,
+                'bg-white border border-strokecream rounded-xl px-4 py-3 text-gray-800 min-h-[64px]',
+              )}
+            />
+          </View>
 
         {/* Parse Button */}
-        {parsedItems.length === 0 && (
-          <Pressable
-            onPress={handleParse}
-            disabled={isParsing || (!transcript && !manualText.trim())}
-            style={tw.style(
-              'rounded-xl py-3.5 items-center mb-6',
-              isParsing || (!transcript && !manualText.trim())
-                ? 'bg-gray-200'
-                : 'bg-green-600',
-            )}
-          >
+          {parsedItems.length === 0 && (
+            <Pressable
+              onPress={handleParse}
+              disabled={isParsing || (!transcript && !manualText.trim())}
+              style={tw.style(
+                'rounded-xl py-3.5 items-center mb-6',
+                isParsing || (!transcript && !manualText.trim())
+                  ? 'bg-gray-200'
+                  : 'bg-eggplant',
+              )}
+            >
             {isParsing ? (
               <View style={tw`flex-row items-center gap-2`}>
                 <ActivityIndicator size="small" color="white" />
@@ -282,12 +297,12 @@ export default function VoiceAddScreen() {
                 </Text>
               </View>
             )}
-          </Pressable>
-        )}
+            </Pressable>
+          )}
 
         {/* Parsed Items List */}
-        {parsedItems.length > 0 && (
-          <View>
+          {parsedItems.length > 0 && (
+            <View>
             <Text style={tw.style(bodyMediumBold, 'text-gray-800 mb-3')}>
               Found {parsedItems.length} item(s) — review & confirm:
             </Text>
@@ -310,7 +325,7 @@ export default function VoiceAddScreen() {
               disabled={isConfirming}
               style={tw.style(
                 'rounded-xl py-3.5 items-center mt-4',
-                isConfirming ? 'bg-gray-200' : 'bg-green-600',
+                isConfirming ? 'bg-gray-200' : 'bg-eggplant',
               )}
             >
               {isConfirming ? (
@@ -339,13 +354,14 @@ export default function VoiceAddScreen() {
               }}
               style={tw`items-center mt-3 py-2`}
             >
-              <Text style={tw.style(bodyMediumRegular, 'text-gray-500')}>
+              <Text style={tw.style(bodyMediumRegular, 'text-eggplant-vibrant')}>
                 Start Over
               </Text>
             </Pressable>
-          </View>
-        )}
-      </ScrollView>
+            </View>
+          )}
+        </ScrollView>
+      </ImageBackground>
     </SafeAreaView>
   );
 }
@@ -378,7 +394,7 @@ function ParsedItemCard({
 
   if (isEditing) {
     return (
-      <View style={tw`bg-blue-50 rounded-xl p-4 mb-2 border border-blue-200`}>
+      <View style={tw`bg-white rounded-xl p-4 mb-2 border border-strokecream`}>
         <Text style={tw.style(bodyMediumBold, 'text-gray-800 mb-2')}>
           Edit: {item.name}
         </Text>
@@ -416,8 +432,10 @@ function ParsedItemCard({
               key={opt.key}
               onPress={() => setEditStorage(opt.key)}
               style={tw.style(
-                'flex-1 py-2 rounded-lg items-center',
-                editStorage === opt.key ? 'bg-green-600' : 'bg-white border border-gray-200',
+                'flex-1 py-2 rounded-lg items-center border',
+                editStorage === opt.key
+                  ? 'bg-eggplant border-eggplant'
+                  : 'bg-white border-strokecream',
               )}
             >
               <Text
@@ -441,7 +459,7 @@ function ParsedItemCard({
                 storageLocation: editStorage,
               })
             }
-            style={tw`flex-1 bg-green-600 rounded-lg py-2 items-center`}
+            style={tw`flex-1 bg-eggplant rounded-lg py-2 items-center`}
           >
             <Text style={tw.style(bodyMediumBold, 'text-white text-sm')}>Save</Text>
           </Pressable>
@@ -459,7 +477,7 @@ function ParsedItemCard({
   }
 
   return (
-    <View style={tw`bg-gray-50 rounded-xl p-3 mb-2 flex-row items-center`}>
+    <View style={tw`bg-white border border-strokecream rounded-xl p-3 mb-2 flex-row items-center`}>
       <View style={tw`flex-1`}>
         <View style={tw`flex-row items-center gap-1.5`}>
           <Text style={tw.style(bodyMediumBold, 'text-gray-800')}>
