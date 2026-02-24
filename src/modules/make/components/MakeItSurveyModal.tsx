@@ -1,5 +1,4 @@
 import { Feather } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { skipToken } from '@reduxjs/toolkit/query';
 import SecondaryButton from '../../../common/components/ThemeButtons/SecondaryButton';
 import SavefulHaptics from '../../../common/helpers/haptics';
@@ -8,16 +7,13 @@ import tw from '../../../common/tailwind';
 import { IChallenge } from '../../../models/craft';
 import { mixpanelEventName } from '../../analytics/analytics';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
-import { useGetCookedRecipesQuery, useSaveFoodAnalyticsMutation } from '../../analytics/api/api';
+import { useGetCookedRecipesQuery } from '../../analytics/api/api';
 import { 
   useGetUserChallengeQuery,
   useUpdateUserChallengeMutation,
 } from '../../../modules/challenges/api/api';
 import useNotifications from '../../../modules/notifications/hooks/useNotifications';
 import { useCurentRoute } from '../../route/context/CurrentRouteContext';
-import {
-  useCreateFeedbackMutation,
-} from '../../../modules/track/api/api';
 import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Modal, Pressable, Text, View } from 'react-native';
@@ -28,11 +24,12 @@ import {
   h7TextStyle,
   subheadLargeUppercase,
 } from '../../../theme/typography';
+import { useGetInventoryQuery } from '../../inventory/api/inventoryApi';
+import { InventoryIngredient } from '../../inventory/api/types';
 
 export default function MakeItSurveyModal({
   isVisible,
   setIsVisible,
-  setIsCompltedModalVisible,
   frameworkId,
   title,
   mealId,
@@ -44,7 +41,6 @@ export default function MakeItSurveyModal({
 }: {
   isVisible: boolean;
   setIsVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsCompltedModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
   frameworkId: string;
   title: string;
   mealId: string;
@@ -71,13 +67,6 @@ export default function MakeItSurveyModal({
   const { sendAnalyticsEvent } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
 
-  // Create feedback to record food saved
-  const [createFeedback, { isLoading: isCreateFeedbackLoading }] =
-    useCreateFeedbackMutation();
-
-  // Save food analytics (AI price calculation)
-  const [saveFoodAnalytics, { isLoading: isSavingAnalytics }] = useSaveFoodAnalyticsMutation();
-
   // Update user challenge with cooks and food saved
   const { getChallenges } = useContent();
   const [challenge, setChallenge] = useState<IChallenge>();
@@ -89,8 +78,13 @@ export default function MakeItSurveyModal({
   const { data: cookedRecipesData } = useGetCookedRecipesQuery();
   const userMeals = cookedRecipesData?.cookedRecipes || [];
 
+  // Fetch user's inventory to auto-mark ingredients already in their fridge/pantry
+  const { data: inventoryItems } = useGetInventoryQuery({});
+
   // Prevent double execution with a ref guard
   const isExecutingRef = useRef(false);
+  // Track whether auto-mark has already been applied for this modal session
+  const hasAutoMarkedRef = useRef(false);
 
   const currentUserChallenge =
     userChallenge?.data?.challengeStatus === 'joined' ? userChallenge : null;
@@ -119,40 +113,58 @@ export default function MakeItSurveyModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const onStartCooking = async () => {
-    if (isCreateFeedbackLoading || isSavingAnalytics) {
-      return;
+  useEffect(() => {
+    if (!isVisible || !inventoryItems || hasAutoMarkedRef.current) return;
+
+    const inventoryIngredientIds = new Set<string>();
+    inventoryItems.forEach((item) => {
+      if (item.ingredientId) {
+        const ingId =
+          typeof item.ingredientId === 'object'
+            ? (item.ingredientId as InventoryIngredient)._id
+            : item.ingredientId;
+        if (ingId) {
+          inventoryIngredientIds.add(ingId);
+        }
+      }
+    });
+
+    if (inventoryIngredientIds.size === 0) return;
+
+    const autoSelected = mealIngredients.filter((ingredient) =>
+      inventoryIngredientIds.has(ingredient.id),
+    );
+
+    if (autoSelected.length > 0) {
+      setPreExistingIngredients((prev) => {
+        const existingIds = new Set(prev.map((p) => p.id));
+        const merged = [...prev];
+        autoSelected.forEach((ing) => {
+          if (!existingIds.has(ing.id)) {
+            merged.push(ing);
+          }
+        });
+        return merged;
+      });
     }
 
-    // Prevent double execution with ref guard
+    hasAutoMarkedRef.current = true;
+  }, [isVisible, inventoryItems, mealIngredients, setPreExistingIngredients]);
+
+  useEffect(() => {
+    if (!isVisible) {
+      hasAutoMarkedRef.current = false;
+    }
+  }, [isVisible]);
+
+  const onStartCooking = async () => {
     if (isExecutingRef.current) {
       return;
     }
     isExecutingRef.current = true;
 
     try {
-      // Call analytics endpoint FIRST to calculate and save money based on selected ingredients
-      if (preExistingIngredients.length > 0) {
-        // Idempotency: prevent double-counting for the same meal
-        const guardKey = `analytics:meal:${mealId}`;
-        const alreadySent = await AsyncStorage.getItem(guardKey);
-        if (alreadySent) {
-        } else {
-        const ingredientIds = preExistingIngredients.map(i => i.id);
-        const ingredients = preExistingIngredients.map(i => ({ name: i.title, averageWeight: i.averageWeight }));
-        const analyticsResult = await saveFoodAnalytics({ ingredientIds, frameworkId, ingredients }).unwrap();
-          try {
-            await AsyncStorage.setItem(guardKey, '1');
-          } catch (_e) {
-            // best-effort
-          }
-        }
-      } else {
-      }
-
-      // Do not create feedback at start to avoid duplicate analytics.
-      // Feedback (and food saved) is recorded on completion in MakeItCarousel.
-
+    
       sendAnalyticsEvent({
         event: mixpanelEventName.actionClicked,
         properties: {
@@ -169,13 +181,11 @@ export default function MakeItSurveyModal({
 
       scheduleNotification({
         message: `How was your ${title ?? 'meal'}?`,
-        delayInSeconds: 30 * 60, // 30 minutes
+        delayInSeconds: 30 * 60,
         url: `/survey/postmake/${mealId}`,
       });
 
       setIsVisible(false);
-      setIsCompltedModalVisible(true);
-      // setIsVisible(false);
     } catch (error: unknown) {
       console.error('Error creating feedback:', error);
       const errorMessage = error && typeof error === 'object' && 'data' in error 
@@ -189,7 +199,6 @@ export default function MakeItSurveyModal({
         `Failed to save meal completion. ${errorMessage}`,
       );
     } finally {
-      // Reset execution guard
       isExecutingRef.current = false;
     }
   };
@@ -290,8 +299,7 @@ export default function MakeItSurveyModal({
 
             <SecondaryButton
               onPress={onStartCooking}
-              // Show loading state while saving analytics or feedback
-              loading={isCreateFeedbackLoading || isSavingAnalytics}
+              loading={isExecutingRef.current}
             >
               Next
             </SecondaryButton>
@@ -299,7 +307,6 @@ export default function MakeItSurveyModal({
               style={tw`mt-4`}
               onPress={() => {
                 setPreExistingIngredients([]);
-                // onStartCooking();
                 setIsVisible(false);
 
                 sendAnalyticsEvent({

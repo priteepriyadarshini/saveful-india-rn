@@ -13,6 +13,8 @@ import {
   WasteClassification,
   NewRecipeMatchesResponse,
   GetInventoryQueryParams,
+  ConsumeInventoryItemsDto,
+  ConsumeInventoryResponse,
 } from './types';
 
 const inventoryApi = api
@@ -223,6 +225,23 @@ const inventoryApi = api
           body: dto,
         }),
       }),
+
+      consumeInventoryItems: builder.mutation<
+        ConsumeInventoryResponse,
+        ConsumeInventoryItemsDto
+      >({
+        query: (dto) => ({
+          url: '/api/inventory/consume',
+          method: 'POST',
+          body: dto,
+        }),
+        invalidatesTags: [
+          'Inventory',
+          'InventoryGrouped',
+          'InventoryExpiring',
+          'MealSuggestions',
+        ],
+      }),
     }),
   });
 
@@ -245,6 +264,7 @@ export const {
   useDiscardInventoryItemMutation,
   useClassifyWasteMutation,
   useCheckNewRecipeMatchesMutation,
+  useConsumeInventoryItemsMutation,
 } = inventoryApi;
 
 export default inventoryApi;

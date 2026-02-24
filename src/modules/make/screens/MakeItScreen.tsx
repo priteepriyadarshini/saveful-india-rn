@@ -5,7 +5,6 @@ import tw from '../../../common/tailwind';
 import { IFramework } from '../../../models/craft';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
-import CompletedCookWithSurvey from '../../../modules/make/components/CompletedCookWithSurvey';
 import MakeItCarousel from '../../../modules/make/components/MakeItCarousel';
 import MakeItHeader from '../../../modules/make/components/MakeItHeader';
 import MakeItNavigation from '../../../modules/make/components/MakeItNavigation';
@@ -45,7 +44,6 @@ export default function MakeItScreen({
   const [isFirstMakeSession, setIsFirstMakeSession] = useState<boolean>(false);
   const [isIngredientsModalVisible, setIngredientsModalVisible] =
     useState(false);
-  const [isCompletedModalVisible, setIsCompletedModalVisible] = useState(false);
   const [preExistingIngredients, setPreExistingIngredients] = useState<
     { id: string; title: string; averageWeight: number }[]
   >([]);
@@ -363,6 +361,7 @@ export default function MakeItScreen({
                 completedSteps={completedSteps}
                 onScroll={onScroll}
                 scaledQuantities={scaledQuantities}
+                preExistingIngredients={preExistingIngredients}
               />
             </View>
           </SafeAreaView>
@@ -384,7 +383,6 @@ export default function MakeItScreen({
       <MakeItSurveyModal
         isVisible={isFocused && isIngredientsModalVisible}
         setIsVisible={setIngredientsModalVisible}
-        setIsCompltedModalVisible={setIsCompletedModalVisible}
         frameworkId={id}
         title={framework.title}
         mealId={mealId}
@@ -394,12 +392,6 @@ export default function MakeItScreen({
         mealIngredients={mealIngredients}
         preExistingIngredients={preExistingIngredients}
         setPreExistingIngredients={setPreExistingIngredients}
-        totalWeightOfSelectedIngredients={totalWeightOfSelectedIngredients}
-      />
-
-      <CompletedCookWithSurvey
-        isModalVisible={isFocused && isCompletedModalVisible}
-        setIsModalVisible={setIsCompletedModalVisible}
         totalWeightOfSelectedIngredients={totalWeightOfSelectedIngredients}
       />
 

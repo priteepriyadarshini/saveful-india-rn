@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import { useCreateFeedbackMutation } from '../../../modules/track/api/api';
 import { useGetCookedRecipesQuery } from '../../../modules/analytics/api/api';
+import { useConsumeInventoryItemsMutation } from '../../../modules/inventory/api/inventoryApi';
 import { InitialNavigationStackParams } from '../../navigation/navigator/InitialNavigator';
 
 const screenWidth = Dimensions.get('screen').width;
@@ -44,6 +45,7 @@ export default function MakeItCarousel({
   onScroll,
   completedSteps,
   scaledQuantities,
+  preExistingIngredients,
 }: {
   frameworkId: string;
   recipeName?: string;
@@ -54,6 +56,7 @@ export default function MakeItCarousel({
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   completedSteps: () => void;
   scaledQuantities?: Map<string, string>;
+  preExistingIngredients?: { id: string; title: string; averageWeight: number }[];
 }) {
 
   const navigation = useNavigation<InitialNavigationStackParams<'MakeIt'>['navigation']>();
@@ -76,6 +79,7 @@ export default function MakeItCarousel({
     data: cookedRecipesData,
     refetch: refetchCookedRecipes,
   } = useGetCookedRecipesQuery();
+  const [consumeInventoryItems] = useConsumeInventoryItemsMutation();
 
   const scrollToItem = (index: number) => {
     if (flashListRef.current) {
@@ -86,25 +90,18 @@ export default function MakeItCarousel({
     }
   };
 
-  // const toggleIncompleteModal = () => {
-  //   setIncompleteModalVisible(!isIncompleteModalVisible);
-  // };
 
   const toggleModal = () => {
-    // Only toggle visibility; navigation handled by modal's close
     setModalVisible(!isModalVisible);
   };
 
   const handleCompletedModalClose = () => {
-    // Close the completed cook modal
     setModalVisible(false);
-    // Show the shopping list modal
     setShowShoppingListModal(true);
   };
 
   const handleShoppingListModalClose = () => {
     setShowShoppingListModal(false);
-    // Navigate back to Make tab root (MakeHome) after shopping list modal closes
     navigation.navigate('Root', {
       screen: 'Make',
       params: { screen: 'MakeHome' },
@@ -113,7 +110,6 @@ export default function MakeItCarousel({
 
   const onCompleteCook = async () => {
     try {
-      // Prevent duplicate submissions while in-flight
       if (isCompleting || isCreateFeedbackLoading) {
         return;
       }
@@ -128,30 +124,46 @@ export default function MakeItCarousel({
           meal_id: frameworkId,
         },
       });
-      // Create feedback so stats/groups update. Use computed foodSaved if available
-      await createFeedback({
-        frameworkId,
-        prompted: false,
-        foodSaved: (totalWeightOfSelectedIngredients || 0) / 1000,
-        mealId,
-      }).unwrap();
 
-      // Optimistically bump the cooked count for immediate UI feedback
+      // Create feedback — this also triggers food.saved event on the backend
+      // which increments meals cooked, food/money/CO2 saved, leaderboard, etc.
+      try {
+        const ingredientIds = preExistingIngredients?.map((ing) => ing.id) || [];
+        await createFeedback({
+          frameworkId,
+          prompted: false,
+          foodSaved: (totalWeightOfSelectedIngredients || 0) / 1000,
+          mealId,
+          ingredientIds,
+        }).unwrap();
+      } catch (feedbackErr) {
+        console.error('[CompleteCook] Feedback/analytics error:', feedbackErr);
+        sendFailedEventAnalytics(feedbackErr);
+      }
+
       setOptimisticMealsCooked((cookedRecipesData?.numberOfMealsCooked ?? 0) + 1);
 
-      // Ensure cooked count and stats reflect this completion from server
+      // Deduct consumed ingredients from inventory after cooking
+      if (preExistingIngredients && preExistingIngredients.length > 0) {
+        try {
+          await consumeInventoryItems({
+            ingredients: preExistingIngredients.map((ing) => ({
+              ingredientId: ing.id,
+              name: ing.title,
+            })),
+            recipeId: frameworkId,
+            recipeName,
+          }).unwrap();
+        } catch (consumeErr) {
+          // Don't block cooking completion if inventory deduction fails
+        }
+      }
+
       await refetchCookedRecipes();
       
-      // Check milestones after completing a meal - this will auto-show badge notifications
       await checkMilestonesNow();
 
       setModalVisible(true);
-
-      // scheduleNotification({
-      //   message: `How was your ${title ?? 'meal'}?`,
-      //   delayInSeconds: 30 * 60, // 30 minutes
-      //   url: `/survey/postmake/${result.id}`,
-      // });
 
     } catch (error: unknown) {
       sendFailedEventAnalytics(error);
@@ -197,13 +209,7 @@ export default function MakeItCarousel({
         onScroll={onScroll}
         scrollEventThrottle={16}
       />
-      {/* {totalWeightOfSelectedIngredients > 0 ? (
-        <CompletedCookWithSurvey
-          isModalVisible={isModalVisible}
-          toggleModal={toggleModal}
-          totalWeightOfSelectedIngredients={totalWeightOfSelectedIngredients}
-        />
-      ) : ( */}
+
       <CompletedCookModal
         mealsCookedCount={
           optimisticMealsCooked ?? cookedRecipesData?.numberOfMealsCooked ?? 0

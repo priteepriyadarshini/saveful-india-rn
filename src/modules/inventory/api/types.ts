@@ -179,3 +179,19 @@ export interface GetInventoryQueryParams {
   search?: string;
   expiringWithinDays?: number;
 }
+
+export interface ConsumeIngredientDto {
+  ingredientId: string;
+  name?: string;
+}
+
+export interface ConsumeInventoryItemsDto {
+  ingredients: ConsumeIngredientDto[];
+  recipeId?: string;
+  recipeName?: string;
+}
+
+export interface ConsumeInventoryResponse {
+  consumed: number;
+  items: InventoryItem[];
+}

@@ -32,7 +32,8 @@ const trackApi = api
           foodSaved: number;
           mealId: string;
           rating?: number; 
-          review?: string; 
+          review?: string;
+          ingredientIds?: string[];
         }
       >({
         query: params => ({
@@ -48,6 +49,9 @@ const trackApi = api
               ...(params.rating !== undefined ? { rating: params.rating } : {}),
               ...(params.review !== undefined ? { review: params.review } : {}),
             },
+            ...(params.ingredientIds && params.ingredientIds.length > 0
+              ? { ingredient_ids: params.ingredientIds }
+              : {}),
           },
         }),
         invalidatesTags: ['Feedback', 'Stats'],
