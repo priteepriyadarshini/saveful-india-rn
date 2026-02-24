@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import {
   View,
   Text,
@@ -19,13 +19,194 @@ import { useGetCurrentUserQuery } from '../../auth/api';
 import { bodyMediumRegular, h6TextStyle, bodySmallRegular, bodySmallBold, subheadSmallUppercase } from '../../../theme/typography';
 import { cardDrop } from '../../../theme/shadow';
 
+const getRankConfig = (rank: number) => {
+  switch (rank) {
+    case 1:
+      return {
+        icon: 'trophy' as const,
+        color: '#FFD700',
+        gradient: ['#FFF9E6', '#FFFFFF'] as const,
+        borderColor: '#FFD700',
+      };
+    case 2:
+      return {
+        icon: 'trophy' as const,
+        color: '#C0C0C0',
+        gradient: ['#F5F5F5', '#FFFFFF'] as const,
+        borderColor: '#C0C0C0',
+      };
+    case 3:
+      return {
+        icon: 'trophy' as const,
+        color: '#CD7F32',
+        gradient: ['#FFF0E6', '#FFFFFF'] as const,
+        borderColor: '#CD7F32',
+      };
+    default:
+      return {
+        icon: null,
+        color: tw.color('stone') || '#6D6D72',
+        gradient: ['#FFFFFF', '#FFFFFF'] as const,
+        borderColor: tw.color('strokecream') || '#EEE4D7',
+      };
+  }
+};
+
+const listContentStyle = tw`py-4`;
+
+const keyExtractor = (item: LeaderboardEntry, index: number) => `${item.userId}-${index}`;
+
+
+interface LeaderboardItemProps {
+  item: LeaderboardEntry;
+  index: number;
+}
+
+const LeaderboardItem = memo(({ item, index }: LeaderboardItemProps) => {
+  const rank = index + 1;
+  const isTopThree = rank <= 3;
+  const config = getRankConfig(rank);
+  const foodSavedKg = ((item.foodSavedGrams || 0) / 1000).toFixed(2);
+  const co2SavedKg = item.totalCo2SavedKg || 0;
+
+  return (
+    <View style={tw.style('mx-4 mb-3 overflow-hidden rounded-2xl border bg-white', cardDrop, {
+      borderColor: config.borderColor,
+      borderWidth: isTopThree ? 2 : 1,
+    })}>
+      <ImageBackground
+        source={require('../../../../assets/ribbons/ingredients-ribbons/lemon.png')}
+        resizeMode="cover"
+        style={tw`overflow-hidden`}
+        imageStyle={{ opacity: 0.08 }}
+      >
+        <LinearGradient
+          colors={config.gradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={tw`px-4 py-3`}
+        >
+          {/* Header Row: Rank + Name */}
+          <View style={tw`mb-3 flex-row items-center`}>
+            {/* Rank Badge */}
+            <View style={tw`mr-3`}>
+              {config.icon ? (
+                <View style={tw`items-center`}>
+                  <View style={tw.style('h-10 w-10 items-center justify-center rounded-full', {
+                    backgroundColor: `${config.color}15`,
+                  })}>
+                    <Ionicons name={config.icon} size={20} color={config.color} />
+                  </View>
+                </View>
+              ) : (
+                <View style={tw`h-10 w-10 items-center justify-center rounded-full bg-creme-2`}>
+                  <Text style={tw.style(bodySmallBold, 'text-eggplant')}>{rank}</Text>
+                </View>
+              )}
+            </View>
+
+            {/* User Name */}
+            <View style={tw`flex-1`}>
+              <Text
+                style={tw.style(bodyMediumRegular, 'font-bold text-black text-base')}
+                numberOfLines={1}
+              >
+                {item.userName || 'Anonymous User'}
+              </Text>
+            </View>
+
+            {/* Rank Number Badge for top 3 */}
+            {isTopThree && (
+              <View style={tw.style('ml-2 rounded-full px-2.5 py-1', {
+                backgroundColor: `${config.color}20`,
+              })}>
+                <Text style={tw.style(bodySmallBold, 'text-xs')} selectable={false}>
+                  #{rank}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Stats Row: All metrics in one line */}
+          <View style={tw`flex-row items-center justify-between gap-1.5`}>
+            {/* Meals */}
+            <View style={tw`items-center`}>
+              <View style={tw`mb-1 flex-row items-center rounded-full bg-white px-2 py-1 shadow-sm`}>
+                <Ionicons name="restaurant" size={11} color={tw.color('eggplant-vibrant') || '#7E42FF'} />
+                <Text style={tw.style(bodySmallBold, 'ml-1 text-eggplant text-[10px]')}>
+                  {item.mealsCooked || 0}
+                </Text>
+              </View>
+              <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[8px]')}>
+                Meals
+              </Text>
+            </View>
+
+            {/* Food Saved */}
+            <View style={tw`items-center`}>
+              <View style={tw`mb-1 flex-row items-center rounded-full bg-white px-2 py-1 shadow-sm`}>
+                <Ionicons name="leaf" size={11} color={tw.color('kale') || '#3A7E52'} />
+                <Text style={tw.style(bodySmallBold, 'ml-1 text-kale text-[10px]')}>
+                  {foodSavedKg}
+                </Text>
+              </View>
+              <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[8px]')}>
+                Saved
+              </Text>
+            </View>
+
+            {/* Money */}
+            <View style={tw`items-center`}>
+              <View style={tw`mb-1 flex-row items-center rounded-full bg-white px-2 py-1 shadow-sm`}>
+                <Ionicons name="cash" size={11} color={tw.color('orange') || '#F99C46'} />
+                <Text style={tw.style(bodySmallBold, 'ml-1 text-orange text-[10px]')}>
+                  {getCurrencySymbol(item.country)}{(item.totalMoneySaved || 0).toFixed(0)}
+                </Text>
+              </View>
+              <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[8px]')}>
+                Money
+              </Text>
+            </View>
+
+            {/* Badges */}
+            <View style={tw`items-center`}>
+              <View style={tw`mb-1 flex-row items-center rounded-full bg-white px-2 py-1 shadow-sm`}>
+                <Ionicons name="ribbon" size={11} color={tw.color('eggplant-light') || '#9D6FFF'} />
+                <Text style={tw.style(bodySmallBold, 'ml-1 text-eggplant text-[10px]')}>
+                  {item.badgeCount || 0}
+                </Text>
+              </View>
+              <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[8px]')}>
+                Badges
+              </Text>
+            </View>
+
+            {/* CO2e */}
+            <View style={tw`items-center`}>
+              <View style={tw`mb-1 flex-row items-center rounded-full bg-white px-2 py-1 shadow-sm`}>
+                <Ionicons name="cloud-outline" size={11} color={tw.color('stone') || '#6D6D72'} />
+                <Text style={tw.style(bodySmallBold, 'ml-1 text-stone text-[10px]')}>
+                  {co2SavedKg.toFixed(2)}
+                </Text>
+              </View>
+              <Text style={tw.style(subheadSmallUppercase, 'text-stone text-[8px]')}>
+                CO2e kg
+              </Text>
+            </View>
+          </View>
+        </LinearGradient>
+      </ImageBackground>
+    </View>
+  );
+});
+
+
 export default function LeaderboardTab() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [metricFilter, setMetricFilter] = useState<MetricFilter>('all');
   const { data: currentUser } = useGetCurrentUserQuery();
 
-  // When ranking by money, scope to the current user's country so that
-  // currencies with large nominal values (e.g. ₩) don't unfairly dominate.
+ 
   const countryFilter = metricFilter === 'money' ? currentUser?.country : undefined;
 
   const { data: leaderboardRaw, isLoading, refetch, isFetching } = useGetLeaderboardQuery({
@@ -35,8 +216,7 @@ export default function LeaderboardTab() {
     country: countryFilter,
   });
 
-  // Sort client-side so rank badges (gold/silver/bronze) always reflect the
-  // selected metric, regardless of the order the backend returns entries.
+
   const leaderboard = useMemo(() => {
     if (!leaderboardRaw) return [];
     const sorted = [...leaderboardRaw];
@@ -58,7 +238,6 @@ export default function LeaderboardTab() {
         break;
       case 'all':
       default:
-        // Composite: normalise each metric to 0-1, sum them
         sorted.sort((a, b) => {
           const score = (e: typeof a) =>
             (e.mealsCooked || 0) +
@@ -362,7 +541,6 @@ export default function LeaderboardTab() {
         </ScrollView>
       </View>
 
-      {/* Country-scoped notice when ranking by money */}
       {metricFilter === 'money' && currentUser?.country && (
         <View style={tw`flex-row items-center gap-2 bg-orange/10 px-4 py-2`}>
           <Ionicons name="information-circle-outline" size={14} color={tw.color('orange') || '#E87722'} />
@@ -372,12 +550,11 @@ export default function LeaderboardTab() {
         </View>
       )}
 
-      {/* Leaderboard List */}
       <FlatList
         data={leaderboard || []}
         renderItem={renderLeaderboardItem}
-        keyExtractor={(item, index) => `${item.userId}-${index}`}
-        contentContainerStyle={tw`py-4`}
+        keyExtractor={keyExtractor}
+        contentContainerStyle={listContentStyle}
         ListEmptyComponent={renderEmptyState}
         refreshControl={
           <RefreshControl
