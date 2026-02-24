@@ -99,10 +99,10 @@ export default function LeaderboardScreen() {
               </Pressable>
             </View>
 
-            <View style={tw`px-4 pb-3 pt-0.5`}>
+            <View style={tw`px-4 pb-3.5 pt-0.5`}>
               <View
-                style={tw.style('overflow-hidden rounded-2xl border border-white/20 p-1', {
-                  backgroundColor: 'rgba(255, 252, 249, 0.14)',
+                style={tw.style('overflow-hidden rounded-2xl border border-white/25 p-1.5', {
+                  backgroundColor: 'rgba(255, 252, 249, 0.18)',
                 })}
               >
                 <View style={tw`flex-row`}>
@@ -113,22 +113,29 @@ export default function LeaderboardScreen() {
                       key={tab.key}
                       onPress={() => setActiveTab(tab.key)}
                       style={tw.style(
-                        'flex-1 items-center rounded-xl py-3',
+                        'flex-1 items-center rounded-xl py-2.5',
                         tab.key !== 'challengeBadges' ? 'mr-1.5' : '',
                         isActive ? 'bg-white' : 'bg-transparent'
                       )}
                       accessibilityRole="tab"
                       accessibilityState={{ selected: isActive }}
                     >
-                      <Ionicons
-                        name={tab.icon as any}
-                        size={22}
-                        color={isActive ? tw.color('eggplant') || '#4B2176' : 'white'}
-                      />
+                      <View
+                        style={tw.style(
+                          'h-8 w-8 items-center justify-center rounded-full',
+                          isActive ? 'bg-creme' : 'bg-white/10',
+                        )}
+                      >
+                        <Ionicons
+                          name={tab.icon as any}
+                          size={18}
+                          color={isActive ? tw.color('eggplant') || '#4B2176' : 'white'}
+                        />
+                      </View>
                       <Text
                         style={tw.style(
                           subheadSmallUppercase,
-                          'mt-1',
+                          'mt-1.5',
                           isActive ? 'text-eggplant' : 'text-white'
                         )}
                         numberOfLines={1}

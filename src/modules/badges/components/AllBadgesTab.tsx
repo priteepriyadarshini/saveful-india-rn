@@ -55,13 +55,13 @@ export default function AllBadgesTab() {
   const unseenCount = (userBadges || []).filter((item) => !item.isViewed).length;
 
   const renderListHeader = () => (
-    <View style={tw`mx-4 mb-3 mt-1 overflow-hidden rounded-2xl border border-strokecream bg-white`}>
+    <View style={tw.style('mx-4 mb-3 mt-1 overflow-hidden rounded-2xl border border-strokecream bg-white', cardDrop)}>
       <ImageBackground
         source={require('../../../../assets/ribbons/ingredients-ribbons/eggplant-light2.png')}
         resizeMode="cover"
-        imageStyle={{ opacity: 0.12 }}
+        imageStyle={{ opacity: 0.14 }}
       >
-        <View style={tw`flex-row items-center justify-between px-4 py-3`}>
+        <View style={tw`flex-row items-center justify-between px-4 py-3.5`}>
           <View style={tw`flex-row items-center`}>
             <Ionicons name="medal-outline" size={16} color={tw.color('eggplant') || '#4B2176'} />
             <Text style={tw.style(subheadSmallUppercase, 'ml-1.5 text-eggplant')}>
@@ -179,7 +179,7 @@ export default function AllBadgesTab() {
           source={config.ribbonPattern}
           resizeMode="cover"
           style={tw`overflow-hidden`}
-          imageStyle={{ opacity: 0.08 }}
+          imageStyle={{ opacity: 0.1 }}
         >
           <View style={tw`p-4`}>
           <View style={tw`flex-row items-start`}>
@@ -224,6 +224,7 @@ export default function AllBadgesTab() {
                 <Text style={tw.style(h6TextStyle, 'flex-1 text-black')} numberOfLines={2}>
                   {badge.name}
                 </Text>
+                <Ionicons name="chevron-forward" size={16} color={tw.color('stone') || '#6D6D72'} />
               </View>
               
               <Text
@@ -237,7 +238,7 @@ export default function AllBadgesTab() {
               <View style={tw`mb-2.5 flex-row flex-wrap items-center gap-2`}>
                 <View style={tw`flex-row items-center rounded-full border border-strokecream bg-white px-3 py-1.5`}>
                   <Ionicons name="ribbon" size={12} color={config.iconColor} />
-                  <Text style={tw.style(bodySmallRegular, 'ml-1.5 text-xs text-black')}>
+                  <Text style={tw.style(subheadSmallUppercase, 'ml-1.5 text-black')}>
                     {badge.category.replace(/_/g, ' ')}
                   </Text>
                 </View>

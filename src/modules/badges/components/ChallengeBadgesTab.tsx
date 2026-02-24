@@ -51,13 +51,13 @@ export default function ChallengeBadgesTab() {
   }, [userBadges]);
 
   const renderListHeader = () => (
-    <View style={tw`mx-4 mb-3 mt-1 overflow-hidden rounded-2xl border border-strokecream bg-white`}>
+    <View style={tw.style('mx-4 mb-3 mt-1 overflow-hidden rounded-2xl border border-strokecream bg-white', cardDrop)}>
       <ImageBackground
         source={require('../../../../assets/ribbons/ingredients-ribbons/lemon2.png')}
         resizeMode="cover"
         imageStyle={{ opacity: 0.14 }}
       >
-        <View style={tw`flex-row items-center justify-between px-4 py-3`}>
+        <View style={tw`flex-row items-center justify-between px-4 py-3.5`}>
           <View style={tw`flex-row items-center`}>
             <Ionicons name="trophy-outline" size={16} color={tw.color('eggplant') || '#4B2176'} />
             <Text style={tw.style(subheadSmallUppercase, 'ml-1.5 text-eggplant')}>
@@ -80,12 +80,12 @@ export default function ChallengeBadgesTab() {
     const metadata = item.metadata;
 
     return (
-      <View style={tw.style('mx-4 mb-4 overflow-hidden rounded-2xl bg-white border border-strokecream', cardDrop)}>
+      <View style={tw.style('mx-4 mb-4 overflow-hidden rounded-2xl border border-strokecream bg-white', cardDrop)}>
         <ImageBackground
           source={require('../../../../assets/ribbons/ingredients-ribbons/eggplant-light.png')}
           resizeMode="cover"
           style={tw`overflow-hidden`}
-          imageStyle={{ opacity: 0.08 }}
+          imageStyle={{ opacity: 0.1 }}
         >
           <View style={tw`p-4`}>
           <View style={tw`flex-row items-start`}>
@@ -119,6 +119,7 @@ export default function ChallengeBadgesTab() {
                 <Text style={tw.style(h6TextStyle, 'flex-1 text-black')} numberOfLines={2}>
                   {badge.name}
                 </Text>
+                <Ionicons name="chevron-forward" size={16} color={tw.color('stone') || '#6D6D72'} />
               </View>
               
               <Text
