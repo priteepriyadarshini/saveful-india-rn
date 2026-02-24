@@ -1,6 +1,15 @@
 import api from '../../api';
 import { Recipe, PopulatedRecipe } from '../models/recipe';
 
+export interface DietaryRecommendationsParams {
+  vegType?: string;
+  dairyFree?: boolean;
+  nutFree?: boolean;
+  glutenFree?: boolean;
+  hasDiabetes?: boolean;
+  country?: string;
+}
+
 const recipeApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getAllRecipes: builder.query<Recipe[], void>({
@@ -14,6 +23,21 @@ const recipeApi = api.injectEndpoints({
     }),
     getRecipesByIngredient: builder.query<Recipe[], string>({
       query: (ingredientId) => `/api/api/recipe/ingredient/${ingredientId}`,
+    }),
+    getDietaryRecommendations: builder.query<Recipe[], DietaryRecommendationsParams>({
+      query: (params) => {
+        const qs = new URLSearchParams();
+        if (params.vegType)                      qs.set('vegType',     params.vegType);
+        // Always send boolean flags explicitly (even false) so the backend
+        // doesn't silently merge the stored user dietary profile on top.
+        if (params.dairyFree  !== undefined)     qs.set('dairyFree',   String(params.dairyFree));
+        if (params.nutFree    !== undefined)     qs.set('nutFree',     String(params.nutFree));
+        if (params.glutenFree !== undefined)     qs.set('glutenFree',  String(params.glutenFree));
+        if (params.hasDiabetes !== undefined)    qs.set('hasDiabetes', String(params.hasDiabetes));
+        if (params.country)                      qs.set('country',     params.country);
+        const query = qs.toString();
+        return `/api/api/recipe/dietary-recommendations${query ? `?${query}` : ''}`;
+      },
     }),
     getRecipesByIngredients: builder.query<Recipe[], { ingredientIds: string[]; country?: string }>({
       async queryFn(arg, _queryApi, _extraOptions, fetchWithBQ) {
@@ -52,6 +76,7 @@ export const {
   useGetRecipesByCategoryQuery,
   useGetRecipesByIngredientQuery,
   useGetRecipesByIngredientsQuery,
+  useGetDietaryRecommendationsQuery,
 } = recipeApi;
 
 export default recipeApi;

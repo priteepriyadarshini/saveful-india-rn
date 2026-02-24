@@ -26,6 +26,7 @@ import IngredientsCarousel from "../components/IngredientsCarousel";
 import MealsCarousel from "../components/MealsCarousel";
 import { IngredientsStackScreenProps } from "../../ingredients/navigation/IngredientsNavigator";
 import { FeedStackScreenProps } from "../navigation/FeedNavigation";
+import DietaryFilterBanner from "../components/DietaryFilterBanner";
 
 
 const screenWidth = Dimensions.get('window').width;
@@ -154,6 +155,7 @@ export default function FeedScreen() {
             onPress={onSearchTapped}
             title="What are you cooking with?"
           />
+
  <FeedNotification setIsNotification={setIsNotification} />
           <View style={tw`-mb-12 mt-10`}>
             <FeedSaved
@@ -168,7 +170,8 @@ export default function FeedScreen() {
 
           <CommunityGroups />
 
-          {/* <QantasBlock /> */}
+          {/* Dietary Filters & Personalised Recipe Recommendations */}
+          <DietaryFilterBanner />
 
           <MealsCarousel />
 

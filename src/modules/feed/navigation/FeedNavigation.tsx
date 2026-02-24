@@ -6,6 +6,7 @@ import {
 import tw from '../../../common/tailwind';
 import FeedScreen from '../screens/FeedScreen';
 import PartnersScreen from '../screens/PartnersScreen';
+import DietaryRecipesScreen from '../screens/DietaryRecipesScreen';
 import IngredientsStackNavigator, { IngredientsStackParamList } from '../../ingredients/navigation/IngredientsNavigator';
 import GroupsStackNavigator, { GroupsStackParamList } from '../../groups/navigation/GroupsNavigator';
 import LeaderboardScreen from '../../badges/screens/LeaderboardScreen';
@@ -19,6 +20,7 @@ export type FeedStackParamList = {
   Partners: undefined;
   Leaderboard: undefined;
   ShoppingList: undefined;
+  DietaryRecipes: { filters: string[]; title?: string };
   Ingredients: NavigatorScreenParams<IngredientsStackParamList>;
   Groups: NavigatorScreenParams<GroupsStackParamList>;
 };
@@ -73,8 +75,12 @@ export default function FeedStackNavigator() {
         component={GroupsStackNavigator}
         options={{ title: 'Groups', headerShown: false }}
       />
-      
-      {/* Add other screens here as needed */}
+
+      <NavigationStack.Screen
+        name="DietaryRecipes"
+        component={DietaryRecipesScreen}
+        options={{ headerShown: false }}
+      />
     </NavigationStack.Navigator>
   );
 }

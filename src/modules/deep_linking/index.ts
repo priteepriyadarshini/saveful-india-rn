@@ -226,7 +226,6 @@ const linking = {
         },
       },
 
-      QantasLink: { screens: { path: "qantas-link", exact: true } },
       AppCallbacks: { screens: { Login: { path: "app/login/redirect", exact: true } } },
       NotFound: "*",
     },

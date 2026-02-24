@@ -238,7 +238,7 @@ const {
                   <PrimaryButton
                     iconRight="plus"
                     onPress={() => {
-                      linkTo("/qantas-link?hideRibbon=true");
+                      linkTo("/survey/weekly");
                     }}
                   >
                     Link account

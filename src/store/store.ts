@@ -30,11 +30,16 @@ export const makeStore = () => {
     reducer: rootReducer,
     middleware: getDefaultMiddleware => {
       const middleware = getDefaultMiddleware({
+        // RTK Query manages its own cache state — exclude it from these dev-only
+        // checks to avoid the 128ms threshold warning caused by large API payloads.
         serializableCheck: {
-          warnAfter: 128, 
+          ignoredPaths: [api.reducerPath],
+          ignoredActions: [/^api\//],
+          warnAfter: 128,
         },
         immutableCheck: {
-          warnAfter: 128, 
+          ignoredPaths: [api.reducerPath],
+          warnAfter: 128,
         },
       }).concat(api.middleware);
 
