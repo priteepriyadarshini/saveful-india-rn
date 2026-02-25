@@ -15,6 +15,8 @@ import {
   GetInventoryQueryParams,
   ConsumeInventoryItemsDto,
   ConsumeInventoryResponse,
+  ShelfLifeEstimate,
+  MakeoverIdeasResponse,
 } from './types';
 
 const inventoryApi = api
@@ -242,6 +244,28 @@ const inventoryApi = api
           'MealSuggestions',
         ],
       }),
+
+      estimateShelfLife: builder.mutation<
+        ShelfLifeEstimate,
+        { dishName: string; storageLocation: string; dishCategory?: string }
+      >({
+        query: (dto) => ({
+          url: '/api/inventory/leftover/shelf-life',
+          method: 'POST',
+          body: dto,
+        }),
+      }),
+
+      getLeftoverMakeoverIdeas: builder.mutation<
+        MakeoverIdeasResponse,
+        { dishName: string; storageLocation?: string; country?: string }
+      >({
+        query: (dto) => ({
+          url: '/api/inventory/leftover/makeover-ideas',
+          method: 'POST',
+          body: dto,
+        }),
+      }),
     }),
   });
 
@@ -265,6 +289,8 @@ export const {
   useClassifyWasteMutation,
   useCheckNewRecipeMatchesMutation,
   useConsumeInventoryItemsMutation,
+  useEstimateShelfLifeMutation,
+  useGetLeftoverMakeoverIdeasMutation,
 } = inventoryApi;
 
 export default inventoryApi;

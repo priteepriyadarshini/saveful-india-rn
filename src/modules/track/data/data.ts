@@ -1,89 +1,75 @@
 import { PostMake, Survey, WeekResults } from "../types";
 
-export const POSTMAKE = (dish?: string) => [
+export const IMPROVEMENT_REASONS = [
+  { id: 0, label: 'Too bland', key: 'bland' },
+  { id: 1, label: 'Too spicy', key: 'spicy' },
+  { id: 2, label: 'Too complex / time-consuming', key: 'complex' },
+  { id: 3, label: 'Ingredients hard to find', key: 'ingredients' },
+  { id: 4, label: 'Not my taste', key: 'taste' },
+] as const;
+
+export const PORTION_OPTIONS = [
+  { id: 0, label: 'Too much', key: 'too_much' },
+  { id: 1, label: 'Just right', key: 'just_right' },
+  { id: 2, label: 'Not enough', key: 'not_enough' },
+] as const;
+
+export const STORAGE_OPTIONS = [
   {
     id: 0,
-    showSurveyDishes: true,
-    content: [
-      {
-        id: 0,
-        title: `Did you enjoy your ${dish}?`,
-        buttonText: [
-          {
-            id: 0,
-            name: 'Sure did',
-          },
-          {
-            id: 1,
-            name: 'No',
-          },
-        ],
-      },
-      {
-        id: 1,
-        title: 'sorry to hear that',
-        image: require('../../../../assets/placeholder/question-mark.png'),
-        description: `So we can make it more chef’s kiss, less chef’s miss – why didn’t you like your ${dish}?`,
-        buttonText: [
-          {
-            id: 0,
-            name: 'Too bland',
-          },
-          {
-            id: 1,
-            name: 'Too spicy',
-          },
-          {
-            id: 2,
-            name: 'Too soggy',
-          },
-          {
-            id: 3,
-            name: 'Too much effort/time',
-          },
-          {
-            id: 4,
-            name: 'Just not my thing',
-          },
-        ],
-      },
-      {
-        id: 2,
-        title: (flavour?: string) => `fixing a ${flavour} dish`,
-        description: `Often it’s the little things that can elevate a dish from average to amazing. One of those little things is the simple act of seasoning.
-
-        By seasoning your meal with salt and pepper as you cook, you can adjust the flavours as you go instead of having to make big corrections at the end of your cook.`,
-      },
-    ],
+    label: 'Pantry',
+    key: 'pantry' as const,
+    shelfLifeDays: 2,
+    tip: 'Store in airtight containers in a cool, dry place. Best consumed within 1-2 days.',
+    icon: require('../../../../assets/placeholder/frying-pan.png'),
   },
-  // {
-  //   id: 2,
-  //   title: 'which ingredients did you already have?',
-  //   description: 'This helps us figure out how much food you’ve saved.',
-  //   buttonText: 'Next',
-  //   pressableText: 'I didn’t have any of the ingredients',
-  //   showSurveyIngredients: true,
-  // },
   {
-    id: 3,
-    title: 'Got any leftovers?',
-    dessciption:
-      'Let us know if there’s any of your dish left and we’ll help you savour every last bit.',
-    image: require('../../../../assets/placeholder/tuppleware.png'),
-    buttonText: [
-      {
-        id: 0,
-        name: 'Yes',
-      },
-      {
-        id: 1,
-        name: 'No',
-      },
-    ],
-    showSurveyLeftovers: true,
+    id: 1,
+    label: 'Fridge',
+    key: 'fridge' as const,
+    shelfLifeDays: 3,
+    tip: 'Store in a sealed container. Best consumed within 3 days.',
+    icon: require('../../../../assets/placeholder/fridge.png'),
   },
-];
+  {
+    id: 2,
+    label: 'Freezer',
+    key: 'freezer' as const,
+    shelfLifeDays: 90,
+    tip: 'Store in an airtight container or freezer bag. Good for up to 3 months.',
+    icon: require('../../../../assets/placeholder/fridge.png'),
+  },
+] as const;
 
+/**
+ * Builds a user-friendly "use by" label from an AI shelf-life estimate.
+ */
+export function formatUseByLabel(shelfLifeDays: number, useByDate: string): string {
+  const expiresAt = new Date(useByDate);
+  if (shelfLifeDays <= 1) {
+    return 'Use by tomorrow';
+  } else if (shelfLifeDays <= 7) {
+    const dayName = expiresAt.toLocaleDateString('en-US', { weekday: 'long' });
+    return `Use by ${dayName} (${shelfLifeDays} days)`;
+  } else if (shelfLifeDays <= 30) {
+    const dateStr = expiresAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `Use within ${shelfLifeDays} days (by ${dateStr})`;
+  } else {
+    const months = Math.round(shelfLifeDays / 30);
+    const dateStr = expiresAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `Use within ~${months} month${months > 1 ? 's' : ''} (by ${dateStr})`;
+  }
+}
+
+export type PostMakeSurveyStep =
+  | 'improvement'
+  | 'portion'
+  | 'leftover_ask'
+  | 'storage'
+  | 'makeover'
+  | 'done_no_leftover';
+
+export const POSTMAKE = (_dish?: string) => [] as any[];
 export const data: PostMake = {
   id: 0,
   title: 'noodle soup',

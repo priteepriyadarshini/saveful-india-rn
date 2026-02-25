@@ -180,6 +180,27 @@ export interface GetInventoryQueryParams {
   expiringWithinDays?: number;
 }
 
+// ─── Leftover AI types ───────────────────────────────────────────
+
+export interface ShelfLifeEstimate {
+  shelfLifeDays: number;
+  useByDate: string;
+  confidence: number;
+  storageTip: string;
+  warningSign: string;
+}
+
+export interface MakeoverIdea {
+  title: string;
+  description: string;
+  effort: 'easy' | 'medium';
+  timeMinutes: number;
+}
+
+export interface MakeoverIdeasResponse {
+  ideas: MakeoverIdea[];
+}
+
 export interface ConsumeIngredientDto {
   ingredientId: string;
   name?: string;

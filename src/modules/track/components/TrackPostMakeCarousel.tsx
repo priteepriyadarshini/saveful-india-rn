@@ -1,7 +1,6 @@
-import GenericCarouselPagination from '../../../common/components/GenericCarousel/GenericCarouselPagination';
-// import { getAllIngredientsFromComponents } from 'common/helpers/filterIngredients';
-import tw from '../../../common/tailwind';
+﻿import tw from '../../../common/tailwind';
 import { IFramework } from '../types/local';
+import { PostMakeSurveyStep } from '../data/data';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
 import { useBadgeChecker } from '../../../modules/badges/hooks/useBadgeChecker';
@@ -11,143 +10,121 @@ import {
   useUpdateFeedbackMutation,
 } from '../../../modules/track/api/api';
 import { FeedbackResult } from '../../../modules/track/api/types';
-import LeftoversComponent from '../../../modules/track/components/PostMakeQuestion/LeftoversComponent';
-import PostMakeQ1 from '../../../modules/track/components/PostMakeQuestion/PostMakeQ1';
-import PostMakeQ3 from '../../../modules/track/components/PostMakeQuestion/PostMakeQ3';
-import ShopFridge from '../../../modules/track/components/PostMakeQuestion/ShopFridge';
-import { ITrackPostMakeIngredient } from '../../../modules/track/components/TrackPostMakeIngredients';
+import PostMakeImprovementQ from './PostMakeQuestion/PostMakeImprovementQ';
+import PostMakePortionQ from './PostMakeQuestion/PostMakePortionQ';
+import PostMakeLeftoverAskQ from './PostMakeQuestion/PostMakeLeftoverAskQ';
+import PostMakeStorageQ from './PostMakeQuestion/PostMakeStorageQ';
+import PostMakeMakeoverQ from './PostMakeQuestion/PostMakeMakeoverQ';
+import PostMakeNoLeftoverDone from './PostMakeQuestion/PostMakeNoLeftoverDone';
 import PostMakeRecipeSurveyModal from '../../make/components/PostMakeRecipeSurveyModal';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  Alert,
-  Dimensions,
-  FlatList,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  View,
-} from 'react-native';
-
-interface PostMakeSurveyItem {
-  id: number;
-}
-
-const screenWidth = Dimensions.get('window').width;
+import { Alert, View } from 'react-native';
 
 export default function TrackPostMakeCarousel({
   framework,
   mealId,
-  data,
   handlePresentModalDismiss,
-  //usedIngredients,
-  selectedIngredients,
-  //setSelectedIngredients,
-  setIsIngredient,
   feedback,
   isStarted,
   setIsStarted,
-  setIsCompleted,
-  isIngredient,
   totalWeightOfSelectedIngredients,
 }: {
   framework: IFramework;
   mealId: string;
-  data?: PostMakeSurveyItem[];
   handlePresentModalDismiss: () => void;
-  usedIngredients?: string[];
-  selectedIngredients: ITrackPostMakeIngredient[];
-  isIngredient: boolean;
-  setIsIngredient: (value: boolean) => void;
   feedback?: FeedbackResult;
   isStarted: boolean;
   setIsStarted: (value: boolean) => void;
-  setIsCompleted: (value: boolean) => void;
   totalWeightOfSelectedIngredients: number;
-  setSelectedIngredients: (value: ITrackPostMakeIngredient[]) => void;
 }) {
-  const flatListRef = useRef<FlatList<any>>(null);
-
-  const getItemLayout = (_data: any, index: number) => ({
-    length: screenWidth,
-    offset: screenWidth * index,
-    index,
-  });
 
   const { sendAnalyticsEvent, sendFailedEventAnalytics } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
   const { checkMilestonesNow } = useBadgeChecker();
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const [didYouLikeIt, setDidYouLikeIt] = useState<boolean>(false);
-  const [isAnyLeftovers, setIsAnyLeftovers] = useState<string>('');
-  const [dislikeStatus, setDislikeStatus] = useState<string>('');
-  const [showRatingModal, setShowRatingModal] = useState<boolean>(!isStarted && !feedback); // Show at start if not started yet
+  const [createFeedback, { isLoading: isCreateLoading }] = useCreateFeedbackMutation();
+  const [updateFeedback, { isLoading: isUpdateLoading }] = useUpdateFeedbackMutation();
+  const isFeedbackLoading = isCreateLoading || isUpdateLoading;
+  const isSubmittingRef = useRef(false);
+
+  const [showRatingModal, setShowRatingModal] = useState(!isStarted && !feedback);
   const [ratingData, setRatingData] = useState<{ rating: number; review: string } | null>(null);
-  
-  const onScroll = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const currentSlideSize =
-        screenWidth || event.nativeEvent.layoutMeasurement.width;
-      const index = event.nativeEvent.contentOffset.x / currentSlideSize;
-      const roundIndex = Math.round(index);
+  const [currentStep, setCurrentStep] = useState<PostMakeSurveyStep | null>(null);
+  const [improvementReason, setImprovementReason] = useState<string>('');
+  const [portionSize, setPortionSize] = useState<string>('');
+  const [hasLeftovers, setHasLeftovers] = useState<boolean | null>(null);
+  const [storageLocation, setStorageLocation] = useState<string>('');
 
-      setCurrentIndex(roundIndex);
-    },
-    [],
-  );
-
-  const scrollToItem = (index: number) => {
-    if (flatListRef.current) {
-      flatListRef.current.scrollToIndex({
-        animated: true,
-        index,
-      });
-    }
-  };
-  // const dishIngredients = getAllIngredientsFromComponents(framework.components)
-  //   .filter(
-  //     (ingredient, index, self) =>
-  //       index === self.findIndex(t => t.id === ingredient.id),
-  //   )
-  //   // Show only the ingredients actually used in make this dish
-  //   // Using title as a unique identifier
-  //   .filter(ingredient => usedIngredients?.includes(ingredient.title))
-  //   // Sort by title
-  //   .sort((a, b) => a.title.localeCompare(b.title));
-
-  // const onValueChecked = (value: ITrackPostMakeIngredient) => {
-  //   const valueIndex = selectedIngredients.findIndex(x => x.id === value.id);
-
-  //   if (valueIndex === -1) {
-  //     setSelectedIngredients([...selectedIngredients, value]);
-  //   } else {
-  //     const updatedArray = [...selectedIngredients];
-  //     updatedArray.splice(valueIndex, 1);
-
-  //     setSelectedIngredients(updatedArray);
-  //   }
-  // };
-
-  const [createFeedback, { isLoading: isCreateFeedbackLoading }] =
-    useCreateFeedbackMutation();
-  const [updateFeedback, { isLoading: isUpdateFeedbackLoading }] =
-    useUpdateFeedbackMutation();
-  // Meals update was removed; keep UI consistent by setting loading to false
-  const isUpdateUserMealLoading = false;
-  // Removed saveFoodAnalytics here to avoid double-counting.
-
-  // Show rating modal at the start of the survey
   useEffect(() => {
     if (!isStarted && !feedback) {
       setShowRatingModal(true);
     }
   }, [isStarted, feedback]);
 
-  const onFeedbackComplete = async () => {
-    if (isCreateFeedbackLoading || isUpdateFeedbackLoading) {
-      return;
-    }
+  const handleRatingSubmit = (rating: number, review: string) => {
+    setRatingData({ rating, review });
+    setShowRatingModal(false);
+    setIsStarted(true);
+    setCurrentStep(rating <= 2 ? 'improvement' : 'portion');
+  };
 
+  const handleRatingSkip = () => {
+    setRatingData(null);
+    setShowRatingModal(false);
+    setIsStarted(true);
+    setCurrentStep('portion');
+  };
+
+  useEffect(() => {
+    if (isStarted && !currentStep && !showRatingModal) {
+      setCurrentStep('portion');
+    }
+  }, [isStarted, currentStep, showRatingModal]);
+
+  const handleImprovementSelected = (reasonKey: string) => {
+    setImprovementReason(reasonKey);
+    setCurrentStep('portion');
+  };
+
+  const handlePortionSelected = (portionKey: string) => {
+    setPortionSize(portionKey);
+    switch (portionKey) {
+      case 'too_much':
+        setHasLeftovers(true);
+        setCurrentStep('storage');
+        break;
+      case 'just_right':
+        setCurrentStep('leftover_ask');
+        break;
+      case 'not_enough':
+        setHasLeftovers(false);
+        setCurrentStep('done_no_leftover');
+        break;
+      default:
+        setCurrentStep('leftover_ask');
+    }
+  };
+
+  const handleLeftoverAnswer = (hasLeftover: boolean) => {
+    setHasLeftovers(hasLeftover);
+    if (hasLeftover) {
+      setCurrentStep('storage');
+    } else {
+      setCurrentStep('done_no_leftover');
+    }
+  };
+
+  const handleStorageSelected = (storageKey: string) => {
+    setStorageLocation(storageKey);
+    setCurrentStep('makeover');
+  };
+
+  const submitFeedback = useCallback(async () => {
+    if (isSubmittingRef.current || isCreateLoading || isUpdateLoading) return;
+    isSubmittingRef.current = true;
 
     try {
+      const didYouLikeIt = ratingData ? ratingData.rating >= 3 : true;
+
       if (!feedback) {
         await createFeedback({
           frameworkId: framework.id,
@@ -157,6 +134,10 @@ export default function TrackPostMakeCarousel({
           mealId,
           rating: ratingData?.rating,
           review: ratingData?.review || undefined,
+          improvementReason: improvementReason || undefined,
+          portionSize: portionSize || undefined,
+          hasLeftovers: hasLeftovers ?? undefined,
+          leftoverStorage: storageLocation || undefined,
         }).unwrap();
       } else {
         await updateFeedback({
@@ -167,14 +148,13 @@ export default function TrackPostMakeCarousel({
           mealId,
           rating: ratingData?.rating,
           review: ratingData?.review || undefined,
+          improvementReason: improvementReason || undefined,
+          portionSize: portionSize || undefined,
+          hasLeftovers: hasLeftovers ?? undefined,
+          leftoverStorage: storageLocation || undefined,
         }).unwrap();
       }
 
-      // Analytics (AI price calculation) is invoked during MakeItSurveyModal only.
-      // Do not call it here to prevent double-counting of saved food/money/meals.
-
-      // Force-check milestones so users immediately receive badges if thresholds met
-      // This will trigger badge notifications automatically via useBadgeChecker hook
       await checkMilestonesNow();
 
       sendAnalyticsEvent({
@@ -183,150 +163,97 @@ export default function TrackPostMakeCarousel({
           location: newCurrentRoute,
           action: mixpanelEventName.postMakeSurveySubmitted,
           frameworkId: framework.id,
-          feedback: didYouLikeIt,
-          leftovers: !!isAnyLeftovers,
-          dislike_status: dislikeStatus ? `Too ${dislikeStatus}` : 'None',
-          food_saved: `${totalWeightOfSelectedIngredients / 1000}Kg`,
-          number_of_selected_ingredients: selectedIngredients.length,
-          selected_ingredients: selectedIngredients,
+          meal_name: framework.title,
           rating: ratingData?.rating,
           has_review: !!ratingData?.review,
           rating_skipped: !ratingData,
+          improvement_reason: improvementReason || 'none',
+          portion_size: portionSize,
+          has_leftovers: hasLeftovers,
+          leftover_storage: storageLocation || 'none',
+          food_saved: `${totalWeightOfSelectedIngredients / 1000}Kg`,
         },
       });
 
       handlePresentModalDismiss();
     } catch (error: unknown) {
-      // Whoopss.
       sendFailedEventAnalytics(error);
       Alert.alert(
         'Feedback update error. Try again later.',
         JSON.stringify(error),
       );
+    } finally {
+      isSubmittingRef.current = false;
     }
-  };
-
-  const handleRatingSubmit = (rating: number, review: string) => {
-    // Rating submitted
-    // Store rating data to be saved later with the survey answers
-    setRatingData({ rating, review });
-    setShowRatingModal(false);
-    setIsStarted(true);
-  };
-
-  const handleRatingSkip = () => {
-    // Rating skipped
-    // User skipped rating - continue to survey without rating data
-    setRatingData(null);
-    setShowRatingModal(false);
-    setIsStarted(true);
-  };
-
-  // const emptyIngredients = () => {
-  //   setSelectedIngredients([]);
-  // };
-
-  useEffect(() => {
-    if (!isStarted) {
-      setIsStarted(true);
-    }
-  }, [isStarted, setIsStarted]);
+  }, [
+    feedback,
+    framework,
+    mealId,
+    ratingData,
+    improvementReason,
+    portionSize,
+    hasLeftovers,
+    storageLocation,
+    totalWeightOfSelectedIngredients,
+    createFeedback,
+    updateFeedback,
+    checkMilestonesNow,
+    sendAnalyticsEvent,
+    sendFailedEventAnalytics,
+    handlePresentModalDismiss,
+    newCurrentRoute,
+    isCreateLoading,
+    isUpdateLoading,
+  ]);
 
   return (
-    <View style={tw.style('pb-5')}>
-      <FlatList
-        ref={flatListRef}
-        data={data}
-        renderItem={({ item }) => {
-          return (
-            <View
-              style={tw`w-[${Dimensions.get('window').width}px]`}
-              key={item.id}
-            >
-              {item.showSurveyDishes && (
-                <PostMakeQ1
-                  framework={framework}
-                  item={item.content}
-                  setNextIndex={scrollToItem}
-                  handlePresentModalDismiss={handlePresentModalDismiss}
-                  setDislikeStatus={setDislikeStatus}
-                  setDidYouLikeIt={setDidYouLikeIt}
-                />
-              )}
-              {/* {item.showSurveyIngredients && (
-                <PostMakeQ2
-                  item={item}
-                  setNextIndex={scrollToItem}
-                  list={dishIngredients}
-                  selectedIngredients={selectedIngredients}
-                  setSelectedIngredients={onValueChecked as any}
-                  emptyIngredients={emptyIngredients}
-                />
-              )} */}
-              {!isAnyLeftovers && item.showSurveyLeftovers && (
-                <PostMakeQ3
-                  item={item}
-                  setIsAnyLeftovers={setIsAnyLeftovers}
-                  selectedIngredients={selectedIngredients}
-                  setIsIngredient={setIsIngredient}
-                  setIsCompleted={setIsCompleted}
-                  isLoading={
-                    isCreateFeedbackLoading ||
-                    isUpdateFeedbackLoading ||
-                    isUpdateUserMealLoading
-                  }
-                  onFeedbackComplete={onFeedbackComplete}
-                />
-              )}
-              {isAnyLeftovers === 'yes' && (
-                <LeftoversComponent
-                  framework={framework}
-                  selectedIngredients={selectedIngredients}
-                  setIsIngredient={setIsIngredient}
-                  setIsCompleted={setIsCompleted}
-                  isLoading={
-                    isCreateFeedbackLoading ||
-                    isUpdateFeedbackLoading ||
-                    isUpdateUserMealLoading
-                  }
-                  onFeedbackComplete={onFeedbackComplete}
-                />
-              )}
-              {isIngredient &&
-                isAnyLeftovers &&
-                selectedIngredients.length === 0 && (
-                  <ShopFridge onDone={onFeedbackComplete} />
-                )}
-            </View>
-          );
-        }}
-        horizontal
-        scrollEnabled={false}
-        showsHorizontalScrollIndicator={false}
-        bounces={false}
-        decelerationRate={0}
-        getItemLayout={getItemLayout}
-        renderToHardwareTextureAndroid
-        contentContainerStyle={tw.style(`mb-1 content-center`)}
-        snapToInterval={screenWidth}
-        snapToAlignment="start"
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-        viewabilityConfig={{
-          itemVisiblePercentThreshold: 100,
-        }}
-        initialScrollIndex={0}
-      />
-      <GenericCarouselPagination
-        items={data as any}
-        dotSpacing={4}
-        dotSize={4}
-        activeDotColor="radish"
-        inactiveDotColor="radish/60"
-        currentIndex={currentIndex}
-      />
-      
-      {/* Recipe Rating Modal - Shows after survey completion */}
+    <View style={tw.style('flex-1 pb-5')}>
+      {currentStep === 'improvement' && (
+        <PostMakeImprovementQ
+          dishName={framework.title}
+          onSelect={handleImprovementSelected}
+        />
+      )}
+
+      {currentStep === 'portion' && (
+        <PostMakePortionQ
+          dishName={framework.title}
+          onSelect={handlePortionSelected}
+        />
+      )}
+
+      {currentStep === 'leftover_ask' && (
+        <PostMakeLeftoverAskQ
+          onAnswer={handleLeftoverAnswer}
+          isLoading={isFeedbackLoading}
+        />
+      )}
+
+      {currentStep === 'storage' && (
+        <PostMakeStorageQ
+          dishName={framework.title}
+          dishId={framework.id}
+          onStorageSelected={handleStorageSelected}
+        />
+      )}
+
+      {currentStep === 'makeover' && (
+        <PostMakeMakeoverQ
+          framework={framework}
+          storageLocation={storageLocation}
+          onDone={submitFeedback}
+          isLoading={isFeedbackLoading}
+        />
+      )}
+
+      {currentStep === 'done_no_leftover' && (
+        <PostMakeNoLeftoverDone
+          portionSize={portionSize}
+          dishName={framework.title}
+          onDone={submitFeedback}
+          isLoading={isFeedbackLoading}
+        />
+      )}
       <PostMakeRecipeSurveyModal
         isVisible={showRatingModal}
         recipeId={framework.id}

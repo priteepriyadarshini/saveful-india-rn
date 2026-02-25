@@ -34,6 +34,11 @@ const trackApi = api
           rating?: number; 
           review?: string;
           ingredientIds?: string[];
+          // Post-make survey fields
+          improvementReason?: string;
+          portionSize?: string;
+          hasLeftovers?: boolean;
+          leftoverStorage?: string;
         }
       >({
         query: params => ({
@@ -48,6 +53,10 @@ const trackApi = api
               meal_id: params.mealId,
               ...(params.rating !== undefined ? { rating: params.rating } : {}),
               ...(params.review !== undefined ? { review: params.review } : {}),
+              ...(params.improvementReason ? { improvement_reason: params.improvementReason } : {}),
+              ...(params.portionSize ? { portion_size: params.portionSize } : {}),
+              ...(params.hasLeftovers !== undefined ? { has_leftovers: params.hasLeftovers } : {}),
+              ...(params.leftoverStorage ? { leftover_storage: params.leftoverStorage } : {}),
             },
             ...(params.ingredientIds && params.ingredientIds.length > 0
               ? { ingredient_ids: params.ingredientIds }
@@ -71,8 +80,13 @@ const trackApi = api
           didYouLikeIt?: boolean;
           foodSaved?: number;
           mealId?: string;
-          rating?: number; // 1-5 carrot rating
-          review?: string; // Optional review text
+          rating?: number;
+          review?: string;
+          // Post-make survey fields
+          improvementReason?: string;
+          portionSize?: string;
+          hasLeftovers?: boolean;
+          leftoverStorage?: string;
         }
       >({
         query: params => ({
@@ -90,6 +104,10 @@ const trackApi = api
               meal_id: params.mealId,
               ...(params.rating !== undefined ? { rating: params.rating } : {}),
               ...(params.review !== undefined ? { review: params.review } : {}),
+              ...(params.improvementReason ? { improvement_reason: params.improvementReason } : {}),
+              ...(params.portionSize ? { portion_size: params.portionSize } : {}),
+              ...(params.hasLeftovers !== undefined ? { has_leftovers: params.hasLeftovers } : {}),
+              ...(params.leftoverStorage ? { leftover_storage: params.leftoverStorage } : {}),
             },
           },
         }),
