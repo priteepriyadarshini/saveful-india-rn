@@ -3,7 +3,6 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
 import { filterAllergiesByUserPreferences } from '../../../common/helpers/filterIngredients';
-// Removed Craft CMS content dependency; using API favourites details
 import tw from '../../../common/tailwind';
 import { IFramework } from '../types/local';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
@@ -50,7 +49,6 @@ export default function ProfileHistoryScreen({
   const { data: cookedRecipesDetails } = useGetCookedRecipesDetailsQuery();
   const cookedItems = cookedRecipesDetails?.cookedRecipes || [];
 
-  // No longer using Craft content; relying on API
   const { data: userOnboarding } = useGetUserOnboardingQuery();
   const [frameworks, setFrameworks] = React.useState<IFramework[]>([]);
   const [mealType] = React.useState<string>(type);
@@ -61,14 +59,11 @@ export default function ProfileHistoryScreen({
   const { sendScrollEventInitiation, sendAnalyticsEvent } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
 
-  // Frameworks for fallback only (if needed); otherwise use favourites details
 
   useEffect(() => {
-    // Optionally load frameworks if needed elsewhere
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Render regardless of frameworks; using API data for cooked/saved/hacks
 
   const { data: favouriteDetails } = useGetFavouriteDetailsQuery();
   const favItems = favouriteDetails || [];
