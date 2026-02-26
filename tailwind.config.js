@@ -54,6 +54,7 @@ module.exports = {
         strokecream: '#EEE4D7',
         validation: '#DB2C00',
         qantas: '#E40000',
+        carrot: '#F26522',
       },
       fontSize: {
         '1.5xl': '1.375rem',

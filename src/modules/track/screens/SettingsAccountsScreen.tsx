@@ -1,5 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useLinkTo } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import FocusAwareStatusBar from "../../../common/components/FocusAwareStatusBar";
 import PrimaryButton from "../../../common/components/ThemeButtons/PrimaryButton";
 import SecondaryButton from "../../../common/components/ThemeButtons/SecondaryButton";
@@ -9,9 +9,9 @@ import { mixpanelEventName } from "../../../modules/analytics/analytics";
 import useAnalytics from "../../../modules/analytics/hooks/useAnalytics";
 import { ControlledTextInput, FormLabel } from "../../../modules/forms";
 import { handleFormSubmitException } from "../../../modules/forms/validation";
-//import { useGetFFNQuery, useUnlinkFFNMutation } from 'modules/qantas/api/api';
+import { useGetFFNQuery, useUnlinkFFNMutation } from '../../qantas/api/api';
 import AnimatedSettingsHeader from "../../../modules/track/components/AnimatedSettingsHeader";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import {
   Animated,
@@ -32,13 +32,13 @@ import * as Yup from "yup";
 
 const schema = Yup.object({
   ffn: Yup.string().required("Please enter your Frequent Flyer number"),
-  surname: Yup.string().notRequired(),
+  surname: Yup.string().optional().default(""),
 });
 
 
 interface FormData {
   ffn: string;
-  surname?: string;
+  surname: string;
 }
 
 const defaultValues: FormData = {
@@ -49,19 +49,11 @@ const defaultValues: FormData = {
 export default function SettingsAccountsScreen() {
   const offset = useRef(new Animated.Value(0)).current;
 
-  const linkTo = useLinkTo();
+  const navigation = useNavigation();
 
   const { sendAnalyticsEvent, sendFailedEventAnalytics } = useAnalytics();
 
-  //const { data: qantasFFN, isLoading, isError } = useGetFFNQuery();
-  // Temporary mock state to simulate API response
-  const [qantasFFN, setQantasFFN] = useState<{
-    link_response: { qffReference: { memberId: string } };
-    surname?: string;
-  } | null>(null);
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [isError, setIsError] = useState(false);
+  const { data: qantasFFN, isLoading, isError } = useGetFFNQuery();
 
 const {
   control,
@@ -72,33 +64,8 @@ const {
 } = useForm<FormData>({
   mode: "onBlur",
   defaultValues,
-  //resolver: yupResolver(schema),
+  resolver: yupResolver(schema),
 });
-
-
-
-  //Demo Data
-   useEffect(() => {
-    // 🔧 Simulate fetching data
-    setIsLoading(true);
-    setTimeout(() => {
-      // Simulate success or failure
-      const mockSuccess = true;
-
-      if (mockSuccess) {
-        setQantasFFN({
-          link_response: { qffReference: { memberId: '123456789' } },
-          surname: 'Doe',
-        });
-        setIsError(false);
-      } else {
-        setIsError(true);
-      }
-
-      setIsLoading(false);
-    }, 1000);
-  }, []);
-//DemoData ends here
 
 
   useEffect(() => {
@@ -109,22 +76,20 @@ const {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [qantasFFN]);
 
-  //const [unlinkFFN, { isLoading: isUnlinkFFNLoading }] = useUnlinkFFNMutation();
+  const [unlinkFFN, { isLoading: isUnlinkFFNLoading }] = useUnlinkFFNMutation();
 
   const onUnlinkFFN = handleSubmit(async () => {
     try {
       try {
-        //await unlinkFFN().unwrap(); //uncommenet once actual value is there and remove the below line
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await unlinkFFN().unwrap();
 
         sendAnalyticsEvent({
           event: mixpanelEventName.qantasUnlink,
           properties: {
-            // What properties
+            memberId: qantasFFN?.memberId,
           },
         });
       } catch (error: unknown) {
-        // Whoopss.
         sendFailedEventAnalytics(error);
         console.error("Qantas unlink error", JSON.stringify(error));
       }
@@ -238,7 +203,7 @@ const {
                   <PrimaryButton
                     iconRight="plus"
                     onPress={() => {
-                      linkTo("/survey/weekly");
+                      (navigation as any).navigate('SettingsAccountsQantasLink');
                     }}
                   >
                     Link account
@@ -272,10 +237,16 @@ const {
 
                   <SecondaryButton
                     onPress={onUnlinkFFN}
-                    //loading={isUnlinkFFNLoading}
+                    loading={isUnlinkFFNLoading}
                   >
                     Unlink Frequent Flyer Account
                   </SecondaryButton>
+
+                  <PrimaryButton
+                    onPress={() => (navigation as any).navigate('QantasDashboard')}
+                  >
+                    View Dashboard
+                  </PrimaryButton>
                 </View>
               )}
             </View>

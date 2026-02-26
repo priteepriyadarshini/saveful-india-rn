@@ -4,7 +4,7 @@ import tw from '../../../../common/tailwind';
 import { mixpanelEventName } from '../../../../modules/analytics/analytics';
 import useAnalytics from '../../../../modules/analytics/hooks/useAnalytics';
 import { TrackSurveyEligibility } from '../../api/types';
-//import { useGetFFNQuery } from 'modules/qantas/api/api';
+import { useGetFFNQuery } from '../../../qantas/api/api';
 import { useCurentRoute } from '../../../../modules/route/context/CurrentRouteContext';
 import TrackContent from '../../../../modules/track/components/TrackContent';
 import TrackLinearGradient from '../../../../modules/track/components/TrackLinearGradient';
@@ -29,11 +29,11 @@ export default function StartSurvey({
   const { sendAnalyticsEvent } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
 
-  //const { data: qantasFFN } = useGetFFNQuery(); //Uncomment when available
-  // Use surveys_count from eligibility data
-  const qantasFFN = {
-    surveys_count: eligibilityData?.surveys_count || 0,
-  };
+  const { data: qantasFFN } = useGetFFNQuery();
+  // surveys_count from eligibility data; if Qantas is linked, use the cycle count from qantasFFN
+  const surveysCount = qantasFFN
+    ? qantasFFN.surveysCompletedInCycle
+    : (eligibilityData?.surveys_count || 0);
 
   const isEligible = eligibilityData?.eligible ?? true;
   const nextSurveyDate = eligibilityData?.next_survey_date;
@@ -83,15 +83,15 @@ export default function StartSurvey({
               </View>
             )}
 
-            {/* Show Qantas progress only if eligible and count < 4 */}
-            {isEligible && qantasFFN && qantasFFN.surveys_count < 4 && (
+            {/* Show Qantas progress only if eligible and linked, count < 4 */}
+            {isEligible && qantasFFN && surveysCount < 4 && (
               <View style={tw`mt-2 gap-4 rounded-md bg-creme p-6`}>
                 <View style={tw`py-2`}>
                   <Progress.Bar
                     progress={
-                      (!qantasFFN.surveys_count || qantasFFN.surveys_count === 0
+                      (!surveysCount || surveysCount === 0
                         ? 0.15
-                        : qantasFFN.surveys_count) / 4
+                        : surveysCount) / 4
                     }
                     color={tw.color('kale')}
                     indeterminateAnimationDuration={100}
@@ -118,7 +118,7 @@ export default function StartSurvey({
                   maxFontSizeMultiplier={1}
                 >
                   {`You're only ${
-                    4 - (qantasFFN.surveys_count ?? 0)
+                    4 - surveysCount
                   } surveys away from completing your monthly tracking goal and unlocking new achievements.`}
                 </Text>
               </View>

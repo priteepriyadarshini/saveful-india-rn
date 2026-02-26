@@ -3,7 +3,7 @@
  * Shows recipes filtered by the user's active dietary preferences.
  * Receives `filters` (array of dietary tag keys) and `title` from navigation params.
  */
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { skipToken } from '@reduxjs/toolkit/query/react';
 import {
   ActivityIndicator,
@@ -95,6 +95,7 @@ export default function DietaryRecipesScreen() {
   const userCountry = currentUser?.country || userOnboarding?.suburb;
 
   const [selectedFilters, setSelectedFilters] = useState<string[]>(initialFilters);
+  const [maxCardHeight, setMaxCardHeight] = useState<number>(0);
 
   const queryParams = useMemo(
     () => buildQueryParams(selectedFilters, userCountry),
@@ -114,6 +115,10 @@ export default function DietaryRecipesScreen() {
   };
 
   const activeRecipes = recipes ?? [];
+
+  useEffect(() => {
+    setMaxCardHeight(0);
+  }, [selectedFilters, activeRecipes.length]);
 
   return (
     <View style={tw`flex-1 bg-creme`}>
@@ -222,6 +227,8 @@ export default function DietaryRecipesScreen() {
                     : undefined
                 }
                 variantTags={[]}
+                maxHeight={maxCardHeight}
+                setMaxHeight={setMaxCardHeight}
               />
             </View>
           )}

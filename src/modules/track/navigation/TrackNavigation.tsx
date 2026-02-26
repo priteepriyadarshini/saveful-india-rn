@@ -16,6 +16,8 @@ import SettingsNotificationsScreen from '../../../modules/track/screens/Settings
 import SettingsSavefulScreen from '../../../modules/track/screens/SettingsSavefulScreen';
 import SettingsScreen from '../../../modules/track/screens/SettingsScreen';
 import TrackScreen from '../screens/TrackScreen';
+import QantasLinkScreen from '../../qantas/screens/QantasLinkScreen';
+import QantasDashboardScreen from '../../qantas/screens/QantasDashboardScreen';
 import React from 'react';
 import { Pressable, View } from 'react-native';
 import { SurveyStackParamList } from './SurveyNavigator';
@@ -30,6 +32,7 @@ export type TrackStackParamList = {
   SettingsNotifications: undefined;
   SettingsAccounts: undefined;
   SettingsAccountsQantasLink: { hideRibbon?: string };
+  QantasDashboard: undefined;
   SettingsDetailsOnboardingDietary: undefined;
   Profile: undefined;
   ProfileHistory: { id: string };
@@ -105,6 +108,20 @@ export default function TrackStackNavigator() {
       <NavigationStack.Screen
         name="SettingsAccounts"
         component={SettingsAccountsScreen}
+        options={() => ({
+          headerShown: false,
+        })}
+      />
+      <NavigationStack.Screen
+        name="SettingsAccountsQantasLink"
+        component={QantasLinkScreen}
+        options={() => ({
+          headerShown: false,
+        })}
+      />
+      <NavigationStack.Screen
+        name="QantasDashboard"
+        component={QantasDashboardScreen}
         options={() => ({
           headerShown: false,
         })}

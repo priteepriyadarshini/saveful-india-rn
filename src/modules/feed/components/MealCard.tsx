@@ -86,7 +86,7 @@ export default function MealCard({
   return (
     <Pressable
       style={[
-        tw`w-full items-center gap-3 rounded border border-strokecream bg-white p-2.5 min-h-[${maxHeight}px]`,
+        tw`w-full rounded border border-strokecream bg-white p-2.5 min-h-[${maxHeight}px]`,
         cardDrop,
       ]}
       onPress={onPress}
@@ -99,7 +99,7 @@ export default function MealCard({
     >
       {heroImage?.[0]?.url && (
         <Image
-          style={tw`h-[140px] w-full overflow-hidden rounded`}
+          style={tw`mb-3 h-[200px] w-full overflow-hidden rounded`}
           resizeMode="cover"
           source={bundledSource(heroImage[0].url, env.useBundledContent)}
           accessibilityIgnoresInvertColors
@@ -115,7 +115,7 @@ export default function MealCard({
         )}
       </View>
 
-      <View style={tw`w-full content-center items-center gap-1 pb-2.5`}>
+      <View style={tw`w-full flex-1 content-center items-center justify-center gap-1 py-1`}>
         <Text
           style={tw.style(h7TextStyle, 'text-center')}
           maxFontSizeMultiplier={1}

@@ -118,7 +118,7 @@ export default function MealsCarousel() {
         }));
 
   const skeletonStyles = [
-    `mb-3 h-[311px] w-[${itemLength}px] overflow-hidden rounded`,
+    `mb-3 h-[371px] w-[${itemLength}px] overflow-hidden rounded`,
   ];
 
   return (

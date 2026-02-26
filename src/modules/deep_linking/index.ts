@@ -204,6 +204,8 @@ const linking = {
               SettingsNotifications: { path: "track/settings/notifications", exact: true },
               SettingsDetailsOnboardingDietary: { path: "track/settings/details/onboarding-dietary", exact: true },
               SettingsAccounts: { path: "track/settings/accounts", exact: true },
+              SettingsAccountsQantasLink: { path: "track/qantas-link", exact: true },
+              QantasDashboard: { path: "track/qantas-dashboard", exact: true },
               ChangePassword: { path: "track/settings/change-password", exact: true },
             },
           },

@@ -22,6 +22,7 @@ import CommunityGroups from "../components/CommunityGroups";
 import Staples from "../components/Staples";
 import Partners from "../components/Partners";
 import FeedSaved from "../components/FeedSaved";
+import QantasFeedBanner from "../../qantas/components/QantasFeedBanner";
 import IngredientsCarousel from "../components/IngredientsCarousel";
 import MealsCarousel from "../components/MealsCarousel";
 import { IngredientsStackScreenProps } from "../../ingredients/navigation/IngredientsNavigator";
@@ -169,15 +170,11 @@ export default function FeedScreen() {
           <IngredientsCarousel />
 
           <CommunityGroups />
+          <QantasFeedBanner />
 
-          {/* Dietary Filters & Personalised Recipe Recommendations */}
           <DietaryFilterBanner />
 
           <MealsCarousel />
-
-          {/* <Video />  */}
-
-          {/* <Staples /> */}
 
           <Partners />
 
