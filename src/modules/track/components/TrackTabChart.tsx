@@ -1,4 +1,4 @@
-import tw from '../../../common/tailwind';
+﻿import tw from '../../../common/tailwind';
 // import { TRACK } from 'modules/track/data/data';
 import React, { Fragment, SetStateAction, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
@@ -23,7 +23,7 @@ export default function TrackTabChart() {
       value: `${Number(stats?.food_savings_user ?? 0).toFixed(2)}kg`,
       description: `by cooking ${stats?.completed_meals_count} saveful meals`,
       image: {
-        uri: require('../../../../assets/track/food1.png'),
+        uri: 'https://d3fg04h02j12vm.cloudfront.net/track/food1.png',
       },
     },
     {
@@ -32,7 +32,7 @@ export default function TrackTabChart() {
       value: `${currencySymbol}${Number(stats?.total_cost_savings ?? 0).toFixed(2)}`,
       description: `by cooking ${stats?.completed_meals_count} saveful meals`,
       image: {
-        uri: require('../../../../assets/track/money1.png'),
+        uri: 'https://d3fg04h02j12vm.cloudfront.net/track/money1.png',
       },
     },
     {
@@ -41,7 +41,7 @@ export default function TrackTabChart() {
       value: `${Number(stats?.total_co2_savings ?? 0).toFixed(2)}kg CO2`,
       description: `by cooking ${stats?.completed_meals_count} saveful meals`,
       image: {
-        uri: require('../../../../assets/track/co2.png'),
+        uri: 'https://d3fg04h02j12vm.cloudfront.net/track/co2.png',
       },
     },
   ];

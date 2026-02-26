@@ -3,7 +3,7 @@ import { LocationMetadata } from '../../../modules/intro/api/types';
 import PostcodeAutocomplete from '../../../modules/intro/components/PostcodeAutocomplete';
 import React, { useState } from 'react';
 import { Control, UseFormSetValue } from 'react-hook-form';
-import { Image, ImageRequireSource, Text, TextInput, View, Pressable, Modal, ScrollView, TouchableOpacity } from 'react-native';
+import { Image, Text, TextInput, View, Pressable, Modal, ScrollView, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import {
   bodyLargeRegular,
@@ -32,7 +32,7 @@ export default function OnboardingItemHeader({
   setValue,
 }: {
   itemId?: number;
-  image?: ImageRequireSource;
+  image?: any;
   heading?: string;
   welcomeMessage?: string;
   subHeading?: string;
@@ -104,7 +104,7 @@ export default function OnboardingItemHeader({
               style={tw.style(
                 `mx-auto ${
                   itemId === 7 ? 'my-7' : 'mb-7'
-                } h-[290px] max-w-full`,
+                } h-[290px] w-full`,
               )}
               resizeMode="contain"
               source={image}

@@ -1,13 +1,15 @@
+const CDN_BASE = 'https://d3fg04h02j12vm.cloudfront.net/groups';
+
 const PROFILE_PHOTOS = [
   {
     id: '1',
-    image: require('../../../../assets/groups/profile-green-apples.png'),
-    src: '../../../../assets/groups/profile-green-apples.png',
+    image: { uri: `${CDN_BASE}/profile-green-apples.png` },
+    src: `${CDN_BASE}/profile-green-apples.png`,
   },
   {
     id: '2',
-    image: require('../../../../assets/groups/profile-pink-limes.png'),
-    src: '../../../../assets/groups/profile-pink-limes.png',
+    image: { uri: `${CDN_BASE}/profile-pink-limes.png` },
+    src: `${CDN_BASE}/profile-pink-limes.png`,
   },
 ];
 

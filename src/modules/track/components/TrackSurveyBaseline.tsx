@@ -1,4 +1,4 @@
-import tw from '../../../common/tailwind';
+﻿import tw from '../../../common/tailwind';
 // import { TRACK } from 'modules/track/data/data';
 import React, { Fragment, SetStateAction, useState } from 'react';
 import { Dimensions, Image, Pressable, Text, View } from 'react-native';
@@ -26,7 +26,7 @@ export default function TrackSurveyBaseline({
       value: `${(Number(waste) / 1000).toFixed(2)}kg`,
       description: `food waste footprint`,
       image: {
-        uri: require('../../../../assets/placeholder/apple.png'),
+        uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/apple.png',
       },
     },
     {
@@ -34,7 +34,7 @@ export default function TrackSurveyBaseline({
       value: `${currencySymbol}${Number(spent).toFixed(2)}`,
       description: `food waste cost`,
       image: {
-        uri: require('../../../../assets/placeholder/money.png'),
+        uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/money.png',
       },
     },
     {
@@ -42,7 +42,7 @@ export default function TrackSurveyBaseline({
       value: `${(Number(co2) / 1000).toFixed(2)}kg`,
       description: `CO2 emissions saved`,
       image: {
-        uri: require('../../../../assets/placeholder/apple.png'),
+        uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/apple.png',
       },
     },
   ];

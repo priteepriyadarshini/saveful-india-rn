@@ -1,4 +1,4 @@
-import tw from '../../../common/tailwind';
+﻿import tw from '../../../common/tailwind';
 import React from 'react';
 import { View } from 'react-native';
 
@@ -13,7 +13,7 @@ export default function FeedHeader() {
           // { tintColor: focused ? undefined : tw.color('gray-200') },
         ]}
         resizeMode="contain"
-        source={require('../../../../assets/placeholder/feed-bg.png')}
+        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/feed-bg.png' }}
         accessibilityIgnoresInvertColors
       /> */}
     </View>

@@ -1,4 +1,4 @@
-export const DIETARIES = [
+﻿export const DIETARIES = [
   'Vegetarian',
   'Vegan',
   'Dairy-free',
@@ -7,26 +7,28 @@ export const DIETARIES = [
   'Low FODMAP',
 ];
 
+const DISHES_CDN = 'https://d3fg04h02j12vm.cloudfront.net/dishes';
+
 export const FAVOURITE_DISHES = [
   {
     id: '1',
     title: 'pasta with tomato sauce',
-    image: require('../../../../assets/dishes/pasta-tomato.png'),
+    image: { uri: `${DISHES_CDN}/pasta-tomato.png` },
   },
   {
     id: '2',
     title: 'coconut curry',
-    image: require('../../../../assets/dishes/coconut-curry.png'),
+    image: { uri: `${DISHES_CDN}/coconut-curry.png` },
   },
   {
     id: '3',
     title: 'fried rice',
-    image: require('../../../../assets/dishes/fried-rice.png'),
+    image: { uri: `${DISHES_CDN}/fried-rice.png` },
   },
   {
     id: '4',
     title: 'pancakes',
-    image: require('../../../../assets/dishes/pancakes.png'),
+    image: { uri: `${DISHES_CDN}/pancakes.png` },
   },
 ];
 
@@ -41,36 +43,38 @@ export const WEEK_PLANNER = [
   'I don’t have a set day',
 ];
 
+const ONBOARDING_CDN = 'https://d3fg04h02j12vm.cloudfront.net/onboarding';
+
 export const SAVED_ITEMS = [
   {
     id: '1',
     title: 'Carrot tops',
-    image: require('../../../../assets/onboarding/saved-items/carrots.png'),
+    image: { uri: `${ONBOARDING_CDN}/saved-items/carrots.png` },
   },
   {
     id: '2',
     title: 'Potato peel',
-    image: require('../../../../assets/onboarding/saved-items/potato.png'),
+    image: { uri: `${ONBOARDING_CDN}/saved-items/potato.png` },
   },
   {
     id: '3',
     title: 'Floppy celery',
-    image: require('../../../../assets/onboarding/saved-items/celery.png'),
+    image: { uri: `${ONBOARDING_CDN}/saved-items/celery.png` },
   },
   {
     id: '4',
     title: 'Leftovers',
-    image: require('../../../../assets/onboarding/saved-items/tupperware.png'),
+    image: { uri: `${ONBOARDING_CDN}/saved-items/tupperware.png` },
   },
   {
     id: '5',
     title: 'Scraps for the dog',
-    image: require('../../../../assets/onboarding/saved-items/dog.png'),
+    image: { uri: `${ONBOARDING_CDN}/saved-items/dog.png` },
   },
   {
     id: '6',
     title: 'Bones',
-    image: require('../../../../assets/onboarding/saved-items/bones.png'),
+    image: { uri: `${ONBOARDING_CDN}/saved-items/bones.png` },
   },
 ];
 
@@ -81,7 +85,7 @@ const ONBOARDING = (firstName?: string) => [
     subHeading: 'Let’s get to know you (and your household).',
     description:
       'Your answers will help us plate up a customised Saveful experience.',
-    image: require('../../../../assets/onboarding/01.png'),
+    image: { uri: `${ONBOARDING_CDN}/01.png` },
     buttonText: 'Let’s go',
   },
   {
@@ -90,7 +94,7 @@ const ONBOARDING = (firstName?: string) => [
     showPostcode: true,
     description:
       'Your location information helps us provide localized suggestions.',
-    image: require('../../../../assets/onboarding/02.png'),
+    image: { uri: `${ONBOARDING_CDN}/02.png` },
     buttonText: 'Next',
     showPostcodeInput: true,
   },
@@ -133,7 +137,7 @@ const ONBOARDING = (firstName?: string) => [
           : `GREAT! We’ll check in on ${day}`
       }`,
     buttonText: 'Next',
-    image: require('../../../../assets/onboarding/day-result.png'),
+    image: { uri: `${ONBOARDING_CDN}/day-result.png` },
     description: (day?: string) =>
       `${
         day?.toLowerCase() === 'i don’t have a set day'
@@ -168,7 +172,7 @@ const ONBOARDING = (firstName?: string) => [
       'We’d love to help you save even more food, money and stress. No spam, ever.',
 
     buttonText: 'Turn on notifications',
-    image: require('../../../../assets/placeholder/notification.png'),
+    image: { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/notification.png' },
     showNotifications: true,
   },
 ];

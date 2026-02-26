@@ -1,4 +1,4 @@
-import SecondaryButton from '../../../../common/components/ThemeButtons/SecondaryButton';
+﻿import SecondaryButton from '../../../../common/components/ThemeButtons/SecondaryButton';
 import { bundledSource } from '../../../../common/helpers/uriHelpers';
 import tw from '../../../../common/tailwind';
 import { IFramework } from '../../types/local';
@@ -74,22 +74,22 @@ export default function PostMakeQ1({
   const tasteImage = (value: string) => {
     switch (value) {
       case 'bland':
-        return require('../../../../../assets/placeholder/shakers.png');
+        return { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/shakers.png' };
 
       case 'spicy':
-        return require('../../../../../assets/placeholder/post-spice.png');
+        return { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/post-spice.png' };
 
       case 'soggy':
-        return require('../../../../../assets/placeholder/post-soggy.png');
+        return { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/post-soggy.png' };
 
       case 'effort':
-        return require('../../../../../assets/placeholder/post-effort.png');
+        return { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/post-effort.png' };
 
       case 'vibe':
-        return require('../../../../../assets/placeholder/post-vibe.png');
+        return { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/post-vibe.png' };
 
       default:
-        return require('../../../../../assets/placeholder/shakers.png');
+        return { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/shakers.png' };
     }
   };
 
@@ -163,7 +163,7 @@ export default function PostMakeQ1({
                   Dimensions.get('window').width - 40
                 }px]`}
                 resizeMode="contain"
-                source={require('../../../../../assets/placeholder/hearts.png')}
+                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/hearts.png' }}
                 animation="zoomIn"
                 duration={500}
               />

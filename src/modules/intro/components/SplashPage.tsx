@@ -1,4 +1,4 @@
-// import React, { useEffect } from 'react';
+﻿// import React, { useEffect } from 'react';
 // import { Image, StyleSheet, View } from 'react-native';
 // import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -11,7 +11,7 @@
 //   return (
 //     <View style={styles.container}>
 //       <Image
-//         source={require('../../assets/splash.png')}
+//         source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/splash.png' }}
 //         style={styles.image}
 //         resizeMode="cover"
 //       />
@@ -150,7 +150,7 @@ export default function SplashPage() {
   return (
     <View style={styles.container}>
       <Image
-        source={require('../../../../assets/splash.png')}
+        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/splash.png' }}
         style={styles.image}
         resizeMode="cover"
       />

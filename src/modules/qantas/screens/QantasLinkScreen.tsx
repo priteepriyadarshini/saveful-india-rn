@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+﻿import { Feather } from '@expo/vector-icons';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useNavigation } from '@react-navigation/native';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
@@ -95,7 +95,7 @@ export default function QantasLinkScreen() {
     <View style={tw`flex-1 bg-creme`}>
       {/* Red Qantas ribbon at the bottom */}
       <Image
-        source={require('../../../../assets/ribbons/qantas.png')}
+        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/qantas.png' }}
         resizeMode="cover"
         accessibilityIgnoresInvertColors
         style={[
@@ -145,7 +145,7 @@ export default function QantasLinkScreen() {
                 {/* Logo */}
                 <Image
                   resizeMode="contain"
-                  source={require('../../../../assets/qantas/frequent-flyer.png')}
+                  source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/frequent-flyer.png' }}
                   accessibilityIgnoresInvertColors
                   style={tw`mx-auto mb-4 h-[56px] w-[160px]`}
                 />

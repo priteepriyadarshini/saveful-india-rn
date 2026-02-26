@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+﻿import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import GenericCarouselFlatlist from '../../../common/components/GenericCarousel/GenericCarouselFlatlist';
 import EggplantButton from '../../../common/components/ThemeButtons/EggplantButton';
@@ -62,7 +62,7 @@ export default function CommunityGroups() {
           >
             <Image
               resizeMode="contain"
-              source={require('../../../../assets/placeholder/community-icon.png')}
+              source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/community-icon.png' }}
               accessibilityIgnoresInvertColors
             />
             <Text

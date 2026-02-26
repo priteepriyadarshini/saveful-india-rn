@@ -1,4 +1,4 @@
-import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
+﻿import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
 import PrimaryButton from '../../../common/components/ThemeButtons/PrimaryButton';
 import VersionNumber from '../../../common/components/VersionNumber';
 import tw from '../../../common/tailwind';
@@ -36,7 +36,7 @@ export default function IntroScreen() {
   return (
     <ImageBackground
       style={tw`relative flex-1 justify-between bg-creme`}
-      source={require('../../../../assets/intro/splash.png')}
+      source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/intro/splash.png' }}
       imageStyle={{
         resizeMode: 'contain',
       }}
@@ -46,7 +46,7 @@ export default function IntroScreen() {
           <Image
             style={tw.style('mx-auto h-[58px] w-[111px]')}
             resizeMode="contain"
-            source={require('../../../../assets/intro/logo.png')}
+            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/intro/logo.png' }}
           />
         </View>
         <View style={tw`shrink justify-center`}>

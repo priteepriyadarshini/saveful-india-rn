@@ -55,7 +55,7 @@ export default function ChallengeDetailScreen() {
   const leaderboardByGrams = useMemo(() => {
     return [...participants]
       .filter(p => p.isActive)
-      .sort((a, b) => (b.foodSaved || 0) - (a.foodSaved || 0))
+      .sort((a, b) => (b.totalFoodSaved || 0) - (a.totalFoodSaved || 0))
       .slice(0, 5);
   }, [participants]);
 
@@ -76,7 +76,7 @@ export default function ChallengeDetailScreen() {
     try {
       await joinChallenge({
         communityId: groupId,
-        challnageId: challengeId,
+        challengeId: challengeId,
       }).unwrap();
       Alert.alert('Success', 'Joined challenge successfully!');
       refetch();

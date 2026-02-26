@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+﻿import { Feather } from '@expo/vector-icons';
 import PrimaryButton from '../../../../common/components/ThemeButtons/PrimaryButton';
 import SecondaryButton from '../../../../common/components/ThemeButtons/SecondaryButton';
 import tw from '../../../../common/tailwind';
@@ -118,7 +118,7 @@ export default function PostMakeStorageQ({
           <Image
             style={tw`mx-auto mb-4 h-[160px] w-[160px]`}
             resizeMode="contain"
-            source={require('../../../../../assets/placeholder/fridge.png')}
+            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/fridge.png' }}
             accessibilityIgnoresInvertColors
           />
 

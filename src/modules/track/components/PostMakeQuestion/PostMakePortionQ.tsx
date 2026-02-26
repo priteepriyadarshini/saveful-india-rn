@@ -1,4 +1,4 @@
-import SecondaryButton from '../../../../common/components/ThemeButtons/SecondaryButton';
+﻿import SecondaryButton from '../../../../common/components/ThemeButtons/SecondaryButton';
 import tw from '../../../../common/tailwind';
 import { PORTION_OPTIONS } from '../../data/data';
 import React, { useState } from 'react';
@@ -21,7 +21,7 @@ export default function PostMakePortionQ({ dishName, onSelect }: Props) {
           <Image
             style={tw`mx-auto mb-6 h-[200px] w-[200px]`}
             resizeMode="contain"
-            source={require('../../../../../assets/placeholder/bowl.png')}
+            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/bowl.png' }}
             accessibilityIgnoresInvertColors
           />
 

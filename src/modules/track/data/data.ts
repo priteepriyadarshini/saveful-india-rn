@@ -1,4 +1,4 @@
-import { PostMake, Survey, WeekResults } from "../types";
+﻿import { PostMake, Survey, WeekResults } from "../types";
 
 export const IMPROVEMENT_REASONS = [
   { id: 0, label: 'Too bland', key: 'bland' },
@@ -21,7 +21,7 @@ export const STORAGE_OPTIONS = [
     key: 'pantry' as const,
     shelfLifeDays: 2,
     tip: 'Store in airtight containers in a cool, dry place. Best consumed within 1-2 days.',
-    icon: require('../../../../assets/placeholder/frying-pan.png'),
+    icon: { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/frying-pan.png' },
   },
   {
     id: 1,
@@ -29,7 +29,7 @@ export const STORAGE_OPTIONS = [
     key: 'fridge' as const,
     shelfLifeDays: 3,
     tip: 'Store in a sealed container. Best consumed within 3 days.',
-    icon: require('../../../../assets/placeholder/fridge.png'),
+    icon: { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/fridge.png' },
   },
   {
     id: 2,
@@ -37,7 +37,7 @@ export const STORAGE_OPTIONS = [
     key: 'freezer' as const,
     shelfLifeDays: 90,
     tip: 'Store in an airtight container or freezer bag. Good for up to 3 months.',
-    icon: require('../../../../assets/placeholder/fridge.png'),
+    icon: { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/fridge.png' },
   },
 ] as const;
 
@@ -125,7 +125,7 @@ export const SURVEY: Survey = {
       subTitle:
         'How many times did you cook any kind of meal over the past seven days?',
       image: {
-        uri: require('../../../../assets/placeholder/frying-pan.png'),
+        uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/frying-pan.png',
       },
       name: 'cookingFrequency',
       phrase: 'times',
@@ -137,7 +137,7 @@ export const SURVEY: Survey = {
       subTitle:
         'Thinking back to the last meal you made, how many cupfuls of scraps (peels, skins, stalks and bones) ended up in the bin or compost?',
       image: {
-        uri: require('../../../../assets/placeholder/banana-peel.png'),
+        uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/banana-peel.png',
       },
       name: 'scraps',
       phrase: 'cupfuls',
@@ -149,7 +149,7 @@ export const SURVEY: Survey = {
       subTitle:
         'How much of the meals you made ended up in the bin or compost?',
       image: {
-        uri: require('../../../../assets/placeholder/tuppleware.png'),
+        uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/tuppleware.png',
       },
       name: 'uneatenLeftovers',
       phrase: 'containers (500 ML)',
@@ -159,7 +159,7 @@ export const SURVEY: Survey = {
       name: 'clearingout',
       title: 'What produce didn’t get SAVED?',
       image: {
-        uri: require('../../../../assets/placeholder/post-fridge.png'),
+        uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/post-fridge.png',
       },
       subTitle:
         'The next  questions are about the food you didn’t turn into meals. ',
@@ -175,7 +175,7 @@ export const SURVEY: Survey = {
           id: 0,
           name: 'Fruit',
           image: {
-            uri: require('../../../../assets/placeholder/fruit.png'),
+            uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/fruit.png',
           },
           controllerName: 'binnedFruit',
           phrase: 'pieces',
@@ -184,7 +184,7 @@ export const SURVEY: Survey = {
           id: 1,
           name: 'Veggies',
           image: {
-            uri: require('../../../../assets/placeholder/veggies.png'),
+            uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/veggies.png',
           },
           controllerName: 'binnedVeggies',
           phrase: 'pieces',
@@ -193,7 +193,7 @@ export const SURVEY: Survey = {
           id: 2,
           name: 'Dairy',
           image: {
-            uri: require('../../../../assets/placeholder/milk.png'),
+            uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/milk.png',
           },
           controllerName: 'binnedDairy',
           phrase: 'kilos/litres',
@@ -202,7 +202,7 @@ export const SURVEY: Survey = {
           id: 3,
           name: 'Bread',
           image: {
-            uri: require('../../../../assets/placeholder/bread.png'),
+            uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/bread.png',
           },
           controllerName: 'binnedBread',
           phrase: 'loaves',
@@ -211,7 +211,7 @@ export const SURVEY: Survey = {
           id: 4,
           name: 'Meat',
           image: {
-            uri: require('../../../../assets/placeholder/meat.png'),
+            uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/meat.png',
           },
           controllerName: 'binnedMeat',
           phrase: 'kilos',
@@ -220,7 +220,7 @@ export const SURVEY: Survey = {
           id: 5,
           name: 'Herbs',
           image: {
-            uri: require('../../../../assets/placeholder/herbs.png'),
+            uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/herbs.png',
           },
           controllerName: 'binnedHerbs',
           phrase: 'bunches',
@@ -299,7 +299,7 @@ export const SAVINGS = ({
           : 'New personal best!',
       isBest: !foodSavedPersonalBest || foodSavedPersonalBest < foodSaved,
       image: {
-        uri: require('../../../../assets/placeholder/apple.png'),
+        uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/apple.png',
       },
     },
     {
@@ -312,7 +312,7 @@ export const SAVINGS = ({
           : 'New personal best!',
       isBest: !costSavingsPersonalBest || costSavingsPersonalBest < costSavings,
       image: {
-        uri: require('../../../../assets/placeholder/money.png'),
+        uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/money.png',
       },
     },
     {
@@ -325,7 +325,7 @@ export const SAVINGS = ({
           : 'New personal best!',
       isBest: !co2SavingsPersonalBest || co2SavingsPersonalBest < co2Savings,
       image: {
-        uri: require('../../../../assets/placeholder/cloud.png'),
+        uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/cloud.png',
       },
     },
   ],
@@ -388,7 +388,7 @@ export const TRACK = [
     heading: 'you’ve saved',
     value: '12.5kg',
     image: {
-      uri: require('../../../../assets/placeholder/bowl.png'),
+      uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/bowl.png',
     },
   },
   {
@@ -396,7 +396,7 @@ export const TRACK = [
     heading: 'you’ve saved',
     value: '$183.00',
     image: {
-      uri: require('../../../../assets/placeholder/bowl.png'),
+      uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/bowl.png',
     },
   },
 ];
@@ -422,7 +422,7 @@ export const WEEKLYSURVEY = ({
     id: 0,
     title: 'waste',
     isBest: false,
-    image: require('../../../../assets/placeholder/big-savings.png'),
+    image: { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/big-savings.png' },
     status:
       foodSaved && foodSaved.length > 0 && foodSaved?.charAt(0) === '-'
         ? 'more'
@@ -440,7 +440,7 @@ export const WEEKLYSURVEY = ({
     id: 1,
     title: 'savings',
     isBest: false,
-    image: require('../../../../assets/placeholder/money.png'),
+    image: { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/money.png' },
     status:
       costSavings && costSavings.length > 0 && costSavings?.charAt(0) === '-'
         ? 'more'
@@ -456,7 +456,7 @@ export const WEEKLYSURVEY = ({
     id: 2,
     title: 'co2',
     isBest: false,
-    image: require('../../../../assets/placeholder/cloud.png'),
+    image: { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/cloud.png' },
     status:
       co2Savings && co2Savings.length > 0 && co2Savings?.charAt(0) === '-'
         ? 'more'

@@ -1,6 +1,8 @@
+const CDN_BASE = 'https://d3fg04h02j12vm.cloudfront.net/groups';
+
 const images = [
-  require('../../../../assets/groups/profile-green-apples.png'),
-  require('../../../../assets/groups/profile-pink-limes.png'),
+  { uri: `${CDN_BASE}/profile-green-apples.png` },
+  { uri: `${CDN_BASE}/profile-pink-limes.png` },
 ];
 
 function hashString(input: string): number {

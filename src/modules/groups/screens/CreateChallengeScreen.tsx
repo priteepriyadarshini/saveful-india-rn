@@ -67,7 +67,7 @@ export default function CreateChallengeScreen() {
         description: description.trim(),
         startDate,
         endDate,
-        challengeGoals: goalsNumber,
+        challengeGoal: goalsNumber,
       }).unwrap();
 
       Alert.alert('Success', 'Challenge created successfully!', [

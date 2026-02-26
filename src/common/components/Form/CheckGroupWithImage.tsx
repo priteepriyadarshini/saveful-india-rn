@@ -66,7 +66,7 @@ export default function CheckGroupWithImage({
               {checkboxItem.image && (
                 <Image
                   resizeMode="contain"
-                  // style={tw`h-[70px]`}
+                  style={tw`h-[70px] w-[70px]`}
                   source={checkboxItem.image}
                   accessibilityIgnoresInvertColors
                 />

@@ -1,4 +1,4 @@
-import PrimaryButton from '../../../../common/components/ThemeButtons/PrimaryButton';
+﻿import PrimaryButton from '../../../../common/components/ThemeButtons/PrimaryButton';
 import SecondaryButton from '../../../../common/components/ThemeButtons/SecondaryButton';
 import tw from '../../../../common/tailwind';
 import { mixpanelEventName } from '../../../../modules/analytics/analytics';
@@ -47,7 +47,7 @@ export default function StartSurvey({
             <Image
               style={tw`mx-auto h-[289px] w-[234px] max-w-full`}
               resizeMode="contain"
-              source={require('../../../../../assets/placeholder/bowl.png')}
+              source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/bowl.png' }}
               accessibilityIgnoresInvertColors
             />
             <Text
@@ -107,7 +107,7 @@ export default function StartSurvey({
                   />
                   <Image
                     resizeMode="contain"
-                    source={require('../../../../../assets/qantas/green-tier.png')}
+                    source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/green-tier.png' }}
                     accessibilityIgnoresInvertColors
                     style={tw`absolute -bottom-3 -right-2`}
                   />

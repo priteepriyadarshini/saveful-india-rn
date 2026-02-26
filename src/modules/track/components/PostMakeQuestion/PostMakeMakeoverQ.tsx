@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+﻿import { Feather } from '@expo/vector-icons';
 import PrimaryButton from '../../../../common/components/ThemeButtons/PrimaryButton';
 import tw from '../../../../common/tailwind';
 import { IFramework } from '../../types/local';
@@ -483,7 +483,7 @@ export default function PostMakeMakeoverQ({
               <Image
                 style={tw`mx-auto mb-4 h-[120px] w-[120px]`}
                 resizeMode="contain"
-                source={require('../../../../../assets/placeholder/frying-pan.png')}
+                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/frying-pan.png' }}
                 accessibilityIgnoresInvertColors
               />
               <Text

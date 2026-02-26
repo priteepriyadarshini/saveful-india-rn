@@ -1,5 +1,5 @@
-import React from 'react';
-import { Image, ImageRequireSource, Pressable, Text } from 'react-native';
+﻿import React from 'react';
+import { Image, Pressable, Text } from 'react-native';
 import { NavigationHelpers, ParamListBase } from '@react-navigation/native';
 import { BottomTabNavigationEventMap } from '@react-navigation/bottom-tabs';
 import tw from '../../../common/tailwind'; // Adjust path if needed
@@ -33,34 +33,34 @@ import { mixpanelEventName } from '../../analytics/analytics';
 //   switch (route.name) {
 //     case 'Feed':
 //       iconSource = focused
-//         ? require('../../../../assets/icons/tabbar/feed/ic_feed_active.png')
+//         ? { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/feed/ic_feed_active.png' }
 //         : makeItRoute
-//         ? require('../../../../assets/icons/tabbar/feed/ic_feed_creme.png')
-//         : require('../../../../assets/icons/tabbar/feed/ic_feed_inactive.png');
+//         ? { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/feed/ic_feed_creme.png' }
+//         : { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/feed/ic_feed_inactive.png' };
 //       break;
 //     case 'Make':
 //       iconSource = focused
 //         ? makeItRoute
-//           ? require('../../../../assets/icons/tabbar/make/ic_make_lime.png')
-//           : require('../../../../assets/icons/tabbar/make/ic_make_active.png')
-//         : require('../../../../assets/icons/tabbar/make/ic_make_inactive.png');
+//           ? { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/make/ic_make_lime.png' }
+//           : { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/make/ic_make_active.png' }
+//         : { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/make/ic_make_inactive.png' };
 //       break;
 //     case 'Hack':
 //       iconSource = focused
-//         ? require('../../../../assets/icons/tabbar/hack/ic_hack_active.png')
+//         ? { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/hack/ic_hack_active.png' }
 //         : makeItRoute
-//         ? require('../../../../assets/icons/tabbar/hack/ic_hack_creme.png')
-//         : require('../../../../assets/icons/tabbar/hack/ic_hack_inactive.png');
+//         ? { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/hack/ic_hack_creme.png' }
+//         : { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/hack/ic_hack_inactive.png' };
 //       break;
 //     case 'Track':
 //       iconSource = focused
-//         ? require('../../../../assets/icons/tabbar/track/ic_track_active.png')
+//         ? { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/track/ic_track_active.png' }
 //         : makeItRoute
-//         ? require('../../../../assets/icons/tabbar/track/ic_track_creme.png')
-//         : require('../../../../assets/icons/tabbar/track/ic_track_inactive.png');
+//         ? { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/track/ic_track_creme.png' }
+//         : { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/track/ic_track_inactive.png' };
 //       break;
 //     default:
-//       iconSource = require('../../../../assets/icons/tabbar/feed/ic_feed_inactive.png');
+//       iconSource = { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/feed/ic_feed_inactive.png' };
 //       break;
 //   }
 
@@ -117,39 +117,39 @@ function TabBarIcon(props: TabBarIconProps) {
 
   const paddingStyle = { paddingBottom: safeArea.bottom > 0 ? 0 : 13 };
 
-  let iconSource: ImageRequireSource;
+  let iconSource: any;
 
   switch (route.name) {
     case 'Feed':
       iconSource = focused
-        ? require('../../../../assets/icons/tabbar/feed/ic_feed_active.png')
+        ? { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/feed/ic_feed_active.png' }
         : makeItRoute
-        ? require('../../../../assets/icons/tabbar/feed/ic_feed_creme.png')
-        : require('../../../../assets/icons/tabbar/feed/ic_feed_inactive.png');
+        ? { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/feed/ic_feed_creme.png' }
+        : { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/feed/ic_feed_inactive.png' };
       break;
     case 'Make':
       iconSource = focused
         ? makeItRoute
-          ? require('../../../../assets/icons/tabbar/make/ic_make_lime.png')
-          : require('../../../../assets/icons/tabbar/make/ic_make_active.png')
-        : require('../../../../assets/icons/tabbar/make/ic_make_inactive.png');
+          ? { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/make/ic_make_lime.png' }
+          : { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/make/ic_make_active.png' }
+        : { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/make/ic_make_inactive.png' };
       break;
     case 'Hack':
       iconSource = focused
-        ? require('../../../../assets/icons/tabbar/hack/ic_hack_active.png')
+        ? { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/hack/ic_hack_active.png' }
         : makeItRoute
-        ? require('../../../../assets/icons/tabbar/hack/ic_hack_creme.png')
-        : require('../../../../assets/icons/tabbar/hack/ic_hack_inactive.png');
+        ? { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/hack/ic_hack_creme.png' }
+        : { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/hack/ic_hack_inactive.png' };
       break;
     case 'Track':
       iconSource = focused
-        ? require('../../../../assets/icons/tabbar/track/ic_track_active.png')
+        ? { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/track/ic_track_active.png' }
         : makeItRoute
-        ? require('../../../../assets/icons/tabbar/track/ic_track_creme.png')
-        : require('../../../../assets/icons/tabbar/track/ic_track_inactive.png');
+        ? { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/track/ic_track_creme.png' }
+        : { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/track/ic_track_inactive.png' };
       break;
     default:
-      iconSource = require('../../../../assets/icons/tabbar/feed/ic_feed_inactive.png');
+      iconSource = { uri: 'https://d3fg04h02j12vm.cloudfront.net/icons/tabbar/feed/ic_feed_inactive.png' };
       break;
   }
 

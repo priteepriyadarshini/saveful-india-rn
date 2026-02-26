@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+﻿import { Feather } from '@expo/vector-icons';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useLinkTo, useNavigation } from '@react-navigation/native';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
@@ -354,7 +354,7 @@ export default function SurveyScreen() {
         <ImageBackground
           style={tw.style(paddingTop, paddingBottom)}
           imageStyle={tw.style('rounded-2xl')}
-          source={require('../../../../assets/placeholder/purple-bg.png')}
+          source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/purple-bg.png' }}
         >
           <HeaderMenu />
           <StartSurvey 
@@ -371,7 +371,7 @@ export default function SurveyScreen() {
             <ImageBackground
               style={tw.style(paddingTop, paddingBottom)}
               imageStyle={tw.style('rounded-2xl')}
-              source={require('../../../../assets/placeholder/purple-bg.png')}
+              source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/purple-bg.png' }}
             >
               <HeaderMenu />
               <FlatList

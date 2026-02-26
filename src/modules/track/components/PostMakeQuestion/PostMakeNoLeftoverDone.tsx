@@ -1,4 +1,4 @@
-import PrimaryButton from '../../../../common/components/ThemeButtons/PrimaryButton';
+﻿import PrimaryButton from '../../../../common/components/ThemeButtons/PrimaryButton';
 import tw from '../../../../common/tailwind';
 import React from 'react';
 import { Image, ScrollView, Text, View } from 'react-native';
@@ -29,8 +29,8 @@ export default function PostMakeNoLeftoverDone({
             resizeMode="contain"
             source={
               isNotEnough
-                ? require('../../../../../assets/placeholder/bowl.png')
-                : require('../../../../../assets/placeholder/post-fridge.png')
+                ? { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/bowl.png' }
+                : { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/post-fridge.png' }
             }
             accessibilityIgnoresInvertColors
           />

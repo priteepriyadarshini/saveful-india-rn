@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, Alert, ActivityIndicator, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image, ImageBackground, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -191,7 +191,7 @@ export default function OTPVerificationScreen({ route, navigation }: any) {
   return (
     <ImageBackground
       style={tw`relative flex-1 bg-creme`}
-      source={require('../../../../assets/intro/splash.png')}
+      source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/intro/splash.png' }}
       imageStyle={{
         resizeMode: 'contain',
       }}
@@ -211,14 +211,14 @@ export default function OTPVerificationScreen({ route, navigation }: any) {
               <Image
                 style={tw.style('h-[58px] w-[111px]')}
                 resizeMode="contain"
-                source={require('../../../../assets/intro/logo.png')}
+                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/intro/logo.png' }}
               />
             </View>
 
             {/* OTP Card */}
             <View style={tw.style('mx-4 mb-6 overflow-hidden rounded-2xl border border-strokecream bg-white', cardDrop)}>
               <ImageBackground
-                source={require('../../../../assets/ribbons/ingredients-ribbons/eggplant-light2.png')}
+                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/eggplant-light2.png' }}
                 resizeMode="cover"
                 imageStyle={{ opacity: 0.1 }}
               >

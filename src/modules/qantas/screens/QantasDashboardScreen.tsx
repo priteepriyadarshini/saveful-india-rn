@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+﻿import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
 import PrimaryButton from '../../../common/components/ThemeButtons/PrimaryButton';
@@ -157,7 +157,7 @@ export default function QantasDashboardScreen() {
           </Pressable>
           <Image
             resizeMode="contain"
-            source={require('../../../../assets/qantas/frequent-flyer.png')}
+            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/frequent-flyer.png' }}
             accessibilityIgnoresInvertColors
             style={tw`mb-6 h-[80px] w-[200px]`}
           />
@@ -184,7 +184,7 @@ export default function QantasDashboardScreen() {
         <View style={tw`absolute inset-0 z-50`} pointerEvents="none">
           <LottieView
             ref={confettiRef}
-            source={require('../../../../assets/groups/confetti.json')}
+            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/groups/confetti.json' }}
             autoPlay
             loop={false}
             style={tw`absolute inset-0`}
@@ -214,7 +214,7 @@ export default function QantasDashboardScreen() {
           <View style={tw`items-center mt-2 mb-4`}>
             <Image
               resizeMode="contain"
-              source={require('../../../../assets/qantas/frequent-flyer.png')}
+              source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/frequent-flyer.png' }}
               accessibilityIgnoresInvertColors
               style={tw`h-[60px] w-[160px]`}
             />
@@ -227,7 +227,7 @@ export default function QantasDashboardScreen() {
             <View style={tw`mb-4 items-center rounded-2xl bg-kale/10 py-4`}>
               <Image
                 resizeMode="contain"
-                source={require('../../../../assets/qantas/green-tier.png')}
+                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/green-tier.png' }}
                 accessibilityIgnoresInvertColors
                 style={tw`h-[48px] w-[48px] mb-2`}
               />
@@ -274,7 +274,7 @@ export default function QantasDashboardScreen() {
               />
               <Image
                 resizeMode="contain"
-                source={require('../../../../assets/qantas/green-tier.png')}
+                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/green-tier.png' }}
                 accessibilityIgnoresInvertColors
                 style={tw`absolute -bottom-3 -right-1 h-[28px] w-[28px]`}
               />

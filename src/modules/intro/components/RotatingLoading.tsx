@@ -1,4 +1,4 @@
-
+﻿
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Text, View } from 'react-native';
 import tw from '../../../common/tailwind';
@@ -35,7 +35,7 @@ export default function RotatingLoading() {
             tw.style('absolute left-3'),
             { transform: [{ rotate: spin }] },
           ]}
-          source={require('../../../../assets/placeholder/circle.png')}
+          source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/circle.png' }}
         />
       </View>
     </View>

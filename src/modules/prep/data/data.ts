@@ -1,38 +1,40 @@
 import { Dish } from '../../../modules/prep/types';
 
+const TUTORIALS_CDN = 'https://d3fg04h02j12vm.cloudfront.net/onboarding/tutorials';
+
 export const PREPTUTORIAL = [
   {
     id: 0,
     title: 'choose YOUR OWN ingredients',
-    image: require('../../../../assets/onboarding/tutorials/Prep-01.png'),
+    image: { uri: `${TUTORIALS_CDN}/Prep-01.png` },
     description:
       'You tell us what you want to cook with, not the other way around! Swipe through each row to choose the ingredients most suited to your tastebuds (and what’s already in your kitchen).',
   },
   {
     id: 1,
     title: 'Add extra flavour',
-    image: require('../../../../assets/onboarding/tutorials/Prep-02.png'),
+    image: { uri: `${TUTORIALS_CDN}/Prep-02.png` },
     description:
       'Tap the plus button to open up a long list of ingredients tailored to each dish. Choose your faves and add them to your meal.',
   },
   {
     id: 2,
     title: 'GET guidance on portions',
-    image: require('../../../../assets/onboarding/tutorials/Prep-03.png'),
+    image: { uri: `${TUTORIALS_CDN}/Prep-03.png` },
     description:
       'Above most ingredient categories, you’ll see a quantity guide. These tend to be per person (hint: they generally have a little flex in them!).',
   },
   {
     id: 3,
     title: 'Make it your own',
-    image: require('../../../../assets/onboarding/tutorials/Prep-04.png'),
+    image: { uri: `${TUTORIALS_CDN}/Prep-04.png` },
     description:
       'Make meals to your tastes. We’ll make some recommendations here and there, but really – it’s up to you (and your tastebuds)!',
   },
   {
     id: 4,
     title: 'get prepped first',
-    image: require('../../../../assets/onboarding/tutorials/Prep-05.png'),
+    image: { uri: `${TUTORIALS_CDN}/Prep-05.png` },
     description:
       'We like to have everything chopped, diced and sliced and ready to roll before we hit the big ‘make it’ button!',
   },
@@ -42,28 +44,28 @@ export const MAKETUTORIAL = [
   {
     id: 0,
     title: 'Ingredients at your fingertips',
-    image: require('../../../../assets/onboarding/tutorials/Make-01.png'),
+    image: { uri: `${TUTORIALS_CDN}/Make-01.png` },
     description:
       'Can’t remember what you chose to use up? Simply tap the ‘ingredients’ drawer to see the ingredients you picked in prep. ',
   },
   {
     id: 1,
     title: 'SWIPE TO NAVIGATE',
-    image: require('../../../../assets/onboarding/tutorials/Make-02.png'),
+    image: { uri: `${TUTORIALS_CDN}/Make-02.png` },
     description:
       'We’ve broken our frameworks down into bite-sized chunks to make them extra-easy to digest! Swipe left to progress to the next step, swipe right to return to the previous step.',
   },
   {
     id: 2,
     title: 'mini hacks',
-    image: require('../../../../assets/onboarding/tutorials/Make-03.png'),
+    image: { uri: `${TUTORIALS_CDN}/Make-03.png` },
     description:
       'Look out for chef-informed ‘pro tips’ ‘mini hacks’ and ‘serving suggestions’. They help you discover sustainable chef know-how (like the fact you can save your onion skins for stocks!).',
   },
   {
     id: 3,
     title: 'complete the cook',
-    image: require('../../../../assets/onboarding/tutorials/Make-04.png'),
+    image: { uri: `${TUTORIALS_CDN}/Make-04.png` },
     description:
       'Make sure you press this button at the end of every meal you make! It’ll help you see how many meals you’ve made with Saveful and how much food, money and carbon you’ve saved!',
   },

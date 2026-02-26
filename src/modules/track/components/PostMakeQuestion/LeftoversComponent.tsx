@@ -1,4 +1,4 @@
-import { useLinkTo, useNavigation } from '@react-navigation/native';
+﻿import { useLinkTo, useNavigation } from '@react-navigation/native';
 import SecondaryButton from '../../../../common/components/ThemeButtons/SecondaryButton';
 import tw from '../../../../common/tailwind';
 import { IFramework } from '../../types/local';
@@ -65,7 +65,7 @@ export default function LeftoversComponent({
           <View style={tw.style('relative flex-row pt-2.5')}>
             <Image
               resizeMode="contain"
-              source={require('../../../../../assets/placeholder/fridge.png')}
+              source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/fridge.png' }}
               accessibilityIgnoresInvertColors
             />
             <View style={tw.style('max-w-[200px]')}>

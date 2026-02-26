@@ -1,4 +1,4 @@
-import SecondaryButton from '../../../../common/components/ThemeButtons/SecondaryButton';
+﻿import SecondaryButton from '../../../../common/components/ThemeButtons/SecondaryButton';
 import tw from '../../../../common/tailwind';
 import React from 'react';
 import { Image, ScrollView, Text, View } from 'react-native';
@@ -18,7 +18,7 @@ export default function PostMakeLeftoverAskQ({ onAnswer, isLoading }: Props) {
           <Image
             style={tw`mx-auto mb-7 h-[280px] w-[260px] max-w-full`}
             resizeMode="contain"
-            source={require('../../../../../assets/placeholder/tuppleware.png')}
+            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/tuppleware.png' }}
             accessibilityIgnoresInvertColors
           />
 

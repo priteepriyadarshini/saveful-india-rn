@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Dimensions, Image, ImageBackground, Text, View } from 'react-native';
 import tw from '../../../common/tailwind';
 import { 
@@ -12,7 +12,7 @@ export default function Staples() {
   return (
     <ImageBackground
       style={tw`items-center px-5 py-10`}
-      source={require('../../../../assets/ribbons/lemon-2.png')}
+      source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/lemon-2.png' }}
     >
       <Text style={tw.style(h6TextStyle, 'mb-5 text-center')}>
         Pantry staples
@@ -25,7 +25,7 @@ export default function Staples() {
             Dimensions.get('screen').width - 80
           }px] overflow-hidden rounded-2lg`}
           resizeMode="cover"
-          source={require('../../../../assets/placeholder/staples.png')}
+          source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/staples.png' }}
           accessibilityIgnoresInvertColors
         />
 
@@ -41,7 +41,7 @@ export default function Staples() {
           <Image
             style={tw`h-[32px] w-[58px] overflow-hidden`}
             resizeMode="cover"
-            source={require('../../../../assets/brands/praise.png')}
+            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/brands/praise.png' }}
             accessibilityIgnoresInvertColors
           />
         </View>

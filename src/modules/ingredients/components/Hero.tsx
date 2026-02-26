@@ -1,4 +1,4 @@
-import { bundledSource } from '../../../common/helpers/uriHelpers';
+﻿import { bundledSource } from '../../../common/helpers/uriHelpers';
 import tw from '../../../common/tailwind';
 import { IAsset, ISticker } from '../../../models/craft';
 import useEnvironment from '../../../modules/environment/hooks/useEnvironment';
@@ -51,7 +51,7 @@ export default function Hero({
           source={
             heroImage[0]?.url
               ? bundledSource(heroImage[0].url, env.useBundledContent)
-              : require('../../../../assets/ingredients/placeholder.png') // TODO: Add default image
+              : { uri: 'https://d3fg04h02j12vm.cloudfront.net/ingredients/placeholder.png' } // TODO: Add default image
           }
           accessibilityIgnoresInvertColors
         />

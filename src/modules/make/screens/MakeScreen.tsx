@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+﻿import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useMemo } from 'react';
 import {
   Dimensions,
@@ -79,7 +79,7 @@ export default function MakeScreen() {
           <Image
             style={tw`absolute top-0 w-[${windowWidth}px] h-[${(windowWidth * 241) / 375}px]`}
             resizeMode="contain"
-            source={require('../../../../assets/placeholder/make-bg.png')}
+            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/make-bg.png' }}
             accessibilityIgnoresInvertColors
           />
           <SafeAreaView style={tw`pt-[25px]`}>
@@ -93,7 +93,7 @@ export default function MakeScreen() {
                   (windowWidth * 184) / 375
                 }px]`}
                 resizeMode="contain"
-                source={require('../../../../assets/placeholder/this-plus-that.png')}
+                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/this-plus-that.png' }}
                 accessibilityIgnoresInvertColors
               />
             </View>

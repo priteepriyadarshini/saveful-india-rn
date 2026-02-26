@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { View, Text, Image, Modal, Pressable, TextInput, ScrollView, Alert } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import * as Animatable from 'react-native-animatable';
@@ -142,7 +142,7 @@ export default function RateRecipeModal({
                 />
               ) : (
                 <Image
-                  source={require('../../../../assets/placeholder/frying-pan.png')}
+                  source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/frying-pan.png' }}
                   style={tw`h-24 w-24`}
                   resizeMode="contain"
                 />
@@ -225,7 +225,7 @@ export default function RateRecipeModal({
       <Image
         style={tw`absolute h-full w-full bg-eggplant`}
         resizeMode="cover"
-        source={require('../../../../assets/placeholder/background-modal.png')}
+        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/background-modal.png' }}
       />
     </Modal>
   );

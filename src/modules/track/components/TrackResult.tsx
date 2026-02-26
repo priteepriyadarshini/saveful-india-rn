@@ -1,4 +1,4 @@
-import { useLinkTo, useNavigation } from '@react-navigation/native';
+﻿import { useLinkTo, useNavigation } from '@react-navigation/native';
 import PrimaryButton from '../../../common/components/ThemeButtons/PrimaryButton';
 import tw from '../../../common/tailwind';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
@@ -35,7 +35,7 @@ export default function TrackResult({
       <Image
         style={tw`mx-auto h-[235px] w-[190px]`}
         resizeMode="contain"
-        source={require('../../../../assets/placeholder/bowl.png')}
+        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/bowl.png' }}
         accessibilityIgnoresInvertColors
       />
       <Text

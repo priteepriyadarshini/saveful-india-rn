@@ -11,7 +11,6 @@ import {
 import {
   Dimensions,
   Image,
-  ImageRequireSource,
   Text,
   View,
 } from 'react-native';
@@ -24,7 +23,7 @@ import { h7TextStyle } from '../../../theme/typography';
 interface CarouselItem {
   id: string;
   title: string;
-  image: ImageRequireSource;
+  image: any;
 }
 
 interface FavouriteDishesProps {

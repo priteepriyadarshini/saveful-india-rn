@@ -1,4 +1,4 @@
-import GenericCarouselFlatlist from '../../../common/components/GenericCarousel/GenericCarouselFlatlist';
+﻿import GenericCarouselFlatlist from '../../../common/components/GenericCarousel/GenericCarouselFlatlist';
 import GenericCarouselPagination from '../../../common/components/GenericCarousel/GenericCarouselPagination';
 import tw from '../../../common/tailwind';
 import ModalComponent from '../../../modules/groups/components/ModalComponent';
@@ -22,25 +22,27 @@ import {
 const screenWidth = Dimensions.get('window').width;
 const itemLength = screenWidth - 40;
 
+const CDN_BASE = 'https://d3fg04h02j12vm.cloudfront.net/groups';
+
 const DATA = [
   {
     id: 0,
     title: 'Create groups',
-    image: require('../../../../assets/groups/tutorial-create.png'),
+    image: { uri: `https://d3fg04h02j12vm.cloudfront.net/groups/tutorial-create.png` },
     description:
       'Get your family, friends, school, workplace or any group together and see how much food you can save together. You can even set up challenges and see who’s the most saveful!',
   },
   {
     id: 1,
     title: 'Join groups',
-    image: require('../../../../assets/groups/tutorial-join.png'),
+    image: { uri: `https://d3fg04h02j12vm.cloudfront.net/groups/tutorial-join.png` },
     description:
       'You can also join groups created by others. To do this, you’ll need to be sent an invite code from either the person that created the group, or an existing group member.',
   },
   {
     id: 2,
     title: 'Save together',
-    image: require('../../../../assets/groups/tutorial-challenge.png'),
+    image: { uri: `https://d3fg04h02j12vm.cloudfront.net/groups/tutorial-challenge.png` },
     description:
       'Once you’re in a group, you can take part in challenges. Groups can set a target and a timeframe and work together to meet (or exceed) the amount of meals they cook.',
   },

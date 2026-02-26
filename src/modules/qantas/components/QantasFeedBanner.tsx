@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+﻿import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import tw from '../../../common/tailwind';
 import { mixpanelEventName } from '../../analytics/analytics';
@@ -78,7 +78,7 @@ export default function QantasFeedBanner() {
         <View style={tw`items-center bg-white px-6 py-5`}>
           <Image
             resizeMode="contain"
-            source={require('../../../../assets/qantas/frequent-flyer.png')}
+            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/frequent-flyer.png' }}
             accessibilityIgnoresInvertColors
             style={tw`mb-3 h-[60px] w-[160px]`}
           />
@@ -142,7 +142,7 @@ export default function QantasFeedBanner() {
       <View style={tw`items-center bg-white px-6 py-5`}>
         <Image
           resizeMode="contain"
-          source={require('../../../../assets/qantas/frequent-flyer.png')}
+          source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/frequent-flyer.png' }}
           accessibilityIgnoresInvertColors
           style={tw`mb-3 h-[50px] w-[140px]`}
         />
@@ -161,7 +161,7 @@ export default function QantasFeedBanner() {
           />
           <Image
             resizeMode="contain"
-            source={require('../../../../assets/qantas/green-tier.png')}
+            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/green-tier.png' }}
             accessibilityIgnoresInvertColors
             style={tw`absolute -bottom-3 -right-1 h-[28px] w-[28px]`}
           />

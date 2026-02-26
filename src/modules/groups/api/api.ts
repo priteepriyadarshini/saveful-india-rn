@@ -31,42 +31,32 @@ const groupsApi = api
         }),
         transformResponse: (response: Group[]) =>
           Array.isArray(response) ? response.filter(g => !(g as any).isDeleted) : [],
-        refetchOnFocus: true,
-        refetchOnReconnect: true,
         providesTags: ['Groups'],
       }),
 
-      // Get groups where the user is a member (not just owner)
       getMemberGroups: builder.query<Group[], void>({
         query: () => ({
           url: '/api/community-groups/userGroups',
           method: 'GET',
         }),
-        // The backend returns an array of objects { role, joinedViaCode, group: { ... } }
-        // Server already filters isDeleted; map cleanly to Group[]
+   
         transformResponse: (response: any[]) =>
           Array.isArray(response)
             ? response
                 .filter(item => !!item?.group)
                 .map(item => item.group as Group)
             : [],
-        refetchOnFocus: true,
-        refetchOnReconnect: true,
         providesTags: ['Groups'],
       }),
       
-      // Get specific group by ID with members
       getUserGroup: builder.query<GroupResponse, { id: string }>({
         query: params => ({
           url: `/api/community-groups/${params.id}`,
           method: 'GET',
         }),
-        refetchOnFocus: true,
-        refetchOnReconnect: true,
         providesTags: ['Groups', 'GroupMembers'],
       }),
 
-      // Create a new group
       createUserGroup: builder.mutation<
         Group,
         {
@@ -80,7 +70,6 @@ const groupsApi = api
         }
       >({
         query: params => {
-          // If no image, send JSON to simplify request
           if (!params.profileImage) {
             return {
               url: '/api/community-groups',
@@ -103,7 +92,6 @@ const groupsApi = api
                 ? params.profileImage.uri
                 : params.profileImage.uri.replace('file://', ''),
             name: params.profileImage.name,
-            // Force a standard MIME type for reliability
             type: 'image/jpeg',
           } as any);
 
@@ -230,7 +218,7 @@ const groupsApi = api
           description: string;
           startDate: Date;
           endDate: Date;
-          challengeGoals: number;
+          challengeGoal: number;
         }
       >({
         query: params => ({
@@ -248,7 +236,7 @@ const groupsApi = api
 
       joinGroupChallenge: builder.mutation<
         { message: string; result: GroupChallengeParticipant },
-        { communityId: string; challnageId: string }
+        { communityId: string; challengeId: string }
       >({
         query: params => ({
           url: '/api/community-groups/challenges/join',
@@ -290,7 +278,7 @@ const groupsApi = api
           description?: string;
           startDate?: Date;
           endDate?: Date;
-          challengeGoals?: number;
+          challengeGoal?: number;
           status?: boolean;
         }
       >({

@@ -1,4 +1,4 @@
-import SecondaryButton from '../../../common/components/ThemeButtons/SecondaryButton';
+﻿import SecondaryButton from '../../../common/components/ThemeButtons/SecondaryButton';
 import tw from '../../../common/tailwind';
 import { Image, Modal, Text, View } from 'react-native';
 import * as Animatable from 'react-native-animatable';
@@ -30,7 +30,7 @@ export default function CompletedCookWithSurvey({
         >
           <View style={tw.style('items-center py-5')}>
             <Image
-              source={require('../../../../assets/placeholder/bowl.png')}
+              source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/bowl.png' }}
               style={tw`flex-initial`}
               resizeMode="contain"
             />
@@ -82,7 +82,7 @@ export default function CompletedCookWithSurvey({
       <Image
         style={tw`absolute h-full w-full bg-eggplant opacity-80`}
         resizeMode="cover"
-        source={require('../../../../assets/placeholder/background-modal.png')}
+        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/background-modal.png' }}
       />
     </Modal>
   );

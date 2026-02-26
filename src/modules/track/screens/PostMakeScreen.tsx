@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+﻿import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { skipToken } from '@reduxjs/toolkit/query';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
@@ -77,7 +77,7 @@ export default function PostMakeScreen({ route: { params } }: any) {
       <ImageBackground
         style={tw`flex-1`}
         imageStyle={tw.style('rounded-2xl')}
-        source={require('../../../../assets/placeholder/purple-line.png')}
+        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/purple-line.png' }}
       >
         <SafeAreaView edges={['bottom', 'top']} style={tw`flex-1 pb-10`}>
           <View style={tw.style('z-10 items-end')}>

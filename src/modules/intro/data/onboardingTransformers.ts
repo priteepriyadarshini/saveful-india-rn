@@ -1,17 +1,18 @@
-import { OnboardingConfig } from '../api/onboardingApi';
-import { ImageRequireSource } from 'react-native';
+﻿import { OnboardingConfig } from '../api/onboardingApi';
 
-const imageAssets: Record<string, ImageRequireSource> = {
-  'onboarding-01': require('../../../../assets/onboarding/01.png'),
-  'onboarding-02': require('../../../../assets/onboarding/02.png'),
-  'onboarding-day-result': require('../../../../assets/onboarding/day-result.png'),
-  'notification-placeholder': require('../../../../assets/placeholder/notification.png'),
+const ONBOARDING_CDN = 'https://d3fg04h02j12vm.cloudfront.net/onboarding';
+
+const imageAssets: Record<string, any> = {
+  'onboarding-01': { uri: `${ONBOARDING_CDN}/01.png` },
+  'onboarding-02': { uri: `${ONBOARDING_CDN}/02.png` },
+  'onboarding-day-result': { uri: `${ONBOARDING_CDN}/day-result.png` },
+  'notification-placeholder': { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/notification.png' },
 };
 
 export interface CarouselItem {
   id: number;
   welcomeMessage?: string;
-  image?: ImageRequireSource;
+  image?: any;
   heading?: string | ((param?: any) => string);
   buttonText: string;
   showPostcodeInput?: boolean;
@@ -92,7 +93,7 @@ export const FALLBACK_ONBOARDING = (firstName?: string): CarouselItem[] => [
     subHeading: "Let's get to know you (and your household).",
     description:
       'Your answers will help us provide a customized experience.',
-    image: require('../../../../assets/onboarding/01.png'),
+    image: { uri: `${ONBOARDING_CDN}/01.png` },
     buttonText: "Let's go",
   },
   {
@@ -101,7 +102,7 @@ export const FALLBACK_ONBOARDING = (firstName?: string): CarouselItem[] => [
     showPostcodeInput: true,
     description:
       'Your location information helps us provide localized suggestions.',
-    image: require('../../../../assets/onboarding/02.png'),
+    image: { uri: `${ONBOARDING_CDN}/02.png` },
     buttonText: 'Next',
   },
   {
@@ -136,7 +137,7 @@ export const FALLBACK_ONBOARDING = (firstName?: string): CarouselItem[] => [
           : `GREAT! We'll check in on ${day}`
       }`,
     buttonText: 'Next',
-    image: require('../../../../assets/onboarding/day-result.png'),
+    image: { uri: `${ONBOARDING_CDN}/day-result.png` },
     description: (day?: string) =>
       `${
         day?.toLowerCase() === "i don't have a set day"
@@ -152,7 +153,7 @@ export const FALLBACK_ONBOARDING = (firstName?: string): CarouselItem[] => [
       "We'd love to help you save even more food, money and time. No spam, ever.",
     buttonText: 'Turn on notifications',
     description: '',
-    image: require('../../../../assets/placeholder/notification.png'),
+    image: { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/notification.png' },
     showNotifications: true,
   },
 ];

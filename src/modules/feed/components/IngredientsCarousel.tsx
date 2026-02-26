@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, Image, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLinkTo, useNavigation } from '@react-navigation/native';
@@ -79,7 +79,7 @@ function IngredientCard({
           source={
             heroImageUrl
               ? { uri: heroImageUrl }
-              : require('../../../../assets/ingredients/placeholder.png')
+              : { uri: 'https://d3fg04h02j12vm.cloudfront.net/ingredients/placeholder.png' }
           }
           accessibilityIgnoresInvertColors
         />

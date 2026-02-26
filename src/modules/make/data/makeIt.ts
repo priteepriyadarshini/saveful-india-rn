@@ -1,4 +1,4 @@
-export interface MakeItProps {
+﻿export interface MakeItProps {
   id: string;
   heading: string;
   info?: {
@@ -82,7 +82,7 @@ const MAKE_IT: MakeItProps[] = [
         'A chilli is a great way to sneak in extra veg for fussy kids - you can add them after the onion and garlic are cooked off. Be sure to chop or grate your extra veg very finely to aid in the subterfuge!',
       sponsor: 'sponsored by',
       image: {
-        uri: require('../../../../assets/brands/birds-eye.png'),
+        uri: 'https://d3fg04h02j12vm.cloudfront.net/brands/birds-eye.png',
       },
     },
     ingredients: [

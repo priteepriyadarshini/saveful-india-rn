@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+﻿import { Feather } from '@expo/vector-icons';
 import {
   GenericCarouselFlatlist,
   GenericCarouselWrapper,
@@ -115,7 +115,7 @@ export default function PrepCarousel({
       id: 2,
       title: 'SAVING THIS DISH',
       type: 'save',
-      uri: require('../../../../assets/placeholder/fridge.png'),
+      uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/fridge.png',
       description: [
         {
           title: 'In the freezer',

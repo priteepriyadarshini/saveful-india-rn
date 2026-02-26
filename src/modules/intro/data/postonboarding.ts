@@ -1,11 +1,11 @@
-export const POSTONBOARDING = [
+﻿export const POSTONBOARDING = [
   {
     id: 0,
     progressBar: true,
     heading: 'May we send you little nudges?',
     subHeading: `We’d love to help you save even more food, money and stress. No spam, ever.`,
     image: {
-      uri: require('../../../../assets/placeholder/notification.png'),
+      uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/notification.png',
     },
     buttonText: 'Turn on notifications',
   },
@@ -15,7 +15,7 @@ export const POSTONBOARDING = [
     heading: 'Link a Qantas account',
     subHeading: 'Get rewarded for sustainable choices.',
     image: {
-      uri: require('../../../../assets/placeholder/qantas-logo.png'),
+      uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/qantas-logo.png',
     },
     buttonText: 'Link your Qantas account',
     contentList: [
@@ -39,7 +39,7 @@ export const POSTONBOARDING = [
     heading: 'Connect your Qantas account',
     subHeading: 'Link up your account so we can reduce our impact, together.',
     image: {
-      uri: require('../../../../assets/placeholder/leaf.png'),
+      uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/leaf.png',
     },
     buttonText: 'Link your Qantas account',
   },

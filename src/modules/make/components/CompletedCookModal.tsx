@@ -1,4 +1,4 @@
-import SecondaryButton from '../../../common/components/ThemeButtons/SecondaryButton';
+﻿import SecondaryButton from '../../../common/components/ThemeButtons/SecondaryButton';
 import tw from '../../../common/tailwind';
 import { Image, Modal, Text, View } from 'react-native';
 import * as Animatable from 'react-native-animatable';
@@ -51,7 +51,7 @@ const navigation = useNavigation<InitialNav>();
         >
           <View style={tw.style('items-center')}>
             <Image
-              source={require('../../../../assets/placeholder/frying-pan.png')}
+              source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/frying-pan.png' }}
               style={tw`flex-initial`}
               resizeMode="contain"
             />
@@ -98,7 +98,7 @@ const navigation = useNavigation<InitialNav>();
       <Image
         style={tw`absolute h-full w-full bg-eggplant opacity-80`}
         resizeMode="cover"
-        source={require('../../../../assets/placeholder/background-modal.png')}
+        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/background-modal.png' }}
       />
     </Modal>
   );

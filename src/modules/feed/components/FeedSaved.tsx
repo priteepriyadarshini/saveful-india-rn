@@ -1,4 +1,4 @@
-import { Entypo } from '@expo/vector-icons';
+﻿import { Entypo } from '@expo/vector-icons';
 import { skipToken } from '@reduxjs/toolkit/query';
 
 import { bundledSource } from '../../../common/helpers/uriHelpers';
@@ -171,7 +171,7 @@ export default function FeedSaved({
               <Image
                 style={tw.style('mx-auto h-[31px] w-[60px]')}
                 resizeMode="contain"
-                source={require('../../../../assets/intro/logo-white.png')}
+                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/intro/logo-white.png' }}
               />
             )}
             <Text

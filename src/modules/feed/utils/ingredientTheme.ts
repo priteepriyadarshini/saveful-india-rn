@@ -1,4 +1,4 @@
-const bgTheme = (ingredientTheme: string | null) => {
+﻿const bgTheme = (ingredientTheme: string | null) => {
   switch (ingredientTheme) {
     case 'red':
       return 'bg-[#FFF5E7]';
@@ -20,63 +20,63 @@ const bgTheme = (ingredientTheme: string | null) => {
 const heroTheme = (ingredientTheme: string | null) => {
   switch (ingredientTheme) {
     case 'red':
-      return require('../../../../assets/ingredients/hero-red.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ingredients/hero-red.png' };
 
     case 'pink':
-      return require('../../../../assets/ingredients/hero-pink.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ingredients/hero-pink.png' };
 
     case 'purple':
-      return require('../../../../assets/ingredients/hero-purple.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ingredients/hero-purple.png' };
 
     case 'green':
-      return require('../../../../assets/ingredients/hero-green.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ingredients/hero-green.png' };
 
     case 'yellow':
-      return require('../../../../assets/ingredients/hero-yellow.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ingredients/hero-yellow.png' };
 
     case 'orange':
-      return require('../../../../assets/ingredients/hero-orange.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ingredients/hero-orange.png' };
 
     default:
-      return require('../../../../assets/ingredients/hero-red.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ingredients/hero-red.png' };
   }
 };
 
 const lineOneTheme = (ingredientTheme: string | null) => {
   switch (ingredientTheme) {
     case 'red':
-      return require('../../../../assets/ribbons/ingredients-ribbons/chilli.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/chilli.png' };
     case 'pink':
-      return require('../../../../assets/ribbons/ingredients-ribbons/radish.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/radish.png' };
     case 'purple':
-      return require('../../../../assets/ribbons/ingredients-ribbons/eggplant-light.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/eggplant-light.png' };
     case 'green':
-      return require('../../../../assets/ribbons/ingredients-ribbons/mint.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/mint.png' };
     case 'yellow':
-      return require('../../../../assets/ribbons/ingredients-ribbons/lemon.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/lemon.png' };
     case 'orange':
-      return require('../../../../assets/ribbons/ingredients-ribbons/orange.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/orange.png' };
     default:
-      return require('../../../../assets/ribbons/ingredients-ribbons/chilli.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/chilli.png' };
   }
 };
 
 const lineTwoTheme = (ingredientTheme: string | null) => {
   switch (ingredientTheme) {
     case 'red':
-      return require('../../../../assets/ribbons/ingredients-ribbons/chilli2.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/chilli2.png' };
     case 'pink':
-      return require('../../../../assets/ribbons/ingredients-ribbons/radish2.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/radish2.png' };
     case 'purple':
-      return require('../../../../assets/ribbons/ingredients-ribbons/eggplant-light2.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/eggplant-light2.png' };
     case 'green':
-      return require('../../../../assets/ribbons/ingredients-ribbons/mint2.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/mint2.png' };
     case 'yellow':
-      return require('../../../../assets/ribbons/ingredients-ribbons/lemon2.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/lemon2.png' };
     case 'orange':
-      return require('../../../../assets/ribbons/ingredients-ribbons/orange2.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/orange2.png' };
     default:
-      return require('../../../../assets/ribbons/ingredients-ribbons/chilli2.png');
+      return { uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/chilli2.png' };
   }
 };
 

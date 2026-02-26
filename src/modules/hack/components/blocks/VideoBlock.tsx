@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+﻿import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import tw from '../../../../common/tailwind';
@@ -104,7 +104,7 @@ export default function VideoBlock({ block }: { block: VideoBlockProps }) {
                   } absolute left-1/2 top-1/2 -ml-[37px] -mt-[37px] h-[74px] w-[73px]`,
                 ]}
                 resizeMode="contain"
-                source={require('../../../../../assets/buttons/play.png')}
+                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/buttons/play.png' }}
                 accessibilityIgnoresInvertColors
               />
             </Pressable>

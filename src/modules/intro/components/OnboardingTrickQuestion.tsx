@@ -1,4 +1,4 @@
-import tw from '../../../common/tailwind';
+﻿import tw from '../../../common/tailwind';
 import { Image, Text, View } from 'react-native';
 import { cardDrop } from '../../../theme/shadow';
 import {
@@ -12,21 +12,21 @@ const options = [
     id: 0,
     name: 'scraps',
     image: {
-      uri: require('../../../../assets/placeholder/scraps.png'),
+      uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/scraps.png',
     },
   },
   {
     id: 1,
     name: 'fresh produce',
     image: {
-      uri: require('../../../../assets/placeholder/produce.png'),
+      uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/produce.png',
     },
   },
   {
     id: 2,
     name: 'leftovers',
     image: {
-      uri: require('../../../../assets/placeholder/leftovers.png'),
+      uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/leftovers.png',
     },
   },
 ];
