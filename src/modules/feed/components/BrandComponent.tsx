@@ -16,6 +16,7 @@ export default function BrandComponent({ brand }: { brand: any }) {
             >
               <Image
                 resizeMode="contain"
+                style={tw`h-[100px] w-[220px]`}
                 source={brand.image}
                 accessibilityIgnoresInvertColors
               />

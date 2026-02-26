@@ -35,9 +35,6 @@ import { cardDrop } from '../../../theme/shadow';
 
 const screenWidth = Dimensions.get('window').width;
 
-/**
- * Animated circular progress ring for the dashboard.
- */
 function SurveyProgressRing({
   progress,
   surveysInCycle,
@@ -81,7 +78,6 @@ function SurveyProgressRing({
             r={radius}
             fill="none"
           />
-          {/* Progress circle */}
           <AnimatedCircle
             stroke={tw.color('kale')}
             strokeWidth={strokeWidth}
@@ -95,7 +91,6 @@ function SurveyProgressRing({
             transform={`rotate(-90, ${size / 2}, ${size / 2})`}
           />
         </Svg>
-        {/* Center text */}
         <View style={tw`absolute items-center justify-center`}>
           <Text style={tw.style(h5TextStyle, 'text-kale')}>
             {surveysInCycle}/{surveysRequired}
@@ -133,7 +128,6 @@ export default function QantasDashboardScreen() {
   const pendingAllocation = dashboard?.pendingAllocation ?? false;
   const maskedFFN = ffnData ? `****${ffnData.memberId.slice(-4)}` : '—';
 
-  // Trigger confetti exactly once when isRewarded transitions false → true
   useEffect(() => {
     if (prevIsRewarded.current === false && isRewarded === true) {
       setShowConfetti(true);
@@ -217,7 +211,6 @@ export default function QantasDashboardScreen() {
           contentContainerStyle={tw`px-5 pb-10`}
           showsVerticalScrollIndicator={false}
         >
-          {/* Frequent Flyer Logo */}
           <View style={tw`items-center mt-2 mb-4`}>
             <Image
               resizeMode="contain"
@@ -230,7 +223,6 @@ export default function QantasDashboardScreen() {
             </Text>
           </View>
 
-          {/* Green Tier Badge (when unlocked) */}
           {greenTierUnlocked && (
             <View style={tw`mb-4 items-center rounded-2xl bg-kale/10 py-4`}>
               <Image
@@ -248,7 +240,6 @@ export default function QantasDashboardScreen() {
             </View>
           )}
 
-          {/* Progress Ring Card */}
           <View
             style={[
               tw`mb-4 rounded-2xl bg-white p-6`,
@@ -270,7 +261,6 @@ export default function QantasDashboardScreen() {
               surveysRequired={surveysRequired}
             />
 
-            {/* Progress bar fallback */}
             <View style={tw`mt-4 w-full`}>
               <Progress.Bar
                 progress={progress > 0 ? progress : 0.05}
@@ -306,7 +296,6 @@ export default function QantasDashboardScreen() {
             </Text>
           </View>
 
-          {/* Points Summary Card */}
           <View
             style={[
               tw`mb-4 rounded-2xl bg-white p-6`,

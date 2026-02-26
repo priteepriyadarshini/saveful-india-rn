@@ -1,156 +1,108 @@
+const CDN_BASE = 'https://d3fg04h02j12vm.cloudfront.net/Saveful+Partner+logos';
+
 const BRANDS = [
   {
     id: 1,
     name: 'AGL',
-    image: require('../../../../assets/brands/agl.png'),
+    image: { uri: `${CDN_BASE}/AGL.png` },
   },
   {
     id: 2,
     name: 'Always Fresh',
-    image: require('../../../../assets/brands/always-fresh.png'),
+    image: { uri: `${CDN_BASE}/ALWAYS+FRESH.png` },
   },
   {
     id: 3,
     name: 'Ardmona',
-    image: require('../../../../assets/brands/ardmona.png'),
+    image: { uri: `${CDN_BASE}/ARDMONA.png` },
   },
   {
     id: 4,
     name: 'Bakers Delight',
-    image: require('../../../../assets/brands/bakers-delight.png'),
+    image: { uri: `${CDN_BASE}/BAKERS+DELIGHT.png` },
   },
   {
     id: 5,
-    name: 'bega',
-    image: require('../../../../assets/brands/bega-group.png'),
+    name: 'Bega',
+    image: { uri: `${CDN_BASE}/BEGA.png` },
   },
   {
     id: 6,
-    name: 'birds eye',
-    image: require('../../../../assets/brands/birds-eye-large.png'),
+    name: 'Birds Eye',
+    image: { uri: `${CDN_BASE}/BIRDS+EYE.png` },
   },
   {
     id: 7,
-    name: 'Chief',
-    image: require('../../../../assets/brands/chief-brand.png'),
+    name: 'Farmers Union',
+    image: { uri: `${CDN_BASE}/FARMERS+UNION.png` },
   },
   {
     id: 8,
-    name: 'Farmers Union',
-    image: require('../../../../assets/brands/farmers-union.png'),
+    name: 'Goodman Fielder',
+    image: { uri: `${CDN_BASE}/GOODMAN+FIELDER.png` },
   },
   {
     id: 9,
-    name: 'Fridge Friend',
-    image: require('../../../../assets/brands/fridge-friend.png'),
+    name: 'Gumtree',
+    image: { uri: `${CDN_BASE}/GUMTREE.png` },
   },
   {
     id: 10,
-    name: 'Gander',
-    image: require('../../../../assets/brands/gander-brand.png'),
+    name: 'Maggi',
+    image: { uri: `${CDN_BASE}/MAGGI.png` },
+  },
+  {
+    id: 11,
+    name: 'Nestlé',
+    image: { uri: `${CDN_BASE}/NESTLE.png` },
   },
   {
     id: 12,
-    name: 'Goodman Fielder',
-    image: require('../../../../assets/brands/goodman-fielder.png'),
+    name: 'Praise',
+    image: { uri: `${CDN_BASE}/PRAISE.png` },
   },
   {
     id: 13,
-    name: 'Gumtree',
-    image: require('../../../../assets/brands/gumtree-brand.png'),
+    name: 'Qantas',
+    image: { uri: `${CDN_BASE}/QANTAS.png` },
   },
   {
     id: 14,
-    name: 'Maggi',
-    image: require('../../../../assets/brands/maggi.png'),
+    name: 'Rabobank',
+    image: { uri: `${CDN_BASE}/RABOBANK.png` },
   },
   {
     id: 15,
-    name: 'Matt Moran',
-    image: require('../../../../assets/brands/matt-moran.png'),
+    name: 'SPC',
+    image: { uri: `${CDN_BASE}/SPC.png` },
   },
   {
     id: 16,
-    name: 'Nestlé',
-    image: require('../../../../assets/brands/nestle.png'),
+    name: 'Sun Rice',
+    image: { uri: `${CDN_BASE}/SUN+RICE.png` },
   },
   {
     id: 17,
-    name: 'OzHarvest',
-    image: require('../../../../assets/brands/ozharvest-brand.png'),
-  },
-  {
-    id: 18,
-    name: 'Praise',
-    image: require('../../../../assets/brands/praise-large.png'),
-  },
-  {
-    id: 19,
-    name: 'Qantas',
-    image: require('../../../../assets/brands/qantas-brand.png'),
-  },
-  {
-    id: 20,
-    name: 'Rabobank',
-    image: require('../../../../assets/brands/rabobank-brand.png'),
-  },
-  {
-    id: 21,
-    name: 'Shadowboxer',
-    image: require('../../../../assets/brands/shadowboxer.png'),
-  },
-  {
-    id: 22,
-    name: 'SPC',
-    image: require('../../../../assets/brands/spc-brand.png'),
-  },
-  {
-    id: 23,
-    name: 'Sun Rice',
-    image: require('../../../../assets/brands/sun-rice.png'),
-  },
-  {
-    id: 24,
-    name: 'YUME',
-    image: require('../../../../assets/brands/yume-brand.png'),
+    name: 'Thankful',
+    image: { uri: `${CDN_BASE}/THANKFUL.png` },
   },
 ];
 
 const INDUSTRY = [
   {
     id: 1,
-    name: 'Aora',
-    image: require('../../../../assets/brands/aora.png'),
+    name: 'Centurion University of Management & Technology',
+    image: { uri: `${CDN_BASE}/CENTURION+UNIVERSITY+OF+MANAGEMENT+%26+TECHNOLOGY.png` },
   },
   {
     id: 2,
-    name: 'Australian Food Pact',
-    image: require('../../../../assets/brands/afp.png'),
+    name: 'International Council for Circular Economy',
+    image: { uri: `${CDN_BASE}/INTERNATIONAL+COUNCIL+FOR+CIRCULAR+ECONOMY.png` },
   },
   {
     id: 3,
-    name: 'Australia Food & Grocery Council',
-    image: require('../../../../assets/brands/australian-food-grocery-council.png'),
-  },
-  {
-    id: 4,
-    name: 'Eat Well Tasmania',
-    image: require('../../../../assets/brands/eat-well-tasmania.png'),
-  },
-  {
-    id: 5,
-    name: 'End Food Waste Australia',
-    image: require('../../../../assets/brands/end-food-waste.png'),
-  },
-  {
-    id: 6,
-    name: 'Love Food Hate Waste',
-    image: require('../../../../assets/brands/love-food-hate-waste.png'),
-  },
-  {
-    id: 7,
-    name: 'National Retail Association',
-    image: require('../../../../assets/brands/national-retail-association.png'),
+    name: 'WRI India',
+    image: { uri: `${CDN_BASE}/WRI+INDIA.png` },
   },
 ];
 
@@ -158,12 +110,12 @@ const GOVERNMENT = [
   {
     id: 1,
     name: 'Queensland Government',
-    image: require('../../../../assets/brands/queensland-government.png'),
+    image: { uri: `${CDN_BASE}/QUEENSLAND+GOVERNMENT.png` },
   },
   {
     id: 2,
-    name: 'South Australian government',
-    image: require('../../../../assets/brands/sa-government.png'),
+    name: 'South Australian Government',
+    image: { uri: `${CDN_BASE}/SOUTH+AUSTRALIAN+GOVERNMENT.png` },
   },
 ];
 
