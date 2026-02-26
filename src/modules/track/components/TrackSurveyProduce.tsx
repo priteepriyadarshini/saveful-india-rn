@@ -39,7 +39,7 @@ export default function TrackSurveyProduce({
               <Image
                 resizeMode="contain"
                 style={tw`h-[70px]`}
-                source={produce.image?.uri as any}
+                source={produce.image}
                 accessibilityIgnoresInvertColors
               />
               <View

@@ -192,7 +192,7 @@ export default function WeeklySurveyCarousel() {
           <Image
             resizeMode="contain"
             style={tw.style('mx-auto mb-3 h-[88px] w-[89px]')}
-            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/big-savings.png' }}
+            source={require('../../../../assets/placeholder/big-savings.png')}
             accessibilityIgnoresInvertColors
           />
           <Text style={tw.style(bodyLargeMedium, 'text-center')}>
@@ -244,7 +244,7 @@ export default function WeeklySurveyCarousel() {
           <Image
             resizeMode="contain"
             style={tw.style('mx-auto mb-3 h-[88px] w-[89px]')}
-            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/big-savings.png' }}
+            source={require('../../../../assets/placeholder/big-savings.png')}
             accessibilityIgnoresInvertColors
           />
           <Text style={tw.style(bodyLargeMedium, 'text-center')}>

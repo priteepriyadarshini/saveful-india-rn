@@ -51,7 +51,7 @@ export default function Hero({
           source={
             heroImage[0]?.url
               ? bundledSource(heroImage[0].url, env.useBundledContent)
-              : { uri: 'https://d3fg04h02j12vm.cloudfront.net/ingredients/placeholder.png' } // TODO: Add default image
+              : require('../../../../assets/ingredients/placeholder.png') // TODO: Add default image
           }
           accessibilityIgnoresInvertColors
         />

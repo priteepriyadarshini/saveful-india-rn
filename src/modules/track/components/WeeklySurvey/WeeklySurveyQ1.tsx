@@ -42,7 +42,7 @@ export default function WeeklySurveyQ1({
           <Image
             style={tw`mx-auto w-[354px] max-w-full`}
             resizeMode="contain"
-            source={item.image?.uri as any}
+            source={item.image}
             accessibilityIgnoresInvertColors
           />
         </View>

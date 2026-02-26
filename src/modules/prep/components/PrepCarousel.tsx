@@ -115,7 +115,7 @@ export default function PrepCarousel({
       id: 2,
       title: 'SAVING THIS DISH',
       type: 'save',
-      uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/fridge.png',
+      image: require('../../../../assets/placeholder/fridge.png'),
       description: [
         {
           title: 'In the freezer',
@@ -218,12 +218,12 @@ export default function PrepCarousel({
                       } pt-2.5`,
                     )}
                   />
-                  {item.uri ? (
+                  {item.image ? (
                     <Fragment>
                       <View style={tw.style('relative flex-row pt-2.5')}>
                         <Image
                           resizeMode="contain"
-                          source={item.uri}
+                          source={item.image}
                           accessibilityIgnoresInvertColors
                         />
                         <View style={tw.style('max-w-[200px]')}>

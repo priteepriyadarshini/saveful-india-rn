@@ -239,7 +239,7 @@ export default function InventoryScreen() {
       ) : (
         <ImageBackground
           style={tw`flex-1`}
-          source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/lemon.png' }}
+          source={require('../../../../assets/ribbons/lemon.png')}
         >
           {/* Quick Actions — fixed above scroll */}
           <View style={tw`px-5 pt-4 pb-2 flex-row gap-2`}>
@@ -301,7 +301,7 @@ export default function InventoryScreen() {
             {displayedItems.length === 0 ? (
               <View style={tw`items-center justify-center px-10 mt-10`}>
                 <Image
-                  source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/carrot.png' }}
+                  source={require('../../../../assets/carrot.png')}
                   style={tw`w-40 h-40 opacity-60`}
                   resizeMode="contain"
                 />

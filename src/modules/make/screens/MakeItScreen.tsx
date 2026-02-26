@@ -238,30 +238,30 @@ export default function MakeItScreen({
     case 0:
     case 5:
     case 10:
-      iconSource = { uri: 'https://d3fg04h02j12vm.cloudfront.net/animations/cook-01.png' };
+      iconSource = require('../../../../assets/animations/cook-01.png');
       break;
     case 1:
     case 6:
     case 11:
-      iconSource = { uri: 'https://d3fg04h02j12vm.cloudfront.net/animations/cook-02.png' };
+      iconSource = require('../../../../assets/animations/cook-02.png');
       break;
     case 2:
     case 7:
     case 12:
-      iconSource = { uri: 'https://d3fg04h02j12vm.cloudfront.net/animations/cook-03.png' };
+      iconSource = require('../../../../assets/animations/cook-03.png');
       break;
     case 3:
     case 8:
     case 13:
-      iconSource = { uri: 'https://d3fg04h02j12vm.cloudfront.net/animations/cook-04.png' };
+      iconSource = require('../../../../assets/animations/cook-04.png');
       break;
     case 4:
     case 9:
     case 14:
-      iconSource = { uri: 'https://d3fg04h02j12vm.cloudfront.net/animations/cook-05.png' };
+      iconSource = require('../../../../assets/animations/cook-05.png');
       break;
     default:
-      iconSource = { uri: 'https://d3fg04h02j12vm.cloudfront.net/animations/cook-01.png' };
+      iconSource = require('../../../../assets/animations/cook-01.png');
       break;
   }
 
@@ -311,7 +311,7 @@ export default function MakeItScreen({
   return (
     <View style={tw`flex-1 bg-kale`}>
       <ImageBackground
-        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/makeit.png' }}
+        source={require('../../../../assets/ribbons/makeit.png')}
         style={tw`relative mt-5 flex-1`}
       >
         <MakeItHeader

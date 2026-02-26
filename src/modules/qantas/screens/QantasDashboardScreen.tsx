@@ -184,7 +184,7 @@ export default function QantasDashboardScreen() {
         <View style={tw`absolute inset-0 z-50`} pointerEvents="none">
           <LottieView
             ref={confettiRef}
-            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/groups/confetti.json' }}
+            source={require('../../../../assets/groups/confetti.json')}
             autoPlay
             loop={false}
             style={tw`absolute inset-0`}

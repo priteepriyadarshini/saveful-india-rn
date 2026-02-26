@@ -81,7 +81,7 @@ export default function SponsorPanel({ id }: { id: string }) {
                     tw`absolute -right-[36px] -top-5 z-10 h-[74px] w-[73px]`,
                   ]}
                   resizeMode="contain"
-                  source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/buttons/play.png' }}
+                  source={require('../../../../assets/buttons/play.png')}
                   accessibilityIgnoresInvertColors
                 />
               </View>

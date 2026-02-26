@@ -22,27 +22,21 @@ export default function TrackTabChart() {
       heading: 'you’ve potentially saved',
       value: `${Number(stats?.food_savings_user ?? 0).toFixed(2)}kg`,
       description: `by cooking ${stats?.completed_meals_count} saveful meals`,
-      image: {
-        uri: 'https://d3fg04h02j12vm.cloudfront.net/track/food1.png',
-      },
+      image: require('../../../../assets/track/food1.png'),
     },
     {
       name: 'money',
       heading: 'you’ve potentially saved',
       value: `${currencySymbol}${Number(stats?.total_cost_savings ?? 0).toFixed(2)}`,
       description: `by cooking ${stats?.completed_meals_count} saveful meals`,
-      image: {
-        uri: 'https://d3fg04h02j12vm.cloudfront.net/track/money1.png',
-      },
+      image: require('../../../../assets/track/money1.png'),
     },
     {
       name: 'co2',
       heading: 'you’ve potentially saved',
       value: `${Number(stats?.total_co2_savings ?? 0).toFixed(2)}kg CO2`,
       description: `by cooking ${stats?.completed_meals_count} saveful meals`,
-      image: {
-        uri: 'https://d3fg04h02j12vm.cloudfront.net/track/co2.png',
-      },
+      image: require('../../../../assets/track/co2.png'),
     },
   ];
 

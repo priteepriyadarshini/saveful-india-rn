@@ -172,7 +172,7 @@ const ONBOARDING = (firstName?: string) => [
       'We’d love to help you save even more food, money and stress. No spam, ever.',
 
     buttonText: 'Turn on notifications',
-    image: { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/notification.png' },
+    image: require('../../../../assets/placeholder/notification.png'),
     showNotifications: true,
   },
 ];

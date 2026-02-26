@@ -59,7 +59,7 @@ export default function HackScreen() {
   return (
     <View style={tw`relative flex-1 bg-creme`}>
       <Image
-        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/hacks/female-cook-cutting-ingredients.png' }}
+        source={require('../../../../assets/hacks/female-cook-cutting-ingredients.png')}
         resizeMode="cover"
         style={tw.style(
           `absolute top-0 w-[${windowWidth}px] bg-eggplant h-[${bgImageHeight}px]`,
@@ -94,7 +94,7 @@ export default function HackScreen() {
           <View style={tw`mt-15 relative z-10`}>
             <View style={tw`absolute mt-[200px] h-full w-full bg-creme`}>
               <Image
-                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/curly-eggplant.png' }}
+                source={require('../../../../assets/ribbons/curly-eggplant.png')}
                 style={tw`absolute w-[${windowWidth}px] h-[${ribbonImageHeight}px] top-24`}
                 resizeMode="contain"
               />

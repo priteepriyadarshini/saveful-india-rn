@@ -35,7 +35,7 @@ export default function ResultsScreen() {
           width: Dimensions.get('screen').width,
           height: (Dimensions.get('screen').width * 760) / 375,
         }}
-        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/purple-line.png' }}
+        source={require('../../../../assets/placeholder/purple-line.png')}
       />
       <View style={tw.style(`flex-row items-start justify-between px-3 py-4 `)}>
         <Pressable
@@ -73,7 +73,7 @@ export default function ResultsScreen() {
         <Image
           resizeMode="contain"
           style={tw`absolute left-1/2 top-[85px] z-10 -ml-[133px] w-[267px]`}
-          source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/banana-peel.png' }}
+          source={require('../../../../assets/placeholder/banana-peel.png')}
           accessibilityIgnoresInvertColors
         />
         <View style={tw.style('pb-15 pt-30 bg-creme px-5')}>

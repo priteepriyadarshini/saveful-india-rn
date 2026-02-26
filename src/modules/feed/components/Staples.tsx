@@ -12,7 +12,7 @@ export default function Staples() {
   return (
     <ImageBackground
       style={tw`items-center px-5 py-10`}
-      source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/lemon-2.png' }}
+      source={require('../../../../assets/ribbons/lemon-2.png')}
     >
       <Text style={tw.style(h6TextStyle, 'mb-5 text-center')}>
         Pantry staples
@@ -25,7 +25,7 @@ export default function Staples() {
             Dimensions.get('screen').width - 80
           }px] overflow-hidden rounded-2lg`}
           resizeMode="cover"
-          source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/staples.png' }}
+          source={require('../../../../assets/placeholder/staples.png')}
           accessibilityIgnoresInvertColors
         />
 

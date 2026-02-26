@@ -87,7 +87,7 @@ export default function PrepVideo({ id }: { id: string }) {
                 } absolute left-1/2 top-1/2 -ml-[27px] -mt-[27px] h-[54px] w-[53px]`,
               ]}
               resizeMode="contain"
-              source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/buttons/play-purple.png' }}
+              source={require('../../../../assets/buttons/play-purple.png')}
               accessibilityIgnoresInvertColors
             />
           </Pressable>

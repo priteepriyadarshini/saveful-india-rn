@@ -35,7 +35,7 @@ export default function RotatingLoading() {
             tw.style('absolute left-3'),
             { transform: [{ rotate: spin }] },
           ]}
-          source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/circle.png' }}
+          source={require('../../../../assets/placeholder/circle.png')}
         />
       </View>
     </View>

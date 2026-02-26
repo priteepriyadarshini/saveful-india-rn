@@ -51,7 +51,7 @@ const navigation = useNavigation<InitialNav>();
         >
           <View style={tw.style('items-center')}>
             <Image
-              source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/frying-pan.png' }}
+              source={require('../../../../assets/placeholder/frying-pan.png')}
               style={tw`flex-initial`}
               resizeMode="contain"
             />
@@ -98,7 +98,7 @@ const navigation = useNavigation<InitialNav>();
       <Image
         style={tw`absolute h-full w-full bg-eggplant opacity-80`}
         resizeMode="cover"
-        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/background-modal.png' }}
+        source={require('../../../../assets/placeholder/background-modal.png')}
       />
     </Modal>
   );

@@ -29,8 +29,8 @@ export default function PostMakeNoLeftoverDone({
             resizeMode="contain"
             source={
               isNotEnough
-                ? { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/bowl.png' }
-                : { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/post-fridge.png' }
+                ? require('../../../../../assets/placeholder/bowl.png')
+                : require('../../../../../assets/placeholder/post-fridge.png')
             }
             accessibilityIgnoresInvertColors
           />

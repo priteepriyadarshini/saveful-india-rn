@@ -18,7 +18,7 @@ export default function PostMakeLeftoverAskQ({ onAnswer, isLoading }: Props) {
           <Image
             style={tw`mx-auto mb-7 h-[280px] w-[260px] max-w-full`}
             resizeMode="contain"
-            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/tuppleware.png' }}
+            source={require('../../../../../assets/placeholder/tuppleware.png')}
             accessibilityIgnoresInvertColors
           />
 

@@ -65,7 +65,7 @@ export default function LeftoversComponent({
           <View style={tw.style('relative flex-row pt-2.5')}>
             <Image
               resizeMode="contain"
-              source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/fridge.png' }}
+              source={require('../../../../../assets/placeholder/fridge.png')}
               accessibilityIgnoresInvertColors
             />
             <View style={tw.style('max-w-[200px]')}>

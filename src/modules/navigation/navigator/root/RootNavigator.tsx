@@ -45,6 +45,14 @@ function RootNavigator() {
         options={() => ({
           headerShown: false,
         })}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            // Always reset to TrackHome when the Track tab is pressed,
+            // so the user is never stuck on a deep screen (e.g. QantasLinkScreen)
+            navigation.navigate('Track', { screen: 'TrackHome' } as any);
+          },
+        })}
       />
     </RootNavigationTabBar.Navigator>
   );

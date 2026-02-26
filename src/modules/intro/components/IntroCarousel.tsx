@@ -45,7 +45,7 @@ export default function IntroCarousel({ data }: { data: CarouselItem[] }) {
                 ]}
               >
                 <Image
-                  style={tw.style('w-full')}
+                  style={tw.style('w-full h-[200px]')}
                   resizeMode="contain"
                   source={item.image}
                 />

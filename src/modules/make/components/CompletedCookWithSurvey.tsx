@@ -30,7 +30,7 @@ export default function CompletedCookWithSurvey({
         >
           <View style={tw.style('items-center py-5')}>
             <Image
-              source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/bowl.png' }}
+              source={require('../../../../assets/placeholder/bowl.png')}
               style={tw`flex-initial`}
               resizeMode="contain"
             />
@@ -82,7 +82,7 @@ export default function CompletedCookWithSurvey({
       <Image
         style={tw`absolute h-full w-full bg-eggplant opacity-80`}
         resizeMode="cover"
-        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/background-modal.png' }}
+        source={require('../../../../assets/placeholder/background-modal.png')}
       />
     </Modal>
   );

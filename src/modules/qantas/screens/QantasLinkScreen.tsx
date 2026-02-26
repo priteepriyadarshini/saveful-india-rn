@@ -95,7 +95,7 @@ export default function QantasLinkScreen() {
     <View style={tw`flex-1 bg-creme`}>
       {/* Red Qantas ribbon at the bottom */}
       <Image
-        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/qantas.png' }}
+        source={require('../../../../assets/ribbons/qantas.png')}
         resizeMode="cover"
         accessibilityIgnoresInvertColors
         style={[

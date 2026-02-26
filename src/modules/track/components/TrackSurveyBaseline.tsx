@@ -25,25 +25,19 @@ export default function TrackSurveyBaseline({
       name: 'food',
       value: `${(Number(waste) / 1000).toFixed(2)}kg`,
       description: `food waste footprint`,
-      image: {
-        uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/apple.png',
-      },
+      image: require('../../../../assets/placeholder/apple.png'),
     },
     {
       name: 'money',
       value: `${currencySymbol}${Number(spent).toFixed(2)}`,
       description: `food waste cost`,
-      image: {
-        uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/money.png',
-      },
+      image: require('../../../../assets/placeholder/money.png'),
     },
     {
       name: 'co2',
       value: `${(Number(co2) / 1000).toFixed(2)}kg`,
       description: `CO2 emissions saved`,
-      image: {
-        uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/apple.png',
-      },
+      image: require('../../../../assets/placeholder/apple.png'),
     },
   ];
 
@@ -106,7 +100,7 @@ export default function TrackSurveyBaseline({
                 <Image
                   style={tw.style('mx-auto h-[101px] w-[89px]')}
                   resizeMode="contain"
-                  source={content.image.uri as any}
+                  source={content.image}
                   accessibilityIgnoresInvertColors
                 />
                 <Text style={tw.style(h2TextStyle, 'mt-1')}>

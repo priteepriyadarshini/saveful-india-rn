@@ -11,23 +11,17 @@ const options = [
   {
     id: 0,
     name: 'scraps',
-    image: {
-      uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/scraps.png',
-    },
+    image: require('../../../../assets/placeholder/scraps.png'),
   },
   {
     id: 1,
     name: 'fresh produce',
-    image: {
-      uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/produce.png',
-    },
+    image: require('../../../../assets/placeholder/produce.png'),
   },
   {
     id: 2,
     name: 'leftovers',
-    image: {
-      uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/leftovers.png',
-    },
+    image: require('../../../../assets/placeholder/leftovers.png'),
   },
 ];
 
@@ -52,7 +46,7 @@ export default function OnboardingTrickQuestion() {
               <Image
                 style={[tw`mx-auto my-3 h-[108px] overflow-hidden`]}
                 resizeMode="contain"
-                source={option.image.uri}
+                source={option.image}
                 accessibilityIgnoresInvertColors
               />
               <Text

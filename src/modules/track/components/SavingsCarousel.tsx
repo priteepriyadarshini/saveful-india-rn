@@ -38,7 +38,7 @@ export default function SavingsCarousel({ items }: { items: Savings[] }) {
                   <Image
                     style={tw.style('h-[90px]')}
                     resizeMode="contain"
-                    source={item.image?.uri as any}
+                    source={item.image}
                     accessibilityIgnoresInvertColors
                   />
                   <Text style={tw.style(h2TextStyle, 'text-center')}>

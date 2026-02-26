@@ -62,7 +62,7 @@ export default function CommunityGroups() {
           >
             <Image
               resizeMode="contain"
-              source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/community-icon.png' }}
+              source={require('../../../../assets/placeholder/community-icon.png')}
               accessibilityIgnoresInvertColors
             />
             <Text

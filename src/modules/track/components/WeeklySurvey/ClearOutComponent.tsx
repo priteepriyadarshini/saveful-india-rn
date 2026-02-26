@@ -25,7 +25,7 @@ export default function ClearOutComponent({
             <Image
               style={tw`mx-auto w-[296px] max-w-full`}
               resizeMode="contain"
-              source={item.image?.uri as any}
+              source={item.image}
               accessibilityIgnoresInvertColors
             />
             <Text

@@ -79,7 +79,7 @@ function IngredientCard({
           source={
             heroImageUrl
               ? { uri: heroImageUrl }
-              : { uri: 'https://d3fg04h02j12vm.cloudfront.net/ingredients/placeholder.png' }
+              : require('../../../../assets/ingredients/placeholder.png')
           }
           accessibilityIgnoresInvertColors
         />

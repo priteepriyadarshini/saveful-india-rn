@@ -41,7 +41,7 @@ export default function VideoBox({
           } absolute left-1/2 top-1/2 -ml-[37px] -mt-[37px] h-[74px] w-[73px]`,
         ]}
         resizeMode="contain"
-        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/buttons/play.png' }}
+        source={require('../../../../assets/buttons/play.png')}
         accessibilityIgnoresInvertColors
       />
       <Video

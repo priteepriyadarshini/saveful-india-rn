@@ -171,7 +171,7 @@ const {
             >
               <Image
                 resizeMode="contain"
-                source={require("../../../../assets/qantas/frequent-flyer.png")}
+                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/frequent-flyer.png' }}
                 accessibilityIgnoresInvertColors
                 style={tw`mx-auto`}
               />

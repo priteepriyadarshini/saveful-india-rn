@@ -8,9 +8,7 @@ export default function ChartContent({
   item: {
     heading: string;
     value: string;
-    image: {
-      uri: string;
-    };
+    image: any;
     description: string;
   };
 }) {
@@ -20,7 +18,7 @@ export default function ChartContent({
       <Image
         style={tw.style('mx-auto h-[190px] w-[154px] w-full')}
         resizeMode="contain"
-        source={item.image.uri as any}
+        source={item.image}
         accessibilityIgnoresInvertColors
       />
       <Text

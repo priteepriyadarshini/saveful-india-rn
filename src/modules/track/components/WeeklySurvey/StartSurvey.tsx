@@ -47,7 +47,7 @@ export default function StartSurvey({
             <Image
               style={tw`mx-auto h-[289px] w-[234px] max-w-full`}
               resizeMode="contain"
-              source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/bowl.png' }}
+              source={require('../../../../../assets/placeholder/bowl.png')}
               accessibilityIgnoresInvertColors
             />
             <Text

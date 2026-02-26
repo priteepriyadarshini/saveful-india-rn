@@ -483,7 +483,7 @@ export default function PostMakeMakeoverQ({
               <Image
                 style={tw`mx-auto mb-4 h-[120px] w-[120px]`}
                 resizeMode="contain"
-                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/frying-pan.png' }}
+                source={require('../../../../../assets/placeholder/frying-pan.png')}
                 accessibilityIgnoresInvertColors
               />
               <Text

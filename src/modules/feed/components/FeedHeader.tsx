@@ -13,7 +13,7 @@ export default function FeedHeader() {
           // { tintColor: focused ? undefined : tw.color('gray-200') },
         ]}
         resizeMode="contain"
-        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/feed-bg.png' }}
+        source={require('../../../../assets/placeholder/feed-bg.png')}
         accessibilityIgnoresInvertColors
       /> */}
     </View>

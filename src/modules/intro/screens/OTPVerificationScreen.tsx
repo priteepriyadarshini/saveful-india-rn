@@ -191,7 +191,7 @@ export default function OTPVerificationScreen({ route, navigation }: any) {
   return (
     <ImageBackground
       style={tw`relative flex-1 bg-creme`}
-      source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/intro/splash.png' }}
+      source={require('../../../../assets/intro/splash.png')}
       imageStyle={{
         resizeMode: 'contain',
       }}
@@ -211,14 +211,14 @@ export default function OTPVerificationScreen({ route, navigation }: any) {
               <Image
                 style={tw.style('h-[58px] w-[111px]')}
                 resizeMode="contain"
-                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/intro/logo.png' }}
+                source={require('../../../../assets/intro/logo.png')}
               />
             </View>
 
             {/* OTP Card */}
             <View style={tw.style('mx-4 mb-6 overflow-hidden rounded-2xl border border-strokecream bg-white', cardDrop)}>
               <ImageBackground
-                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/eggplant-light2.png' }}
+                source={require('../../../../assets/ribbons/ingredients-ribbons/eggplant-light2.png')}
                 resizeMode="cover"
                 imageStyle={{ opacity: 0.1 }}
               >

@@ -118,7 +118,7 @@ export default function PostMakeStorageQ({
           <Image
             style={tw`mx-auto mb-4 h-[160px] w-[160px]`}
             resizeMode="contain"
-            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/fridge.png' }}
+            source={require('../../../../../assets/placeholder/fridge.png')}
             accessibilityIgnoresInvertColors
           />
 

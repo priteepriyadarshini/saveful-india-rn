@@ -142,7 +142,7 @@ export default function AuthScreen({ navigation }: any) {
   return (
     <ImageBackground
       style={tw`relative flex-1 bg-creme`}
-      source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/intro/splash.png' }}
+      source={require('../../../../assets/intro/splash.png')}
       imageStyle={{ resizeMode: 'contain' }}
     >
       <SafeAreaView style={tw`flex-1 justify-between pb-2.5 pt-6`}>
@@ -160,7 +160,7 @@ export default function AuthScreen({ navigation }: any) {
             <Image
               style={tw.style('h-[58px] w-[111px]')}
               resizeMode="contain"
-              source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/intro/logo.png' }}
+              source={require('../../../../assets/intro/logo.png')}
             />
           </View>
 
@@ -168,7 +168,7 @@ export default function AuthScreen({ navigation }: any) {
           {activeView === 'auth' && (
             <View style={tw.style('mx-4 mb-6 overflow-hidden rounded-2xl border border-strokecream bg-white', cardDrop)}>
               <ImageBackground
-                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/eggplant-light2.png' }}
+                source={require('../../../../assets/ribbons/ingredients-ribbons/eggplant-light2.png')}
                 resizeMode="cover"
                 imageStyle={{ opacity: 0.1 }}
               >
@@ -331,7 +331,7 @@ export default function AuthScreen({ navigation }: any) {
           {activeView === 'forgot' && (
             <View style={tw.style('mx-4 mb-6 overflow-hidden rounded-2xl border border-strokecream bg-white', cardDrop)}>
               <ImageBackground
-                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/lemon2.png' }}
+                source={require('../../../../assets/ribbons/ingredients-ribbons/lemon2.png')}
                 resizeMode="cover"
                 imageStyle={{ opacity: 0.1 }}
               >
@@ -401,7 +401,7 @@ export default function AuthScreen({ navigation }: any) {
           {activeView === 'resetPassword' && (
             <View style={tw.style('mx-4 mb-6 overflow-hidden rounded-2xl border border-strokecream bg-white', cardDrop)}>
               <ImageBackground
-                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/ribbons/ingredients-ribbons/mint2.png' }}
+                source={require('../../../../assets/ribbons/ingredients-ribbons/mint2.png')}
                 resizeMode="cover"
                 imageStyle={{ opacity: 0.1 }}
               >

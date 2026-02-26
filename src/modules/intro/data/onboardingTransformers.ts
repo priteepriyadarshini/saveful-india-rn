@@ -6,7 +6,7 @@ const imageAssets: Record<string, any> = {
   'onboarding-01': { uri: `${ONBOARDING_CDN}/01.png` },
   'onboarding-02': { uri: `${ONBOARDING_CDN}/02.png` },
   'onboarding-day-result': { uri: `${ONBOARDING_CDN}/day-result.png` },
-  'notification-placeholder': { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/notification.png' },
+  'notification-placeholder': require('../../../../assets/placeholder/notification.png'),
 };
 
 export interface CarouselItem {
@@ -153,7 +153,7 @@ export const FALLBACK_ONBOARDING = (firstName?: string): CarouselItem[] => [
       "We'd love to help you save even more food, money and time. No spam, ever.",
     buttonText: 'Turn on notifications',
     description: '',
-    image: { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/notification.png' },
+    image: require('../../../../assets/placeholder/notification.png'),
     showNotifications: true,
   },
 ];

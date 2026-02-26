@@ -74,22 +74,22 @@ export default function PostMakeQ1({
   const tasteImage = (value: string) => {
     switch (value) {
       case 'bland':
-        return { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/shakers.png' };
+        return require('../../../../../assets/placeholder/shakers.png');
 
       case 'spicy':
-        return { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/post-spice.png' };
+        return require('../../../../../assets/placeholder/post-spice.png');
 
       case 'soggy':
-        return { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/post-soggy.png' };
+        return require('../../../../../assets/placeholder/post-soggy.png');
 
       case 'effort':
-        return { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/post-effort.png' };
+        return require('../../../../../assets/placeholder/post-effort.png');
 
       case 'vibe':
-        return { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/post-vibe.png' };
+        return require('../../../../../assets/placeholder/post-vibe.png');
 
       default:
-        return { uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/shakers.png' };
+        return require('../../../../../assets/placeholder/shakers.png');
     }
   };
 
@@ -163,7 +163,7 @@ export default function PostMakeQ1({
                   Dimensions.get('window').width - 40
                 }px]`}
                 resizeMode="contain"
-                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/hearts.png' }}
+                source={require('../../../../../assets/placeholder/hearts.png')}
                 animation="zoomIn"
                 duration={500}
               />

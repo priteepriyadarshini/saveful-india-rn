@@ -12,7 +12,7 @@ export default function CircularHeader({ title }: { title: string }) {
       >
         <Image
           resizeMode="cover"
-          source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/Illustration/Illustration.png' }}
+          source={require('../../../../assets/Illustration/Illustration.png')}
           accessibilityIgnoresInvertColors
         />
       </View>

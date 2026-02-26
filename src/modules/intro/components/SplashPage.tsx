@@ -11,7 +11,7 @@
 //   return (
 //     <View style={styles.container}>
 //       <Image
-//         source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/splash.png' }}
+//         source={require('../../../../assets/splash.png')}
 //         style={styles.image}
 //         resizeMode="cover"
 //       />
@@ -150,7 +150,7 @@ export default function SplashPage() {
   return (
     <View style={styles.container}>
       <Image
-        source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/splash.png' }}
+        source={require('../../../../assets/splash.png')}
         style={styles.image}
         resizeMode="cover"
       />

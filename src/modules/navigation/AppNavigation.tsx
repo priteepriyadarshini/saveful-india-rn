@@ -50,7 +50,17 @@ function AppNavigation() {
               : undefined;
 
             if (state !== undefined) {
-              setInitialState(state);
+              // Strip nested stack states so the app never restores directly
+              // into a deep screen (e.g. QantasLinkScreen) after a restart.
+              const safeState = {
+                ...state,
+                routes: (state as any).routes?.map((route: any) => ({
+                  key: route.key,
+                  name: route.name,
+                  // Omit `state` — each tab re-starts from its initial screen
+                })),
+              };
+              setInitialState(safeState);
             }
           } catch (storageError) {
             console.warn('Failed to restore navigation state (non-critical):', storageError);

@@ -124,7 +124,7 @@ export default function PostOnboardingCarousel({
             <Image
               style={tw`w-full overflow-hidden`}
               resizeMode="contain"
-              source={item.image.uri}
+              source={item.image}
               accessibilityIgnoresInvertColors
             />
             <View style={tw.style('items-center')}>
@@ -190,7 +190,7 @@ export default function PostOnboardingCarousel({
                 <Image
                   style={tw`w-full overflow-hidden`}
                   resizeMode="contain"
-                  source={item.image.uri}
+                  source={item.image}
                   accessibilityIgnoresInvertColors
                 />
                 <Text

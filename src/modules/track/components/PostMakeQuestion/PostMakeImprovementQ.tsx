@@ -21,7 +21,7 @@ export default function PostMakeImprovementQ({ dishName, onSelect }: Props) {
           <Image
             style={tw`mx-auto mb-6 h-[180px] w-[220px]`}
             resizeMode="contain"
-            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/placeholder/question-mark.png' }}
+            source={require('../../../../../assets/placeholder/question-mark.png')}
             accessibilityIgnoresInvertColors
           />
 
