@@ -6,7 +6,7 @@ const cardDrop = {
   },
   shadowOpacity: 0.1,
   shadowRadius: 5.62,
-  elevation: 7,
+  elevation: 0,
 };
 
 const cardIngredientDrop = {

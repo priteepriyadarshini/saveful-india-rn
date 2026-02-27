@@ -5,7 +5,7 @@ import { h6TextStyle, bodySmallRegular } from '../../../theme/typography';
 
 export default function MakeHeader() {
   return (
-    <View style={tw`flex-1`}>
+    <View>
       <View style={tw`mt-3.5`}>
         <Text style={tw.style(h6TextStyle, 'text-center')}>
           Browse all meals

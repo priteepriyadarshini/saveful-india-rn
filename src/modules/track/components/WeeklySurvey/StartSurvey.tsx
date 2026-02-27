@@ -32,7 +32,7 @@ export default function StartSurvey({
   const { data: qantasFFN } = useGetFFNQuery();
   // surveys_count from eligibility data; if Qantas is linked, use the cycle count from qantasFFN
   const surveysCount = qantasFFN
-    ? qantasFFN.surveysCompletedInCycle
+    ? qantasFFN.surveysCompletedSinceLink
     : (eligibilityData?.surveys_count || 0);
 
   const isEligible = eligibilityData?.eligible ?? true;

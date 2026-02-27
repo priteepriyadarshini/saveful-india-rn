@@ -16,6 +16,10 @@ import { useIsFocused } from '@react-navigation/native';
 import TutorialModal from '../../../modules/prep/components/TutorialModal';
 import { MAKETUTORIAL } from '../../../modules/prep/data/data';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
+import { recipeApiService } from '../../recipe/api/recipeApiService';
+import { recipeToFramework } from '../../recipe/adapters/recipeAdapter';
+import { ingredientApiService } from '../../ingredients/api/ingredientApiService';
+import { transformIngredientToLegacyFormat } from '../../ingredients/helpers/ingredientTransformers';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Dimensions,
@@ -58,38 +62,45 @@ export default function MakeItScreen({
 
   const getFrameworksData = async () => {
     try {
-      // Try new recipe API first
-      const { recipeApiService } = await import('../../recipe/api/recipeApiService');
-      const { recipeToFramework } = await import('../../recipe/adapters/recipeAdapter');
-      const { ingredientApiService } = await import('../../ingredients/api/ingredientApiService');
-      const { transformIngredientToLegacyFormat } = await import('../../ingredients/helpers/ingredientTransformers');
-      
       const recipe = await recipeApiService.getRecipeById(id);
       
       if (recipe) {
         const convertedFramework = recipeToFramework(recipe);
-        // Inject ingredient titles/weights from API so Make page renders lists and surveys correctly
-        const allIds: string[] = [];
+
+        // The adapter now extracts populated ingredient data directly.
+        // Only fetch ingredients individually for any still missing a title.
+        const missingIds: string[] = [];
         convertedFramework.components.forEach(comp => {
           comp.requiredIngredients.forEach(ri => {
-            ri.recommendedIngredient.forEach(ing => allIds.push(ing.id));
-            ri.alternativeIngredients.forEach(ai => ai.ingredient.forEach(ing => allIds.push(ing.id)));
+            ri.recommendedIngredient.forEach(ing => { if (!ing.title) missingIds.push(ing.id); });
+            ri.alternativeIngredients.forEach(ai => ai.ingredient.forEach(ing => { if (!ing.title) missingIds.push(ing.id); }));
           });
-          comp.optionalIngredients.forEach(oi => oi.ingredient.forEach(ing => allIds.push(ing.id)));
-          comp.componentSteps.forEach(step => step.relevantIngredients.forEach(ing => allIds.push(ing.id)));
+          comp.optionalIngredients.forEach(oi => oi.ingredient.forEach(ing => { if (!ing.title) missingIds.push(ing.id); }));
+          comp.componentSteps.forEach(step => step.relevantIngredients.forEach(ing => { if (!ing.title) missingIds.push(ing.id); }));
         });
-        const ingredientMap = await ingredientApiService.getIngredientsByIds(allIds);
-        convertedFramework.components.forEach(comp => {
-          comp.requiredIngredients.forEach(ri => {
-            ri.recommendedIngredient.forEach(ing => {
-              const apiIng = ingredientMap[ing.id];
-              if (apiIng) {
-                const legacy = transformIngredientToLegacyFormat(apiIng);
-                ing.title = legacy.title;
-                ing.averageWeight = legacy.averageWeight;
-              }
+
+        if (missingIds.length > 0) {
+          const ingredientMap = await ingredientApiService.getIngredientsByIds(missingIds);
+          convertedFramework.components.forEach(comp => {
+            comp.requiredIngredients.forEach(ri => {
+              ri.recommendedIngredient.forEach(ing => {
+                const apiIng = ingredientMap[ing.id];
+                if (apiIng) {
+                  const legacy = transformIngredientToLegacyFormat(apiIng);
+                  ing.title = legacy.title;
+                  ing.averageWeight = legacy.averageWeight;
+                }
+              });
+              ri.alternativeIngredients.forEach(ai => ai.ingredient.forEach(ing => {
+                const apiIng = ingredientMap[ing.id];
+                if (apiIng) {
+                  const legacy = transformIngredientToLegacyFormat(apiIng);
+                  ing.title = legacy.title;
+                  ing.averageWeight = legacy.averageWeight;
+                }
+              }));
             });
-            ri.alternativeIngredients.forEach(ai => ai.ingredient.forEach(ing => {
+            comp.optionalIngredients.forEach(oi => oi.ingredient.forEach(ing => {
               const apiIng = ingredientMap[ing.id];
               if (apiIng) {
                 const legacy = transformIngredientToLegacyFormat(apiIng);
@@ -97,23 +108,16 @@ export default function MakeItScreen({
                 ing.averageWeight = legacy.averageWeight;
               }
             }));
+            comp.componentSteps.forEach(step => step.relevantIngredients.forEach(ing => {
+              const apiIng = ingredientMap[ing.id];
+              if (apiIng) {
+                const legacy = transformIngredientToLegacyFormat(apiIng);
+                ing.title = legacy.title;
+              }
+            }));
           });
-          comp.optionalIngredients.forEach(oi => oi.ingredient.forEach(ing => {
-            const apiIng = ingredientMap[ing.id];
-            if (apiIng) {
-              const legacy = transformIngredientToLegacyFormat(apiIng);
-              ing.title = legacy.title;
-              ing.averageWeight = legacy.averageWeight;
-            }
-          }));
-          comp.componentSteps.forEach(step => step.relevantIngredients.forEach(ing => {
-            const apiIng = ingredientMap[ing.id];
-            if (apiIng) {
-              const legacy = transformIngredientToLegacyFormat(apiIng);
-              ing.title = legacy.title;
-            }
-          }));
-        });
+        }
+
         setFramework(convertedFramework);
         return;
       }

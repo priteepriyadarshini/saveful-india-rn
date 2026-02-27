@@ -14,15 +14,19 @@ const recipeApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getAllRecipes: builder.query<Recipe[], void>({
       query: () => '/api/api/recipe',
+      keepUnusedDataFor: 300, // 5 minutes
     }),
     getRecipeById: builder.query<PopulatedRecipe, string>({
       query: (id) => `/api/api/recipe/${id}`,
+      keepUnusedDataFor: 300,
     }),
     getRecipesByCategory: builder.query<Recipe[], string>({
       query: (categoryId) => `/api/api/recipe/category/${categoryId}`,
+      keepUnusedDataFor: 300,
     }),
     getRecipesByIngredient: builder.query<Recipe[], string>({
       query: (ingredientId) => `/api/api/recipe/ingredient/${ingredientId}`,
+      keepUnusedDataFor: 300,
     }),
     getDietaryRecommendations: builder.query<Recipe[], DietaryRecommendationsParams>({
       query: (params) => {
@@ -38,6 +42,7 @@ const recipeApi = api.injectEndpoints({
         const query = qs.toString();
         return `/api/api/recipe/dietary-recommendations${query ? `?${query}` : ''}`;
       },
+      keepUnusedDataFor: 300,
     }),
     getRecipesByIngredients: builder.query<Recipe[], { ingredientIds: string[]; country?: string }>({
       async queryFn(arg, _queryApi, _extraOptions, fetchWithBQ) {

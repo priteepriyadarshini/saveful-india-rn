@@ -8,6 +8,18 @@ const extractId = (value: any): string => {
   return value?.toString() || '';
 };
 
+/** Extract ingredient name from a populated ingredient (object with `name`) or fallback to '' */
+const extractIngredientTitle = (value: any): string => {
+  if (typeof value === 'object' && value !== null && value.name) return value.name;
+  return '';
+};
+
+/** Extract averageWeight from a populated ingredient or fallback to 0 */
+const extractIngredientWeight = (value: any): number => {
+  if (typeof value === 'object' && value !== null && typeof value.averageWeight === 'number') return value.averageWeight;
+  return 0;
+};
+
 
 export function recipeToFramework(recipe: Recipe | PopulatedRecipe): IFramework {
   const heroImage: IAsset[] = recipe.heroImageUrl
@@ -121,8 +133,8 @@ export function recipeToFramework(recipe: Recipe | PopulatedRecipe): IFramework 
         recommendedIngredient: [
           {
             id: extractId(reqIng.recommendedIngredient),
-            title: '',
-            averageWeight: 0,
+            title: extractIngredientTitle(reqIng.recommendedIngredient),
+            averageWeight: extractIngredientWeight(reqIng.recommendedIngredient),
           },
         ],
         alternativeIngredients: reqIng.alternativeIngredients.map(alt => ({
@@ -130,8 +142,8 @@ export function recipeToFramework(recipe: Recipe | PopulatedRecipe): IFramework 
           ingredient: [
             {
               id: extractId(alt.ingredient),
-              title: '',
-              averageWeight: 0,
+              title: extractIngredientTitle(alt.ingredient),
+              averageWeight: extractIngredientWeight(alt.ingredient),
             },
           ],
           quantity: alt.inheritQuantity ? reqIng.quantity : alt.quantity || '',
@@ -154,8 +166,8 @@ export function recipeToFramework(recipe: Recipe | PopulatedRecipe): IFramework 
         ingredient: [
           {
             id: extractId(optIng.ingredient),
-            title: '',
-            averageWeight: 0,
+            title: extractIngredientTitle(optIng.ingredient),
+            averageWeight: extractIngredientWeight(optIng.ingredient),
           },
         ],
         quantity: optIng.quantity,
@@ -168,7 +180,7 @@ export function recipeToFramework(recipe: Recipe | PopulatedRecipe): IFramework 
         stepInstructions: step.stepInstructions,
         hackOrTip: step.hackOrTipIds.map(id => ({ id: extractId(id) }) as any),
         alwaysShow: step.alwaysShow,
-        relevantIngredients: step.relevantIngredients.map(id => ({ id: extractId(id), title: '' })),
+        relevantIngredients: step.relevantIngredients.map(id => ({ id: extractId(id), title: extractIngredientTitle(id) })),
       }));
 
       // Create included in variants - if empty, use all variant tags

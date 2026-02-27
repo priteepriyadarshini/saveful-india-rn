@@ -65,7 +65,7 @@ const MealCard = React.memo(function MealCard({
   type InitialNav = NativeStackNavigationProp<InitialStackParamList, 'Root'>;
   const navigation = useNavigation<InitialNav>();
   
-  const onPress = useCallback(async () => {
+  const onPress = useCallback(() => {
     sendAnalyticsEvent({
       event: mixpanelEventName.actionClicked,
       properties: {
@@ -76,26 +76,15 @@ const MealCard = React.memo(function MealCard({
       },
     });
 
-    try {
-      // Try new recipe API first
-      const { recipeApiService } = await import('../../recipe/api/recipeApiService');
-      const recipe = await recipeApiService.getRecipeById(id);
-      
-      if (recipe) {
-        // Generate slug from recipe title
-        const slug = recipe.title.toLowerCase().replace(/\s+/g, '-');
-        navigation.navigate('Root', {
-          screen: 'Make',
-          params: {
-            screen: 'PrepDetail',
-            params: { slug },
-          },
-        });
-        return;
-      }
-    } catch (error) {
-      console.error('Error fetching recipe:', error);
-    }
+    // Derive slug directly from title — no network call needed before navigating
+    const slug = title.toLowerCase().replace(/\s+/g, '-');
+    navigation.navigate('Root', {
+      screen: 'Make',
+      params: {
+        screen: 'PrepDetail',
+        params: { slug },
+      },
+    });
   }, [id, title, navigation, newCurrentRoute, sendAnalyticsEvent]);
 
   return (

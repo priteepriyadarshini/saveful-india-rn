@@ -2,16 +2,37 @@ import axios from 'axios';
 import EnvironmentManager from '../../environment/environmentManager';
 import { Recipe, PopulatedRecipe } from '../models/recipe';
 
+/** Simple TTL cache entry */
+interface CacheEntry<T> {
+  data: T;
+  expiry: number;
+}
+
 class RecipeApiService {
   private getBaseUrl(): string {
     return EnvironmentManager.shared.apiUrl();
   }
 
+  // --- In-memory cache (5-minute TTL) ---
+  private static CACHE_TTL = 5 * 60 * 1000;
+  private cacheById = new Map<string, CacheEntry<PopulatedRecipe>>();
+  private cacheBySlug = new Map<string, CacheEntry<PopulatedRecipe>>();
+  private cacheAllRecipes = new Map<string, CacheEntry<Recipe[]>>();
+
+  private isCacheValid<T>(entry: CacheEntry<T> | undefined): entry is CacheEntry<T> {
+    return !!entry && Date.now() < entry.expiry;
+  }
+
   async getAllRecipes(country?: string): Promise<Recipe[]> {
     try {
+      const cacheKey = `all:${country || 'none'}`;
+      const cached = this.cacheAllRecipes.get(cacheKey);
+      if (this.isCacheValid(cached)) return cached.data;
+
       const baseUrl = this.getBaseUrl();
       const params = country ? `?country=${encodeURIComponent(country)}` : '';
       const response = await axios.get(`${baseUrl}/api/api/recipe${params}`);
+      this.cacheAllRecipes.set(cacheKey, { data: response.data, expiry: Date.now() + RecipeApiService.CACHE_TTL });
       return response.data;
     } catch (error) {
       console.error('Error fetching recipes:', error);
@@ -21,9 +42,17 @@ class RecipeApiService {
 
   async getRecipeById(id: string): Promise<PopulatedRecipe> {
     try {
+      const cached = this.cacheById.get(id);
+      if (this.isCacheValid(cached)) return cached.data;
+
       const baseUrl = this.getBaseUrl();
       const response = await axios.get(`${baseUrl}/api/api/recipe/${id}`);
-      return response.data;
+      const recipe = response.data;
+      this.cacheById.set(id, { data: recipe, expiry: Date.now() + RecipeApiService.CACHE_TTL });
+      // Also populate the slug cache
+      const slug = recipe.title?.toLowerCase().replace(/\s+/g, '-');
+      if (slug) this.cacheBySlug.set(slug, { data: recipe, expiry: Date.now() + RecipeApiService.CACHE_TTL });
+      return recipe;
     } catch (error) {
       console.error(`Error fetching recipe ${id}:`, error);
       throw error;
@@ -31,21 +60,22 @@ class RecipeApiService {
   }
 
 
-  async getRecipeBySlug(slug: string, country?: string): Promise<PopulatedRecipe | null> {
+  async getRecipeBySlug(slug: string, _country?: string): Promise<PopulatedRecipe | null> {
     try {
-      const allRecipes = await this.getAllRecipes(country);
-      
-      const recipe = allRecipes.find(r => {
-        const recipeSlug = r.title.toLowerCase().replace(/\s+/g, '-');
-        return recipeSlug === slug;
-      });
+      // Check in-memory cache first
+      const cached = this.cacheBySlug.get(slug);
+      if (this.isCacheValid(cached)) return cached.data;
 
-      if (recipe) {
-        return await this.getRecipeById(recipe._id);
-      }
-
-      return null;
-    } catch (error) {
+      // Hit the dedicated slug endpoint (single DB query)
+      const baseUrl = this.getBaseUrl();
+      const response = await axios.get(`${baseUrl}/api/api/recipe/by-slug/${encodeURIComponent(slug)}`);
+      const recipe = response.data;
+      this.cacheBySlug.set(slug, { data: recipe, expiry: Date.now() + RecipeApiService.CACHE_TTL });
+      this.cacheById.set(recipe._id || recipe.id, { data: recipe, expiry: Date.now() + RecipeApiService.CACHE_TTL });
+      return recipe;
+    } catch (error: any) {
+      // 404 means not found — don't throw
+      if (error?.response?.status === 404) return null;
       console.error(`Error fetching recipe by slug ${slug}:`, error);
       throw error;
     }

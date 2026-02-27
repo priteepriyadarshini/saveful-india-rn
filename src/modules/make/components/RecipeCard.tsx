@@ -1,5 +1,6 @@
 import React from 'react';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { bundledSource } from '../../../common/helpers/uriHelpers';
@@ -45,23 +46,11 @@ export default function RecipeCard({
   const { newCurrentRoute } = useCurentRoute();
 
   const onMakeIt = React.useCallback(
-  async (id: string) => {
-    try {
-      // Try new recipe API first
-      const { recipeApiService } = await import('../../recipe/api/recipeApiService');
-      const recipe = await recipeApiService.getRecipeById(id);
-      
-      if (recipe) {
-        // Generate slug from recipe title
-        const slug = recipe.title.toLowerCase().replace(/\s+/g, '-');
-        navigation.navigate('PrepDetail', { slug });
-        return;
-      }
-    } catch (error) {
-      console.error('Error fetching recipe:', error);
-    }
+  (_id: string) => {
+    const slug = title.toLowerCase().replace(/\s+/g, '-');
+    navigation.navigate('PrepDetail', { slug });
   },
-  [navigation],
+  [navigation, title],
 );
 
   return (
@@ -95,8 +84,10 @@ export default function RecipeCard({
         {heroImage?.[0]?.url && (
           <Image
             style={[tw`h-[262px] w-full overflow-hidden rounded`]}
-            resizeMode="cover"
+            contentFit="cover"
             source={bundledSource(heroImage[0].url, env.useBundledContent)}
+            cachePolicy="memory-disk"
+            transition={200}
             accessibilityIgnoresInvertColors
           />
         )}

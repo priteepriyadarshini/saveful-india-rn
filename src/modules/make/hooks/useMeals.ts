@@ -56,7 +56,18 @@ export default function useMeals(filters: string[]) {
           userOnboarding?.allergies,
         );
         allFrameworksRef.current = filtered;
-        setFrameworks(filtered);
+        // Apply current filters immediately if any active
+        if (filters.length > 0) {
+          const clientFiltered = filtered.filter(framework =>
+            framework.frameworkCategories?.some(category => {
+              const categoryId = extractCategoryId(category);
+              return filters.includes(categoryId);
+            }),
+          );
+          setFrameworks(clientFiltered.length > 0 ? clientFiltered : filtered);
+        } else {
+          setFrameworks(filtered);
+        }
       }
       setIsLoading(false);
     } catch (error) {
@@ -71,83 +82,35 @@ export default function useMeals(filters: string[]) {
     getFrameworksData();
   }, [getFrameworksData]);
 
-  // When filters change, fetch server-side filtered recipes
+  // When filters change, do instant client-side filtering from cached data
   useEffect(() => {
     const allFrameworks = allFrameworksRef.current;
+    // If no data loaded yet, skip
+    if (allFrameworks.length === 0) return;
 
-    const applyFilters = async () => {
-      if (!filters || filters.length === 0) {
-        setFrameworks(allFrameworks);
-        return;
-      }
+    if (!filters || filters.length === 0) {
+      setFrameworks(allFrameworks);
+      return;
+    }
 
-      try {
-        const recipes = await recipeApiService.getRecipesByCategories(filters, userCountry);
-        const converted = recipesToFrameworks(recipes);
-        const filtered = filterAllergiesByUserPreferences(
-          converted,
-          userOnboarding?.allergies,
-        );
+    // Client-side filter first (instant)
+    const clientFiltered = allFrameworks.filter(framework =>
+      framework.frameworkCategories?.some(category => {
+        const categoryId = extractCategoryId(category);
+        return filters.includes(categoryId);
+      }),
+    );
 
-        if (!filtered || filtered.length === 0) {
-          try {
-            const perCategoryResults = await Promise.all(
-              filters.map(id => recipeApiService.getRecipesByCategory(id, userCountry)),
-            );
-            const mergedRecipes = perCategoryResults.flat();
-            const seen: Record<string, boolean> = {};
-            const deduped = mergedRecipes.filter(r => {
-              const rid =
-                typeof (r as any)._id === 'string'
-                  ? ((r as any)._id as string)
-                  : ((r as any)._id?.$oid as string) ||
-                    String((r as any)._id);
-              if (!rid || seen[rid]) return false;
-              seen[rid] = true;
-              return true;
-            });
-            const mergedFrameworks = recipesToFrameworks(deduped);
-            const allergyFiltered = filterAllergiesByUserPreferences(
-              mergedFrameworks,
-              userOnboarding?.allergies,
-            );
-            if (allergyFiltered && allergyFiltered.length > 0) {
-              setFrameworks(allergyFiltered);
-            } else {
-              const clientFiltered = allFrameworks.filter(framework =>
-                framework.frameworkCategories?.some(category => {
-                  const categoryId = extractCategoryId(category);
-                  return filters.includes(categoryId);
-                }),
-              );
-              setFrameworks(clientFiltered);
-            }
-          } catch {
-            const clientFiltered = allFrameworks.filter(framework =>
-              framework.frameworkCategories?.some(category => {
-                const categoryId = extractCategoryId(category);
-                return filters.includes(categoryId);
-              }),
-            );
-            setFrameworks(clientFiltered);
-          }
-        } else {
-          setFrameworks(filtered);
-        }
-      } catch {
-        const clientFiltered = allFrameworks.filter(framework =>
-          framework.frameworkCategories?.some(category => {
-            const categoryId = extractCategoryId(category);
-            return filters.includes(categoryId);
-          }),
-        );
-        setFrameworks(clientFiltered);
-      }
-    };
+    // Show client-filtered results immediately
+    if (clientFiltered.length > 0) {
+      setFrameworks(clientFiltered);
+    } else {
+      // If client-side found nothing, show all (don't blank out the list)
+      setFrameworks(allFrameworks);
+    }
 
-    applyFilters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, userCountry, userOnboarding?.allergies]);
+  }, [filters]);
 
   return { frameworks, isLoading };
 }

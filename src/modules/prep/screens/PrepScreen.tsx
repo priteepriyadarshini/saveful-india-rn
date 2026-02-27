@@ -31,6 +31,10 @@ import { PREPTUTORIAL } from '../../../modules/prep/data/data';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
 //import { useCreateUserMealMutation } from 'modules/track/api/api';
 import PrepServingSelector, { parseServingsFromPortions } from '../components/PrepServingSelector';
+import { recipeApiService } from '../../recipe/api/recipeApiService';
+import { recipeToFramework } from '../../recipe/adapters/recipeAdapter';
+import { ingredientApiService } from '../../ingredients/api/ingredientApiService';
+import { transformIngredientToLegacyFormat } from '../../ingredients/helpers/ingredientTransformers';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
@@ -168,38 +172,47 @@ export default function PrepScreen({
 
   const getFrameworksData = async () => {
     try {
-      // Try new recipe API first
-      const { recipeApiService } = await import('../../recipe/api/recipeApiService');
-      const { recipeToFramework } = await import('../../recipe/adapters/recipeAdapter');
-      const { ingredientApiService } = await import('../../ingredients/api/ingredientApiService');
-      const { transformIngredientToLegacyFormat } = await import('../../ingredients/helpers/ingredientTransformers');
-      
       const recipe = await recipeApiService.getRecipeBySlug(slug);
       
       if (recipe) {
         const convertedFramework = recipeToFramework(recipe);
-        // Inject ingredient names/weights from API into framework
-        const allIds: string[] = [];
+
+        // The adapter now extracts populated ingredient data directly from
+        // the backend response. Only fetch ingredients individually for any
+        // that are still missing a title (i.e. were not populated).
+        const missingIds: string[] = [];
         convertedFramework.components.forEach(comp => {
           comp.requiredIngredients.forEach(ri => {
-            ri.recommendedIngredient.forEach(ing => allIds.push(ing.id));
-            ri.alternativeIngredients.forEach(ai => ai.ingredient.forEach(ing => allIds.push(ing.id)));
+            ri.recommendedIngredient.forEach(ing => { if (!ing.title) missingIds.push(ing.id); });
+            ri.alternativeIngredients.forEach(ai => ai.ingredient.forEach(ing => { if (!ing.title) missingIds.push(ing.id); }));
           });
-          comp.optionalIngredients.forEach(oi => oi.ingredient.forEach(ing => allIds.push(ing.id)));
-          comp.componentSteps.forEach(step => step.relevantIngredients.forEach(ing => allIds.push(ing.id)));
+          comp.optionalIngredients.forEach(oi => oi.ingredient.forEach(ing => { if (!ing.title) missingIds.push(ing.id); }));
+          comp.componentSteps.forEach(step => step.relevantIngredients.forEach(ing => { if (!ing.title) missingIds.push(ing.id); }));
         });
-        const ingredientMap = await ingredientApiService.getIngredientsByIds(allIds);
-        convertedFramework.components.forEach(comp => {
-          comp.requiredIngredients.forEach(ri => {
-            ri.recommendedIngredient.forEach(ing => {
-              const apiIng = ingredientMap[ing.id];
-              if (apiIng) {
-                const legacy = transformIngredientToLegacyFormat(apiIng);
-                ing.title = legacy.title;
-                ing.averageWeight = legacy.averageWeight;
-              }
+
+        // Only fetch if there are genuinely missing ingredient names
+        if (missingIds.length > 0) {
+          const ingredientMap = await ingredientApiService.getIngredientsByIds(missingIds);
+          convertedFramework.components.forEach(comp => {
+            comp.requiredIngredients.forEach(ri => {
+              ri.recommendedIngredient.forEach(ing => {
+                const apiIng = ingredientMap[ing.id];
+                if (apiIng) {
+                  const legacy = transformIngredientToLegacyFormat(apiIng);
+                  ing.title = legacy.title;
+                  ing.averageWeight = legacy.averageWeight;
+                }
+              });
+              ri.alternativeIngredients.forEach(ai => ai.ingredient.forEach(ing => {
+                const apiIng = ingredientMap[ing.id];
+                if (apiIng) {
+                  const legacy = transformIngredientToLegacyFormat(apiIng);
+                  ing.title = legacy.title;
+                  ing.averageWeight = legacy.averageWeight;
+                }
+              }));
             });
-            ri.alternativeIngredients.forEach(ai => ai.ingredient.forEach(ing => {
+            comp.optionalIngredients.forEach(oi => oi.ingredient.forEach(ing => {
               const apiIng = ingredientMap[ing.id];
               if (apiIng) {
                 const legacy = transformIngredientToLegacyFormat(apiIng);
@@ -207,23 +220,16 @@ export default function PrepScreen({
                 ing.averageWeight = legacy.averageWeight;
               }
             }));
+            comp.componentSteps.forEach(step => step.relevantIngredients.forEach(ing => {
+              const apiIng = ingredientMap[ing.id];
+              if (apiIng) {
+                const legacy = transformIngredientToLegacyFormat(apiIng);
+                ing.title = legacy.title;
+              }
+            }));
           });
-          comp.optionalIngredients.forEach(oi => oi.ingredient.forEach(ing => {
-            const apiIng = ingredientMap[ing.id];
-            if (apiIng) {
-              const legacy = transformIngredientToLegacyFormat(apiIng);
-              ing.title = legacy.title;
-              ing.averageWeight = legacy.averageWeight;
-            }
-          }));
-          comp.componentSteps.forEach(step => step.relevantIngredients.forEach(ing => {
-            const apiIng = ingredientMap[ing.id];
-            if (apiIng) {
-              const legacy = transformIngredientToLegacyFormat(apiIng);
-              ing.title = legacy.title;
-            }
-          }));
-        });
+        }
+
         setFramework(convertedFramework);
         setSelectedFlavor(convertedFramework.variantTags[0]?.id || '');
         setIsLoading(false);
@@ -310,7 +316,6 @@ export default function PrepScreen({
       setCookingNotes(undefined);
 
       try {
-        const { recipeApiService } = await import('../../recipe/api/recipeApiService');
         const originalServings = parseServingsFromPortions(framework.portions);
         const response = await recipeApiService.scaleServings({
           originalServings,

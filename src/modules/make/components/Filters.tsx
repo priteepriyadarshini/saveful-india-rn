@@ -7,9 +7,8 @@ import useAnalytics from '../../analytics/hooks/useAnalytics';
 import { useCurentRoute } from '../../route/context/CurrentRouteContext';
 import { frameworkCategoryApiService } from '../../frameworkCategory/api/frameworkCategoryApiService';
 // import FILTERS from 'modules/make/data/filters';
-import React, { useEffect } from 'react';
-import { LayoutAnimation, View } from 'react-native';
-import * as Animatable from 'react-native-animatable';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Animated, View } from 'react-native';
 
 export default function Filters({
   selectedFilters,
@@ -22,15 +21,26 @@ export default function Filters({
   const { newCurrentRoute } = useCurentRoute();
 
   const [isActive, setIsActive] = React.useState<boolean>(false);
+  const animProgress = useRef(new Animated.Value(0)).current;
+  const [contentHeight, setContentHeight] = useState(0);
+  const measuredRef = useRef(false);
 
   const toggleFilters = (value: boolean) => {
-    /* Adding LayoutAnimation causes warning, trying to fix this  */
-    LayoutAnimation.configureNext({
-      ...LayoutAnimation.Presets.easeInEaseOut,
-      duration: 100,
-    });
     setIsActive(value);
+    Animated.timing(animProgress, {
+      toValue: value ? 1 : 0,
+      duration: 250,
+      useNativeDriver: false,
+    }).start();
   };
+
+  const onContentLayout = useCallback((e: any) => {
+    const h = e.nativeEvent.layout.height;
+    if (h > 0 && !measuredRef.current) {
+      measuredRef.current = true;
+      setContentHeight(h);
+    }
+  }, []);
 
   const [categories, setCategories] = React.useState<ICategory[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
@@ -140,11 +150,31 @@ export default function Filters({
           }}
         />
       </View>
-      <Animatable.View
-        style={tw.style(`${isActive ? 'mt-2.5' : 'h-0 overflow-hidden'}`)}
+      {/* Hidden measurer – renders once off-screen to get real height */}
+      {contentHeight === 0 && (
+        <View
+          style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
+          onLayout={onContentLayout}
+        >
+          <View style={tw`w-full flex-row flex-wrap items-center justify-center gap-1`}>
+            {categories.map((item, index) => (
+              <Pill key={index} text={item.title} size="small" isActive={false} setIsActive={() => {}} />
+            ))}
+          </View>
+        </View>
+      )}
+
+      <Animated.View
+        style={{
+          height: contentHeight > 0
+            ? animProgress.interpolate({ inputRange: [0, 1], outputRange: [0, contentHeight + 10] })
+            : 0,
+          opacity: animProgress,
+          overflow: 'hidden' as const,
+        }}
       >
         <View
-          style={tw`w-full flex-row flex-wrap items-center justify-center gap-1`}
+          style={[tw`w-full flex-row flex-wrap items-center justify-center gap-1`, { paddingTop: 10 }]}
         >
           {categories.map((item, index) => (
             <Pill
@@ -162,7 +192,7 @@ export default function Filters({
             />
           ))}
         </View>
-      </Animatable.View>
+      </Animated.View>
     </View>
   );
 }

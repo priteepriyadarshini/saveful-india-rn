@@ -1,5 +1,6 @@
 import { useLinkTo, useNavigation } from '@react-navigation/native';
-import { Pressable, View, Text, Image } from 'react-native';
+import { Pressable, View, Text } from 'react-native';
+import { Image } from 'expo-image';
 import { bundledSource } from '../../../common/helpers/uriHelpers';
 import tw from '../../../common/tailwind';
 import { IAsset, ITag } from '../../../models/craft';
@@ -62,25 +63,16 @@ export default function MealCard({
   type InitialNav = NativeStackNavigationProp<InitialStackParamList, 'Root'>;
   const navigation = useNavigation<InitialNav>();
 
-  const onPress = async () => {
-    try {
-      // Prefer direct recipe API
-      const { recipeApiService } = await import('../../recipe/api/recipeApiService');
-      const recipe = await recipeApiService.getRecipeById(id);
-      if (recipe) {
-        const slug = recipe.title.toLowerCase().replace(/\s+/g, '-');
-        navigation.navigate('Root', {
-          screen: 'Make',
-          params: {
-            screen: 'PrepDetail',
-            params: { slug },
-          },
-        });
-        return;
-      }
-    } catch (error) {
-      console.error('Error fetching recipe:', error);
-    }
+  const onPress = () => {
+    // Derive slug directly from title — no network call needed before navigating
+    const slug = title.toLowerCase().replace(/\s+/g, '-');
+    navigation.navigate('Root', {
+      screen: 'Make',
+      params: {
+        screen: 'PrepDetail',
+        params: { slug },
+      },
+    });
   };
 
   return (
@@ -100,8 +92,10 @@ export default function MealCard({
       {heroImage?.[0]?.url && (
         <Image
           style={tw`mb-3 h-[200px] w-full overflow-hidden rounded`}
-          resizeMode="cover"
+          contentFit="cover"
           source={bundledSource(heroImage[0].url, env.useBundledContent)}
+          cachePolicy="memory-disk"
+          transition={200}
           accessibilityIgnoresInvertColors
         />
       )}
