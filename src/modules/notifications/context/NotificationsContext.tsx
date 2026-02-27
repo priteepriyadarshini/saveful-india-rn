@@ -8,12 +8,10 @@ import React, { createContext, useEffect, useState } from 'react';
 
 export interface NotificationsState {
   showNotifications?: boolean;
-  isListenersSet?: boolean;
 }
 
 const defaultState: NotificationsState = {
   showNotifications: true,
-  isListenersSet: false,
 };
 
 export const NotificationsContext = createContext<
@@ -63,8 +61,8 @@ export const NotificationsProvider = ({
       .then(stateString => {
         if (stateString) {
           const loadedState = JSON.parse(stateString) as NotificationsState;
-
-          setState(loadedState);
+          // Only restore showNotifications; ignore any legacy keys like isListenersSet
+          setState({ showNotifications: loadedState.showNotifications ?? true });
         } else {
           persistState(state).finally(() => {});
         }

@@ -179,7 +179,7 @@ export default function MakeItSurveyModal({
         },
       });
 
-      scheduleNotification({
+      await scheduleNotification({
         message: `How was your ${title ?? 'meal'}?`,
         delayInSeconds: 30 * 60,
         url: `/survey/postmake/${mealId}`,
