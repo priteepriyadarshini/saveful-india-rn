@@ -4,6 +4,7 @@ import * as ExpoLinking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
 import { AndroidNotificationPriority } from 'expo-notifications';
 import { NotificationsContext } from '../../../modules/notifications/context/NotificationsContext';
+import { TokenManager } from '../../../modules/pushNotifications/TokenManager';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Linking, Platform } from 'react-native';
 
@@ -70,6 +71,9 @@ const useNotifications = () => {
       .then(finalStatus => {
         if (finalStatus) {
           setPermissionStatus(finalStatus);
+          // Sync permission with TokenManager so it can fetch the device push token
+          // This bridges the gap between the local notification system and push token registration
+          TokenManager.shared.checkNotificationPermissions();
         }
       })
       .finally(() => {});
@@ -119,6 +123,8 @@ const useNotifications = () => {
     Notifications.requestPermissionsAsync()
       .then(({ status }) => {
         setPermissionStatus(status);
+        // Sync with TokenManager to fetch device push token if granted
+        TokenManager.shared.checkNotificationPermissions();
         if (
           status === PermissionStatus.DENIED ||
           status === PermissionStatus.UNDETERMINED
@@ -203,7 +209,9 @@ const useNotifications = () => {
     Notifications.getLastNotificationResponseAsync().then(response => {
       if (!response) return;
 
-      const url = response.notification.request.content.data?.url as string | undefined;
+      const data = response.notification.request.content.data;
+      // Local notifications use 'url', remote push uses 'deepLink'
+      const url = (data?.url ?? data?.deepLink) as string | undefined;
       console.log('[Notifications] Cold-start notification response, url:', url);
       if (url) {
         // Small delay to let navigation container finish initialising
@@ -230,7 +238,9 @@ const useNotifications = () => {
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener(response => {
-        const url = response.notification.request.content.data?.url as string | undefined;
+        const data = response.notification.request.content.data;
+        // Local notifications use 'url', remote push uses 'deepLink'
+        const url = (data?.url ?? data?.deepLink) as string | undefined;
         console.log('[Notifications] Tapped notification (live), url:', url);
         if (url) {
           handleNotificationUrl.current(url);

@@ -2,26 +2,29 @@ import Constants from 'expo-constants';
 import { PushToken } from '../../modules/pushNotifications/types';
 import { Platform } from 'react-native';
 
-export function pushTokenFromToken(token: string) {
-  const app_bundle = Platform.select({
+export function pushTokenFromToken(token: string): PushToken {
+  const appBundle = Platform.select({
     ios: Constants.expoConfig?.ios?.bundleIdentifier,
     android: Constants.expoConfig?.android?.package,
     default: 'com.greenr.app',
   });
-  const app_build = Platform.select({
+  const appBuild = Platform.select({
     ios: Constants.expoConfig?.ios?.buildNumber,
     android: Constants.expoConfig?.android?.versionCode?.toString(),
   });
-  const pushToken: PushToken = {
-    token,
-    token_mode: __DEV__ ? 'dev' : 'prod',
-    token_type: Platform.OS === 'ios' ? 'apns' : 'fcm',
-    app_bundle,
-    app_version: Constants.expoConfig?.version,
-    app_build,
-  };
 
-  return pushToken;
+  // Expo push tokens (used in Expo Go) start with 'ExponentPushToken['
+  const isExpoToken = token.startsWith('ExponentPushToken[');
+
+  return {
+    token,
+    platform: Platform.OS === 'ios' ? 'ios' : 'android',
+    tokenMode: __DEV__ ? 'dev' : 'prod',
+    tokenType: isExpoToken ? 'expo' : (Platform.OS === 'ios' ? 'apns' : 'fcm'),
+    appBundle,
+    appVersion: Constants.expoConfig?.version,
+    appBuild,
+  };
 }
 
 export default pushTokenFromToken;

@@ -3,6 +3,7 @@ import * as Device from 'expo-device';
 import { PermissionStatus } from 'expo-modules-core';
 import * as Notifications from 'expo-notifications';
 import { AndroidNotificationPriority } from 'expo-notifications';
+import Constants from 'expo-constants';
 import { CurrentUser } from '../../models/Session';
 import {
   TokenManagerEvents,
@@ -14,6 +15,29 @@ import {
   NativeEventSubscription,
   Platform,
 } from 'react-native';
+
+/**
+ * Returns true when the app is running inside Expo Go.
+ * In Expo Go, getDevicePushTokenAsync() returns a token bound to
+ * host.exp.exponent — it cannot be used with your own Firebase project.
+ * We use getExpoPushTokenAsync() instead and route through Expo's push service.
+ */
+function isRunningInExpoGo(): boolean {
+  return Constants.appOwnership === 'expo';
+}
+
+const EAS_PROJECT_ID = '834347b1-3a49-45f6-8aca-16929fc1895a';
+
+async function getPushToken(): Promise<string> {
+  if (isRunningInExpoGo()) {
+    const result = await Notifications.getExpoPushTokenAsync({ projectId: EAS_PROJECT_ID });
+    console.log('[PushToken] Got Expo push token (Expo Go):', result.data.substring(0, 30) + '...');
+    return result.data;
+  }
+  const result = await Notifications.getDevicePushTokenAsync();
+  console.log('[PushToken] Got device push token:', result.data.substring(0, 20) + '...');
+  return result.data;
+}
 
 function expoPermissionStatusToTokenManagerPermissionStatus(
   status: PermissionStatus,
@@ -71,11 +95,10 @@ class TokenManager extends EventEmitter {
 
     if (this.permission === TokenManagerPermissionStatus.GRANTED) {
       try {
-        // const token = await Notifications.getDevicePushTokenAsync();
-        // console.log({ token });
-        // this.setToken(token.data);
+        const token = await getPushToken();
+        this.setToken(token);
       } catch (e) {
-        console.log({ e });
+        console.warn('[PushToken] Failed to get device push token:', e);
       }
     }
   };
@@ -93,7 +116,11 @@ class TokenManager extends EventEmitter {
     );
 
     if (this.permission === 'granted') {
-      // this.setToken((await Notifications.getDevicePushTokenAsync()).data);
+      try {
+        this.setToken(await getPushToken());
+      } catch (e) {
+        console.warn('[PushToken] Failed to refresh device push token:', e);
+      }
     } else {
       this.setToken(undefined);
     }
@@ -112,7 +139,11 @@ class TokenManager extends EventEmitter {
       return;
     }
     this.setPermission(TokenManagerPermissionStatus.GRANTED);
-    // this.setToken((await Notifications.getDevicePushTokenAsync()).data);
+    try {
+      this.setToken(await getPushToken());
+    } catch (e) {
+      console.warn('[PushToken] Failed to get device push token after permission grant:', e);
+    }
   };
 
   canAskForPermission = () => {
