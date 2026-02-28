@@ -220,6 +220,16 @@ const linking = {
         },
       },
 
+      Inventory: {
+        screens: {
+          InventoryHome: { path: "inventory", exact: true },
+          InventoryVoiceAdd: { path: "inventory/voice-add", exact: true },
+          InventoryMealSuggestions: { path: "inventory/meal-suggestions", exact: true },
+          InventoryExpiring: { path: "inventory/expiring", exact: true },
+          InventoryWasteAnalytics: { path: "inventory/waste-analytics", exact: true },
+        },
+      },
+
       Survey: {
         screens: {
           PostMake: { path: "survey/postmake/:id", exact: true },

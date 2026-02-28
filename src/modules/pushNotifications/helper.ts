@@ -13,7 +13,6 @@ export function pushTokenFromToken(token: string): PushToken {
     android: Constants.expoConfig?.android?.versionCode?.toString(),
   });
 
-  // Expo push tokens can start with either 'ExponentPushToken[' or 'ExpoPushToken['
   const isExpoToken = token.startsWith('ExponentPushToken[') || token.startsWith('ExpoPushToken[');
 
   return {
