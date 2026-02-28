@@ -176,6 +176,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     'expo-localization',
     'expo-font',
+    'expo-notifications',
     'expo-secure-store',
     [
       'expo-speech-recognition',
