@@ -1,8 +1,4 @@
 // Context object that vends the current EnvironmentType and EnvironmentConfiguration from EnvironmentManager
-import useAccessToken from '../../../modules/auth/hooks/useSessionToken';
-import { useSendPushNotificationTokenMutation } from '../../../modules/pushNotifications/api';
-import { pushTokenFromToken } from '../../../modules/pushNotifications/helper';
-import usePushNotificationToken from '../../../modules/pushNotifications/usePushNotificationToken';
 import React from 'react';
 
 import EnvironmentManager, {
@@ -83,21 +79,6 @@ function EnvironmentProvider({ children }: { children: React.ReactNode }) {
       setUseBundledContent,
     };
   }, [env, state, useBundledContent]);
-
-  // Push notifications
-  const { token } = usePushNotificationToken();
-  const [sendPushNotificationToken] = useSendPushNotificationTokenMutation();
-  const accessToken = useAccessToken();
-
-  // Send updated tokens to the server when the token or access token changes
-  React.useEffect(() => {
-    // This will send the tokens slightly more often than we need to
-    // but it should be fine. Probably for the best as we don't
-    // really have an error handling situation for if this request fails.
-    if (token && accessToken) {
-      sendPushNotificationToken(pushTokenFromToken(token));
-    }
-  }, [token, accessToken, sendPushNotificationToken]);
 
   return (
     <EnvironmentContext.Provider value={value}>

@@ -4,18 +4,18 @@ import { PushToken } from '../../modules/pushNotifications/types';
 const pushTokenApi = api.injectEndpoints({
   overrideExisting: true,
   endpoints: builder => ({
-    sendPushNotificationToken: builder.mutation<void, PushToken>({
+    registerDeviceToken: builder.mutation<{ message: string }, PushToken>({
       query: token => ({
-        url: '/api/push_tokens',
+        url: '/api/notifications/token',
         method: 'POST',
         body: token,
       }),
     }),
 
-    testMessage: builder.mutation<void, { token: string; message: string }>({
+    unregisterDeviceToken: builder.mutation<{ message: string }, { token: string }>({
       query: params => ({
-        url: '/api/push_tokens/test_message',
-        method: 'POST',
+        url: '/api/notifications/token',
+        method: 'DELETE',
         body: params,
       }),
     }),
@@ -24,5 +24,7 @@ const pushTokenApi = api.injectEndpoints({
 
 export default pushTokenApi;
 
-export const { useSendPushNotificationTokenMutation, useTestMessageMutation } =
-  pushTokenApi;
+export const {
+  useRegisterDeviceTokenMutation,
+  useUnregisterDeviceTokenMutation,
+} = pushTokenApi;

@@ -74,7 +74,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       NSSpeechRecognitionUsageDescription: 'The app uses speech recognition to convert your voice into inventory items.',
       ITSAppUsesNonExemptEncryption: false,
       LSApplicationQueriesSchemes: ['otpauth'],
-      OneSignal_disable_badge_clearing: true,
       LSMinimumSystemVersion: '12',
     },
     associatedDomains: [
@@ -171,7 +170,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     },
 
-    oneSignalAppId: '905089d3-5a54-46dd-8e22-669fc07adce3',
+    oneSignalAppId: '905089d3-5a54-46dd-8e22-669fc07adce3', // DEPRECATED: kept for reference only
   },
 
   plugins: [
@@ -187,12 +186,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     '@react-native-community/datetimepicker',
     'expo-web-browser',
-    [
-      'onesignal-expo-plugin',
-      {
-        mode: 'development',
-      },
-    ],
    [
   'expo-build-properties',
   {

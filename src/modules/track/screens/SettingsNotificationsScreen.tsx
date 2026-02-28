@@ -15,7 +15,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import { OneSignal } from 'react-native-onesignal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { bodyMediumBold } from '../../../theme/typography';
 
@@ -53,13 +52,6 @@ export default function SettingsNotificationsScreen() {
 
   const handleNotificationsPreferenceChanged = (value: boolean) => {
     setNotificationsPreference(value);
-
-    // Wrap OneSignal call in try-catch to prevent production crashes
-    try {
-      OneSignal.Notifications.requestPermission(value);
-    } catch (error) {
-      console.warn('OneSignal requestPermission failed (non-critical):', error);
-    }
   };
 
   return (

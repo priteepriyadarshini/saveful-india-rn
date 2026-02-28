@@ -26,7 +26,6 @@ import { CurrentRouteProvider } from './modules/route/context/CurrentRouteContex
 import { store } from './store/store';
 import { Provider } from 'react-redux';
 import useCachedResources from './common/hooks/useCachedResources';
-import { OneSignal } from 'react-native-onesignal';
 import OtherLaunchTasksHandler from './common/providers/OtherLaunchTasksHandler';
 import { MixPanelContextProvider } from './modules/mixpanel/context/MixpanelContext';
 import { NotificationsProvider } from './modules/notifications/context/NotificationsContext';
@@ -38,8 +37,6 @@ export default function App() {
   useDeviceContext(tw);
   
   const isLoadingComplete = useCachedResources();
-  
-  //OneSignal.initialize(Constants.expoConfig?.extra?.oneSignalAppId);
 
   if (!isLoadingComplete) {
     return null; 
