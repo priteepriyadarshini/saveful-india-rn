@@ -21,6 +21,8 @@ export default function QantasFeedBanner() {
   const navigation = useNavigation<NativeStackNavigationProp<FeedStackParamList>>();
   const { sendAnalyticsEvent } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
+  const [isLogoErrored, setIsLogoErrored] = React.useState(false);
+  const [progressBarWidth, setProgressBarWidth] = React.useState(0);
 
   const { data: qantasFFN } = useGetFFNQuery();
   const { data: dashboard } = useGetQantasDashboardQuery(undefined, {
@@ -37,7 +39,6 @@ export default function QantasFeedBanner() {
         action: 'qantas_banner_link_pressed',
       },
     });
-    // Navigate to Track > SettingsAccountsQantasLink
     (navigation as any).navigate('Track', {
       screen: 'SettingsAccountsQantasLink',
       params: {},
@@ -58,7 +59,6 @@ export default function QantasFeedBanner() {
     });
   }, [navigation, newCurrentRoute, sendAnalyticsEvent]);
 
-  // ── Not linked: show "Link your account" CTA ──
   if (!isLinked) {
     return (
       <View style={tw`mx-5 mb-5 overflow-hidden rounded-xl border border-qantas`}>
@@ -111,13 +111,24 @@ export default function QantasFeedBanner() {
     );
   }
 
-  // ── Linked: show progress / dashboard preview ──
   const surveysInCycle = dashboard?.surveysInCycle ?? 0;
   const surveysRequired = dashboard?.surveysRequired ?? 4;
   const progress = dashboard?.progress ?? 0;
+  const clampedProgress = Math.max(0, Math.min(1, progress));
   const greenTierUnlocked = dashboard?.greenTierUnlocked ?? false;
   const isRewarded = dashboard?.isRewarded ?? false;
   const pendingAllocation = dashboard?.pendingAllocation ?? false;
+  const leafSize = 28;
+  const leafLeft =
+    progressBarWidth > 0
+      ? Math.max(
+          0,
+          Math.min(
+            progressBarWidth - leafSize,
+            clampedProgress * progressBarWidth - leafSize / 2,
+          ),
+        )
+      : 0;
 
   return (
     <Pressable
@@ -138,17 +149,23 @@ export default function QantasFeedBanner() {
         </Text>
       </View>
 
-      {/* White body */}
       <View style={tw`items-center bg-white px-6 py-5`}>
         <Image
           resizeMode="contain"
-          source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/frequent-flyer.png' }}
+          source={
+            isLogoErrored
+              ? require('../../../../assets/placeholder/qantas-logo.png')
+              : { uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/frequent-flyer.png' }
+          }
+          onError={() => setIsLogoErrored(true)}
           accessibilityIgnoresInvertColors
           style={tw`mb-3 h-[50px] w-[140px]`}
         />
 
-        {/* Progress bar */}
-        <View style={tw`w-full py-2`}>
+        <View
+          style={tw`w-full py-2`}
+          onLayout={event => setProgressBarWidth(event.nativeEvent.layout.width)}
+        >
           <Progress.Bar
             progress={progress > 0 ? progress : 0.05}
             color={tw.color('kale')}
@@ -163,7 +180,10 @@ export default function QantasFeedBanner() {
             resizeMode="contain"
             source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/green-tier.png' }}
             accessibilityIgnoresInvertColors
-            style={tw`absolute -bottom-3 -right-1 h-[28px] w-[28px]`}
+            style={[
+              tw.style('absolute h-[28px] w-[28px]'),
+              { left: leafLeft },
+            ]}
           />
         </View>
 
@@ -177,7 +197,7 @@ export default function QantasFeedBanner() {
             ? `Congratulations! You've earned ${dashboard?.totalPointsAwarded ?? 100} Qantas Points!`
             : pendingAllocation
             ? 'Your Qantas Points are being processed!'
-            : `${surveysRequired - surveysInCycle} survey${surveysRequired - surveysInCycle !== 1 ? 's' : ''} to go — earn 100 Qantas Points!`}
+            : `${surveysRequired - surveysInCycle} survey${surveysRequired - surveysInCycle !== 1 ? 's' : ''} to go - earn 100 Qantas Points!`}
         </Text>
 
         <Pressable

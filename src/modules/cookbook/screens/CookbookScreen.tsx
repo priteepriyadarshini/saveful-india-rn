@@ -113,7 +113,7 @@ function EmptyState({ onAddRecipe }: { onAddRecipe: () => void }) {
         Your CookBook is Empty
       </Text>
       <Text style={tw.style(bodyMediumRegular, 'text-stone mt-1 text-center mb-8')}>
-        Paste a YouTube or Instagram recipe link and our AI will extract the recipe for you.
+        Paste a YouTube recipe link and our AI will extract the recipe for you.
         Build your personal cookbook!
       </Text>
       <Pressable

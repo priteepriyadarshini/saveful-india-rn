@@ -11,7 +11,7 @@ import { ControlledTextInput, FormLabel } from "../../../modules/forms";
 import { handleFormSubmitException } from "../../../modules/forms/validation";
 import { useGetFFNQuery, useUnlinkFFNMutation } from '../../qantas/api/api';
 import AnimatedSettingsHeader from "../../../modules/track/components/AnimatedSettingsHeader";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   Animated,
@@ -48,6 +48,7 @@ const defaultValues: FormData = {
 
 export default function SettingsAccountsScreen() {
   const offset = useRef(new Animated.Value(0)).current;
+  const [isLogoErrored, setIsLogoErrored] = useState(false);
 
   const navigation = useNavigation();
 
@@ -171,9 +172,14 @@ const {
             >
               <Image
                 resizeMode="contain"
-                source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/frequent-flyer.png' }}
+                source={
+                  isLogoErrored
+                    ? require("../../../../assets/placeholder/qantas-logo.png")
+                    : { uri: "https://d3fg04h02j12vm.cloudfront.net/qantas/frequent-flyer.png" }
+                }
+                onError={() => setIsLogoErrored(true)}
                 accessibilityIgnoresInvertColors
-                style={tw`mx-auto`}
+                style={tw`mx-auto h-[56px] w-[168px]`}
               />
 
               <View style={tw`h-px w-full bg-strokecream`} />

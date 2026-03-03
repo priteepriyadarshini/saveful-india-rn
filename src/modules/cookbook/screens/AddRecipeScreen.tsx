@@ -30,11 +30,8 @@ import { CookbookStackParamList } from '../navigation/CookbookNavigation';
 const SUPPORTED_DOMAINS = [
   'youtube.com',
   'youtu.be',
-  'instagram.com',
-  'instagr.am',
   'www.youtube.com',
   'm.youtube.com',
-  'www.instagram.com',
 ];
 
 function isValidRecipeLink(url: string): boolean {
@@ -68,14 +65,14 @@ export default function AddRecipeScreen() {
     const trimmedLink = link.trim();
 
     if (!trimmedLink) {
-      Alert.alert('Missing Link', 'Please paste a YouTube or Instagram recipe link.');
+      Alert.alert('Missing Link', 'Please paste a YouTube recipe link.');
       return;
     }
 
     if (!isValidRecipeLink(trimmedLink)) {
       Alert.alert(
         'Invalid Link',
-        'Please paste a valid YouTube or Instagram link.',
+        'Please paste a valid YouTube link.',
       );
       return;
     }
@@ -166,7 +163,7 @@ export default function AddRecipeScreen() {
               Paste a Recipe Link
             </Text>
             <Text style={tw.style(bodyMediumRegular, 'text-gray-500 mb-5 leading-5')}>
-              Copy a recipe link from YouTube or Instagram and our AI will
+              Copy a recipe link from YouTube and our AI will
               extract all the ingredients, steps, and details for you.
             </Text>
 
@@ -176,12 +173,6 @@ export default function AddRecipeScreen() {
                 <Feather name="youtube" size={14} color={tw.color('eggplant-vibrant') || '#7E42FF'} />
                 <Text style={tw.style(subheadMediumUppercase, 'text-eggplant-vibrant ml-1.5')}>
                   YouTube
-                </Text>
-              </View>
-              <View style={tw`flex-row items-center bg-white border border-eggplant px-4 py-2 rounded-full`}>
-                <Feather name="instagram" size={14} color={tw.color('eggplant-vibrant') || '#7E42FF'} />
-                <Text style={tw.style(subheadMediumUppercase, 'text-eggplant-vibrant ml-1.5')}>
-                  Instagram
                 </Text>
               </View>
             </View>
@@ -198,7 +189,7 @@ export default function AddRecipeScreen() {
                 <TextInput
                   ref={inputRef}
                   style={tw`flex-1 font-sans text-sm text-black py-3.5 px-3`}
-                  placeholder="https://youtu.be/... or https://instagram.com/..."
+                  placeholder="https://youtu.be/..."
                   placeholderTextColor={tw.color('stone')}
                   value={link}
                   onChangeText={setLink}
@@ -273,7 +264,7 @@ export default function AddRecipeScreen() {
               </View>
               <View style={tw`mb-2`}>
                 <Text style={tw.style(bodyMediumRegular, 'text-[11px] text-stone leading-4')}>
-                  • Instagram reels and posts with recipes work great
+                  • Best results come from clear recipe videos with visible steps
                 </Text>
               </View>
               <View>

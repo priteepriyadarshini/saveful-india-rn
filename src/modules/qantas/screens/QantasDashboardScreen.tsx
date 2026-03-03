@@ -113,6 +113,8 @@ export default function QantasDashboardScreen() {
   const [showConfetti, setShowConfetti] = useState(false);
   const confettiRef = useRef<LottieView>(null);
   const prevIsRewarded = useRef<boolean | null>(null);
+  const [isLogoErrored, setIsLogoErrored] = useState(false);
+  const [progressBarWidth, setProgressBarWidth] = useState(0);
 
   const [unlinkFFN, { isLoading: isUnlinking }] = useUnlinkFFNMutation();
 
@@ -121,12 +123,24 @@ export default function QantasDashboardScreen() {
   const surveysInCycle = dashboard?.surveysInCycle ?? 0;
   const surveysRequired = dashboard?.surveysRequired ?? 4;
   const progress = dashboard?.progress ?? 0;
+  const clampedProgress = Math.max(0, Math.min(1, progress));
   const greenTierUnlocked = dashboard?.greenTierUnlocked ?? false;
   const totalPoints = dashboard?.totalPointsAwarded ?? 0;
   const pointsHistory = dashboard?.pointsHistory ?? [];
   const isRewarded = dashboard?.isRewarded ?? false;
   const pendingAllocation = dashboard?.pendingAllocation ?? false;
   const maskedFFN = ffnData ? `****${ffnData.memberId.slice(-4)}` : '—';
+  const leafSize = 28;
+  const leafLeft =
+    progressBarWidth > 0
+      ? Math.max(
+          0,
+          Math.min(
+            progressBarWidth - leafSize,
+            clampedProgress * progressBarWidth - leafSize / 2,
+          ),
+        )
+      : 0;
 
   useEffect(() => {
     if (prevIsRewarded.current === false && isRewarded === true) {
@@ -157,7 +171,12 @@ export default function QantasDashboardScreen() {
           </Pressable>
           <Image
             resizeMode="contain"
-            source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/frequent-flyer.png' }}
+            source={
+              isLogoErrored
+                ? require('../../../../assets/placeholder/qantas-logo.png')
+                : { uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/frequent-flyer.png' }
+            }
+            onError={() => setIsLogoErrored(true)}
             accessibilityIgnoresInvertColors
             style={tw`mb-6 h-[80px] w-[200px]`}
           />
@@ -214,7 +233,12 @@ export default function QantasDashboardScreen() {
           <View style={tw`items-center mt-2 mb-4`}>
             <Image
               resizeMode="contain"
-              source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/frequent-flyer.png' }}
+              source={
+                isLogoErrored
+                  ? require('../../../../assets/placeholder/qantas-logo.png')
+                  : { uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/frequent-flyer.png' }
+              }
+              onError={() => setIsLogoErrored(true)}
               accessibilityIgnoresInvertColors
               style={tw`h-[60px] w-[160px]`}
             />
@@ -261,7 +285,10 @@ export default function QantasDashboardScreen() {
               surveysRequired={surveysRequired}
             />
 
-            <View style={tw`mt-4 w-full`}>
+            <View
+              style={tw`mt-4 w-full`}
+              onLayout={event => setProgressBarWidth(event.nativeEvent.layout.width)}
+            >
               <Progress.Bar
                 progress={progress > 0 ? progress : 0.05}
                 color={tw.color('kale')}
@@ -276,7 +303,10 @@ export default function QantasDashboardScreen() {
                 resizeMode="contain"
                 source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/green-tier.png' }}
                 accessibilityIgnoresInvertColors
-                style={tw`absolute -bottom-3 -right-1 h-[28px] w-[28px]`}
+                style={[
+                  tw.style('absolute -bottom-3 h-[28px] w-[28px]'),
+                  { left: leafLeft },
+                ]}
               />
             </View>
 

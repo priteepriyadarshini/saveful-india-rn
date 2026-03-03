@@ -108,7 +108,6 @@ export default function QantasLinkScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <SafeAreaView style={tw`flex-1`}>
-          {/* Back button */}
           <Pressable
             onPress={() => navigation.goBack()}
             accessibilityRole="button"
@@ -118,12 +117,9 @@ export default function QantasLinkScreen() {
             <Feather name="arrow-left" size={24} color={tw.color('black')} />
           </Pressable>
 
-          {/* Main content fills remaining space */}
           <View style={tw`flex-1 px-5 justify-between pb-4`}>
 
-            {/* Top section */}
             <View>
-              {/* Title */}
               <Text
                 style={tw.style(h6TextStyle, 'text-center')}
                 maxFontSizeMultiplier={1}
@@ -131,7 +127,6 @@ export default function QantasLinkScreen() {
                 Link your Qantas{'\n'}Frequent Flyer account
               </Text>
 
-              {/* Subtitle */}
               <Text
                 style={tw.style(bodyMediumRegular, 'mt-2 text-center text-midgray')}
                 maxFontSizeMultiplier={1}
@@ -140,9 +135,7 @@ export default function QantasLinkScreen() {
                 benefits of Green Tier
               </Text>
 
-              {/* Form card */}
               <View style={tw`mt-4 rounded-2xl border border-strokecream bg-white px-5 pt-4 pb-5`}>
-                {/* Logo */}
                 <Image
                   resizeMode="contain"
                   source={{ uri: 'https://d3fg04h02j12vm.cloudfront.net/qantas/frequent-flyer.png' }}
@@ -150,7 +143,6 @@ export default function QantasLinkScreen() {
                   style={tw`mx-auto mb-4 h-[56px] w-[160px]`}
                 />
 
-                {/* FFN Input */}
                 <View style={tw`mb-3`}>
                   <FormLabel error={errors.ffn}>FREQUENT FLYER NUMBER</FormLabel>
                   <ControlledTextInput

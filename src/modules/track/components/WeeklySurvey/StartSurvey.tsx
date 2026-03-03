@@ -30,7 +30,6 @@ export default function StartSurvey({
   const { newCurrentRoute } = useCurentRoute();
 
   const { data: qantasFFN } = useGetFFNQuery();
-  // surveys_count from eligibility data; if Qantas is linked, use the cycle count from qantasFFN
   const surveysCount = qantasFFN
     ? qantasFFN.surveysCompletedSinceLink
     : (eligibilityData?.surveys_count || 0);
