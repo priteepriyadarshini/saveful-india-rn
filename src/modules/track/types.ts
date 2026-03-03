@@ -1,3 +1,5 @@
+import { ImageSourcePropType } from 'react-native';
+
 export interface PostMake {
   id?: number;
   title?: string;
@@ -31,7 +33,7 @@ export interface WeekResults {
   spent: string;
   waste: string;
   co2?: string;
-  currencySymbol?: string;  // ISO-derived symbol e.g. ₹, A$, £
+  currencySymbol?: string; 
   currentWeekResults: Savings[];
 }
 
@@ -59,9 +61,7 @@ export interface ISurveyList {
 export interface IProduceList {
   id?: number;
   name?: string;
-  image?: {
-    uri: string;
-  };
+  image?: ImageSourcePropType;
   controllerName: string;
   phrase?: string;
 }

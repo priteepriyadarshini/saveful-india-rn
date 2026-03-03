@@ -9,14 +9,14 @@ import _ from 'lodash';
 import { mixpanelEventName } from '../../analytics/analytics';
 import { handleFormSubmitException, getSafeErrorMessage } from '../../forms/validation';
 import { useCurentRoute } from '../../route/context/CurrentRouteContext';
-import { useCreateUserTrackSurveyMutation, useGetUserTrackSurveyEligibilityQuery } from '../../../modules/track/api/api';
+import { useCreateUserTrackSurveyMutation, useGetUserTrackSurveyEligibilityQuery, useGetSurveyConfigQuery } from '../../../modules/track/api/api';
 import { useGetCurrentUserQuery } from '../../auth/api';
 import TrackSurvey from '../../../modules/track/components/TrackSurvey';
 import StartSurvey from '../components/WeeklySurvey/StartSurvey';
 import SurveyResult from '../components/WeeklySurvey/SurveyResult';
-import { SURVEY, SAVINGS } from '../data/data';
+import { SURVEY, SAVINGS, buildSurveyFromConfig } from '../data/data';
 import { WeekResults, ISurveyList } from '../types';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   Alert,
@@ -32,59 +32,82 @@ import * as Yup from 'yup';
 import { TrackStackScreenProps } from '../navigation/TrackNavigation';
 
 
-const schema = Yup.object({
+// Static base schema fields (always present)
+const baseSchemaFields = {
   cookingFrequency: Yup.number().required('Please select a frequency'),
   scraps: Yup.number().required('Please select a scraps'),
   uneatenLeftovers: Yup.number().required('Please select a uneaten leftovers'),
-  binnedFruit: Yup.number().required('Please select a binned fruit'),
-  binnedVeggies: Yup.number().required('Please select a binned veggies'),
-  binnedDairy: Yup.number().required('Please select a binned dairy'),
-  binnedBread: Yup.number().required('Please select a binned bread'),
-  binnedMeat: Yup.number().required('Please select a binned meat'),
-  binnedHerbs: Yup.number().required('Please select a binned herbs'),
   preferredIngredients: Yup.array(Yup.string()).required(
     'Please select at least one preferred ingredient',
   ),
   noOfCooks: Yup.number().required('Please select a number of cooks'),
   promptAt: Yup.string().required('Please select a prompt at'),
-});
+};
 
-interface FormData {
-  cookingFrequency: number;
-  scraps: number;
-  uneatenLeftovers: number;
-  binnedFruit: number;
-  binnedVeggies: number;
-  binnedDairy: number;
-  binnedBread: number;
-  binnedMeat: number;
-  binnedHerbs: number;
-  preferredIngredients: (string | undefined)[];
-  noOfCooks: number;
-  promptAt: string;
+// Fallback produce keys used when no dynamic config is available
+const FALLBACK_PRODUCE_KEYS = ['fruit', 'veggies', 'dairy', 'bread', 'meat', 'herbs'];
+
+/**
+ * Build a Yup schema dynamically based on produce category keys from config.
+ */
+function buildDynamicSchema(produceKeys: string[]) {
+  const produceFields: Record<string, any> = {};
+  for (const key of produceKeys) {
+    produceFields[`binned_${key}`] = Yup.number().required(`Please select binned ${key}`);
+  }
+  return Yup.object({
+    ...baseSchemaFields,
+    ...produceFields,
+  });
 }
 
-const defaultValues: FormData = {
-  cookingFrequency: 0,
-  scraps: 0,
-  uneatenLeftovers: 0,
-  binnedFruit: 0,
-  binnedVeggies: 0,
-  binnedDairy: 0,
-  binnedBread: 0,
-  binnedMeat: 0,
-  binnedHerbs: 0,
-  preferredIngredients: [],
-  noOfCooks: 2,
-  promptAt: new Date().toISOString(),
-};
+/**
+ * Build dynamic default form values based on produce keys.
+ */
+function buildDynamicDefaults(produceKeys: string[]): Record<string, any> {
+  const defaults: Record<string, any> = {
+    cookingFrequency: 0,
+    scraps: 0,
+    uneatenLeftovers: 0,
+    preferredIngredients: [],
+    noOfCooks: 2,
+    promptAt: new Date().toISOString(),
+  };
+  for (const key of produceKeys) {
+    defaults[`binned_${key}`] = 0;
+  }
+  return defaults;
+}
 
 const windowWidth = Dimensions.get('window').width;
 const itemLength = windowWidth * 1;
 const itemWidth = (windowWidth - itemLength) / 2;
 
 export default function SurveyScreen() {
-  const data = SURVEY;
+  // Fetch dynamic survey config from backend
+  const { data: surveyConfig } = useGetSurveyConfigQuery();
+
+  // Build survey data from config or fall back to hardcoded SURVEY
+  const data = useMemo(() => {
+    if (surveyConfig) {
+      return buildSurveyFromConfig(surveyConfig);
+    }
+    return SURVEY;
+  }, [surveyConfig]);
+
+  // Derive dynamic produce keys from config or fallback
+  const produceKeys = useMemo(() => {
+    if (surveyConfig) {
+      return surveyConfig.produceWasteCategories
+        .filter(c => c.isActive)
+        .sort((a, b) => a.order - b.order)
+        .map(c => c.key);
+    }
+    return FALLBACK_PRODUCE_KEYS;
+  }, [surveyConfig]);
+
+  const schema = useMemo(() => buildDynamicSchema(produceKeys), [produceKeys]);
+  const defaultValues = useMemo(() => buildDynamicDefaults(produceKeys), [produceKeys]);
   const linkTo = useLinkTo();
   const navigation = useNavigation<TrackStackScreenProps<'TrackHome'>['navigation']>();
 
@@ -115,10 +138,10 @@ export default function SurveyScreen() {
     control,
     handleSubmit,
     setError,
-  } = useForm<FormData>({
+  } = useForm<Record<string, any>>({
     mode: 'onBlur',
     defaultValues,
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema as any),
   });
 
   sendTimeEventAnalytics(mixpanelEventName.weeklySurveyScreenView);
@@ -148,20 +171,19 @@ export default function SurveyScreen() {
         return Number.isNaN(n) ? 0 : n;
       };
 
+      // Build produceWaste dynamically from config produce keys
+      const produceWaste: Record<string, number> = {};
+      for (const key of produceKeys) {
+        produceWaste[key] = toInt(formData[`binned_${key}`]);
+      }
+
       const result = await createUserTrackSurvey({
         cookingFrequency: toInt(formData.cookingFrequency),
         scraps: toInt(formData.scraps),
         uneatenLeftovers: toInt(formData.uneatenLeftovers),
-        produceWaste: {
-          fruit: toInt(formData.binnedFruit),
-          veggies: toInt(formData.binnedVeggies),
-          dairy: toInt(formData.binnedDairy),
-          bread: toInt(formData.binnedBread),
-          meat: toInt(formData.binnedMeat),
-          herbs: toInt(formData.binnedHerbs),
-        },
-        preferredIngredients: formData.preferredIngredients.filter(
-          (i): i is string => !!i,
+        produceWaste,
+        preferredIngredients: (formData.preferredIngredients || []).filter(
+          (i: any): i is string => !!i,
         ),
         noOfCooks: toInt(formData.noOfCooks),
         country: currentUser?.country,
@@ -406,6 +428,9 @@ export default function SurveyScreen() {
                 decelerationRate={0}
                 getItemLayout={getItemLayout}
                 renderToHardwareTextureAndroid
+                windowSize={3}
+                maxToRenderPerBatch={3}
+                removeClippedSubviews={true}
                 contentContainerStyle={tw.style(`mb-2 content-center`)}
                 snapToInterval={itemLength}
                 snapToAlignment="start"

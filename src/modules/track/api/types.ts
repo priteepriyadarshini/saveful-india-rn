@@ -53,14 +53,73 @@ interface StatsResponse {
   stats: Stats;
 }
 
-// Track Survey types
-interface ProduceWaste {
-  fruit: number;
-  veggies: number;
-  dairy: number;
-  bread: number;
-  meat: number;
-  herbs: number;
+type ProduceWaste = Record<string, number>;
+
+interface SurveyConfigProduceCategory {
+  key: string;
+  label: string;
+  icon: string; 
+  weightPerUnit: number;
+  unit: string;
+  order: number;
+  isActive: boolean;
+}
+
+interface SurveyConfigQuestion {
+  key: string;
+  label: string;
+  type: 'number' | 'slider' | 'select';
+  min: number;
+  max: number;
+  step: number;
+  unit: string;
+  description: string;
+  order: number;
+  isRequired: boolean;
+  isActive: boolean;
+}
+
+interface SurveyConfigCountryRate {
+  countryCode: string;
+  countryName: string;
+  costPerGram: number;
+  currencySymbol: string;
+  isActive: boolean;
+}
+
+interface SurveyConfigWeeklyTip {
+  title: string;
+  content: string;
+  imageUrl: string;
+  weekNumber: number;
+  isActive: boolean;
+  order: number;
+}
+
+interface SurveyConfigUi {
+  surveyTitle: string;
+  surveyDescription: string;
+  completionMessage: string;
+  eligibilityMessage: string;
+  notEligibleMessage: string;
+}
+
+interface SurveyConfigResponse {
+  _id: string;
+  name: string;
+  isActive: boolean;
+  version: number;
+  surveyQuestions: SurveyConfigQuestion[];
+  produceWasteCategories: SurveyConfigProduceCategory[];
+  countryRates: SurveyConfigCountryRate[];
+  calculationConstants: {
+    co2PerGram: number;
+    avgWeeklyWasteGrams: number;
+    scrapsWeightPerUnit: number;
+    leftoversWeightPerUnit: number;
+  };
+  weeklyTips: SurveyConfigWeeklyTip[];
+  uiConfig: SurveyConfigUi;
 }
 
 interface WeeklySavings {
@@ -80,7 +139,6 @@ interface TrackSurveyResponse {
   preferredIngredients: string[];
   noOfCooks: number;
   calculatedSavings: WeeklySavings;
-  // Only populated on createSurvey responses
   prev_personal_bests?: {
     co2_savings: number;
     cost_savings: number;
@@ -113,7 +171,7 @@ interface CreateTrackSurveyDto {
   preferredIngredients: string[];
   noOfCooks?: number;
   surveyDay?: number;
-  country?: string; // ISO country code e.g. IN, AU, US
+  country?: string; 
 }
 
 interface WeeklySavingsSummary {
@@ -143,4 +201,8 @@ export {
   TrackSurveyEligibility,
   CreateTrackSurveyDto,
   WeeklySavingsSummary,
+  SurveyConfigResponse,
+  SurveyConfigProduceCategory,
+  SurveyConfigQuestion,
+  SurveyConfigWeeklyTip,
 };

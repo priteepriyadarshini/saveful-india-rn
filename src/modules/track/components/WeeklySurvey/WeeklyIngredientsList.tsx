@@ -9,13 +9,13 @@ import TrackPostMakeIngredients, {
   ITrackPostMakeIngredient,
 } from '../../../../modules/track/components/TrackPostMakeIngredients';
 import { ISurveyList } from '../../../../modules/track/types';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   FieldValues,
   UseControllerProps,
   useController,
 } from 'react-hook-form';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View, FlatList } from 'react-native';
 import { bodyMediumRegular, h6TextStyle } from '../../../../theme/typography';
 
 interface WeeklyIngredientsListProps {

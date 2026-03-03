@@ -10,8 +10,8 @@ import tw from '../../../common/tailwind';
 import {
   useGetUserTrackSurveyEligibilityQuery,
   useGetUserTrackSurveysQuery,
+  useGetWeeklySummaryQuery,
 } from '../../../modules/track/api/api';
-import { WEEKLYSURVEY } from '../../../modules/track/data/data';
 import moment from 'moment';
 import React from 'react';
 import {
@@ -171,9 +171,11 @@ export default function WeeklySurveyCarousel() {
 
   const { data: userSurveys } = useGetUserTrackSurveysQuery();
   const { data: eligibilityData } = useGetUserTrackSurveyEligibilityQuery();
+  const { data: weeklySummary } = useGetWeeklySummaryQuery();
   const { data: user } = useGetCurrentUserQuery();
 
   const currencySymbol =
+    weeklySummary?.current_week?.currency_symbol ||
     userSurveys?.[0]?.calculatedSavings?.currency_symbol ||
     getCurrencySymbol(user?.country);
 
@@ -222,12 +224,57 @@ export default function WeeklySurveyCarousel() {
     );
   }
 
-  const data = WEEKLYSURVEY({
-    co2Savings: userSurveys[0].calculatedSavings.co2_savings.toString(),
-    costSavings: userSurveys[0].calculatedSavings.cost_savings.toString(),
-    foodSaved: userSurveys[0].calculatedSavings.food_saved.toString(),
-    currencySymbol,
-  });
+  // Use the weekly summary endpoint for real week-on-week comparison
+  const currentWeek = weeklySummary?.current_week ?? userSurveys[0].calculatedSavings;
+  const previousWeek = weeklySummary?.previous_week;
+  const personalBests = weeklySummary?.personal_bests;
+
+  // Calculate week-on-week differences
+  const foodDiff = previousWeek
+    ? currentWeek.food_saved - previousWeek.food_saved
+    : currentWeek.food_saved;
+  const costDiff = previousWeek
+    ? currentWeek.cost_savings - previousWeek.cost_savings
+    : currentWeek.cost_savings;
+  const co2Diff = previousWeek
+    ? currentWeek.co2_savings - previousWeek.co2_savings
+    : currentWeek.co2_savings;
+
+  // Check personal bests from actual survey data
+  const latestSurvey = userSurveys[0];
+  const isFoodBest = latestSurvey?.isFoodSavedPersonalBest ?? false;
+  const isCostBest = latestSurvey?.isCostPersonalBest ?? false;
+  const isCo2Best = latestSurvey?.isCo2PersonalBest ?? false;
+
+  const data = [
+    {
+      id: 0,
+      title: 'waste',
+      isBest: isFoodBest,
+      image: require('../../../../assets/placeholder/big-savings.png'),
+      status: foodDiff >= 0 ? 'less' : 'more',
+      value: `${(Math.abs(currentWeek.food_saved) / 1000).toFixed(2)}KG`,
+      output: `potential ${foodDiff >= 0 ? 'less' : 'more'} waste`,
+    },
+    {
+      id: 1,
+      title: 'savings',
+      isBest: isCostBest,
+      image: require('../../../../assets/placeholder/money.png'),
+      status: costDiff >= 0 ? 'less' : 'more',
+      value: `${currencySymbol}${Math.abs(currentWeek.cost_savings).toFixed(2)}`,
+      output: `potential ${costDiff >= 0 ? 'savings' : 'cost'}`,
+    },
+    {
+      id: 2,
+      title: 'co2',
+      isBest: isCo2Best,
+      image: require('../../../../assets/placeholder/cloud.png'),
+      status: co2Diff >= 0 ? 'less' : 'more',
+      value: `${(Math.abs(currentWeek.co2_savings) / 1000).toFixed(2)}KG`,
+      output: `potential CO2 ${co2Diff >= 0 ? 'saved' : 'spent'}`,
+    },
+  ];
 
   const isEligible = eligibilityData.eligible;
 

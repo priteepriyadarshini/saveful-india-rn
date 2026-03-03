@@ -15,9 +15,10 @@ import MealCarousel from '../../../../modules/track/components/MealCarousel';
 import SavingsCarousel from '../../../../modules/track/components/SavingsCarousel';
 import TipsOfTheWeekCarousel from '../../../../modules/track/components/TipsOfTheWeekCarousel';
 import TrackSurveyBaseline from '../../../../modules/track/components/TrackSurveyBaseline';
-import { TIPSOFTHEWEEK } from '../../../../modules/track/data/data';
+import { TIPSOFTHEWEEK, buildTipsFromConfig } from '../../../../modules/track/data/data';
 import getWeekNumber from '../../../../modules/track/helpers/getWeekNumber';
 import { WeekResults } from '../../../../modules/track/types';
+import { useGetSurveyConfigQuery } from '../../../../modules/track/api/api';
 import { useEffect, useState, useMemo } from 'react';
 import { Dimensions, Image, Pressable, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -43,6 +44,8 @@ export default function SurveyResult({
 
   const { data: userOnboarding } = useGetUserOnboardingQuery();
   const { data: userTrackSurveys } = useGetUserTrackSurveysQuery();
+  const { data: surveyConfig } = useGetSurveyConfigQuery();
+  const tips = surveyConfig ? buildTipsFromConfig(surveyConfig) : TIPSOFTHEWEEK;
 
   const { data: apiFrameworks, isLoading: isLoadingFrameworks } = useGetAllFrameworkCategoriesQuery();
 
@@ -178,12 +181,11 @@ export default function SurveyResult({
               <TipsOfTheWeekCarousel
                 theme="dark"
                 item={[
-                  TIPSOFTHEWEEK[
+                  tips[
                     getWeekNumber(
                       new Date(),
                       userOnboarding?.track_survey_day,
-                      //String(userOnboarding.track_survey_day)
-                    ) % 7
+                    ) % tips.length
                   ],
                 ]}
                 containerStyle={tw.style('mx-10')}

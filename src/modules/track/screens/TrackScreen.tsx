@@ -31,8 +31,9 @@ import TrackTabChart from '../components/TrackTabChart';
 import WeeklySurveyCarousel from '../components/WeeklySurveyCarousel';
 import FaqContainer from '../components/FaqContainer';
 import getWeekNumber from '../helpers/getWeekNumber';
-import { TIPSOFTHEWEEK } from '../data/data';
+import { TIPSOFTHEWEEK, buildTipsFromConfig } from '../data/data';
 import TipsOfTheWeekCarousel from '../components/TipsOfTheWeekCarousel';
+import { useGetSurveyConfigQuery } from '../../../modules/track/api/api';
 
 
 export default function TrackScreen() {
@@ -56,6 +57,8 @@ export default function TrackScreen() {
 
 
   const { data: userOnboarding } = useGetUserOnboardingQuery();
+  const { data: surveyConfig } = useGetSurveyConfigQuery();
+  const tips = surveyConfig ? buildTipsFromConfig(surveyConfig) : TIPSOFTHEWEEK;
   const data = [{ id: 1, name: 'About our calculations' }];
 
 
@@ -122,9 +125,8 @@ export default function TrackScreen() {
 
           <TipsOfTheWeekCarousel
             item={[
-              TIPSOFTHEWEEK[
-                getWeekNumber(new Date(), userOnboarding?.track_survey_day) % 7
-                //currentWeekIndex
+              tips[
+                getWeekNumber(new Date(), userOnboarding?.track_survey_day) % tips.length
               ],
             ]}
           />

@@ -14,15 +14,23 @@ import {
   TrackSurveyEligibility,
   CreateTrackSurveyDto,
   WeeklySavingsSummary,
+  SurveyConfigResponse,
 } from '../../../modules/track/api/types';
 
 const trackApi = api
   .enhanceEndpoints({
-    addTagTypes: ['Feedback', 'UserMeals', 'Favourites', 'Stats', 'TrackSurvey'],
+    addTagTypes: ['Feedback', 'UserMeals', 'Favourites', 'Stats', 'TrackSurvey', 'SurveyConfig'],
   })
   .injectEndpoints({
     overrideExisting: true,
     endpoints: builder => ({
+      getSurveyConfig: builder.query<SurveyConfigResponse, void>({
+        query: () => ({
+          url: '/api/survey-config/active/current',
+          method: 'GET',
+        }),
+        providesTags: ['SurveyConfig'],
+      }),
       createFeedback: builder.mutation<
         FeedbackResult,
         {
@@ -34,7 +42,6 @@ const trackApi = api
           rating?: number; 
           review?: string;
           ingredientIds?: string[];
-          // Post-make survey fields
           improvementReason?: string;
           portionSize?: string;
           hasLeftovers?: boolean;
@@ -82,7 +89,6 @@ const trackApi = api
           mealId?: string;
           rating?: number;
           review?: string;
-          // Post-make survey fields
           improvementReason?: string;
           portionSize?: string;
           hasLeftovers?: boolean;
@@ -132,7 +138,6 @@ const trackApi = api
         transformResponse: r => {
           const anyR = r as any;
           const feedbacks = anyR?.feedback_list || anyR?.feedbacks || [];
-          // Map _id to id and ensure it's a string
           return feedbacks.map((f: any) => ({
             ...f,
             id: f.id?.toString() || f._id?.toString() || f.id || f._id,
@@ -207,7 +212,6 @@ const trackApi = api
         providesTags: ['Stats'],
         transformResponse: r => r as Stats,
       }),
-      // Track Survey endpoints
       getUserTrackSurveys: builder.query<TrackSurveyResponse[], void>({
         query: () => ({
           url: '/api/track-survey',
@@ -250,6 +254,7 @@ const trackApi = api
 export default trackApi;
 
 export const {
+  useGetSurveyConfigQuery,
   useCreateFeedbackMutation,
   useUpdateFeedbackMutation,
   useGetFeedbacksForFrameworkQuery,

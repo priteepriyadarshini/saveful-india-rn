@@ -1,4 +1,125 @@
 ﻿import { PostMake, Survey, WeekResults } from "../types";
+import { SurveyConfigResponse, SurveyConfigProduceCategory, SurveyConfigWeeklyTip } from "../api/types";
+import { ImageSourcePropType } from "react-native";
+
+export const PRODUCE_ASSET_MAP: Record<string, ImageSourcePropType> = {
+  fruit: require('../../../../assets/placeholder/fruit.png'),
+  veggies: require('../../../../assets/placeholder/veggies.png'),
+  dairy: require('../../../../assets/placeholder/milk.png'),
+  bread: require('../../../../assets/placeholder/bread.png'),
+  meat: require('../../../../assets/placeholder/meat.png'),
+  herbs: require('../../../../assets/placeholder/herbs.png'),
+};
+
+const DEFAULT_PRODUCE_IMAGE = require('../../../../assets/placeholder/fruit.png');
+
+export function resolveProduceIcon(icon: string): ImageSourcePropType {
+  if (icon.startsWith('http://') || icon.startsWith('https://')) {
+    return { uri: icon };
+  }
+  return PRODUCE_ASSET_MAP[icon] ?? DEFAULT_PRODUCE_IMAGE;
+}
+
+export function buildSurveyFromConfig(config: SurveyConfigResponse): Survey {
+  const activeProduceCategories = config.produceWasteCategories
+    .filter(c => c.isActive)
+    .sort((a, b) => a.order - b.order);
+
+  return {
+    id: 0,
+    title: config.uiConfig?.surveyTitle || 'Survey One',
+    surveyList: [
+      {
+        id: 0,
+        title: 'How often did you cook this week?',
+        subTitle:
+          'How many times did you cook any kind of meal over the past seven days?',
+        image: require('../../../../assets/placeholder/frying-pan.png'),
+        name: 'cookingFrequency',
+        phrase: 'times',
+        buttonText: 'Next',
+      },
+      {
+        id: 1,
+        title: 'HOW MUCH SCRAPS DID YOU HAVE?',
+        subTitle:
+          'Thinking back to the last meal you made, how many cupfuls of scraps (peels, skins, stalks and bones) ended up in the bin or compost?',
+        image: require('../../../../assets/placeholder/banana-peel.png'),
+        name: 'scraps',
+        phrase: 'cupfuls',
+        buttonText: 'Next',
+      },
+      {
+        id: 2,
+        title: 'HOW MUCH LEFTOVERS WEREN\u2019T EATEN?',
+        subTitle:
+          'How much of the meals you made ended up in the bin or compost?',
+        image: require('../../../../assets/placeholder/tuppleware.png'),
+        name: 'uneatenLeftovers',
+        phrase: 'containers (500 ML)',
+      },
+      {
+        id: 3,
+        name: 'clearingout',
+        title: 'What produce didn\u2019t get SAVED?',
+        image: require('../../../../assets/placeholder/post-fridge.png'),
+        subTitle:
+          'The next  questions are about the food you didn\u2019t turn into meals. ',
+      },
+      {
+        id: 4,
+        name: 'saved',
+        title: 'What produce didn\u2019t get SAVED?',
+        subTitle:
+          'So much food can be rescued, but not everything. What ended up in the bin or compost this week?',
+          produces: activeProduceCategories.map((cat: SurveyConfigProduceCategory, index: number) => ({
+          id: index,
+          name: cat.label,
+          image: resolveProduceIcon(cat.icon),
+          controllerName: `binned_${cat.key}`,
+          phrase: cat.unit,
+        })),
+      },
+      {
+        id: 5,
+        name: 'howMuch',
+        title: 'How much was there?',
+        subTitle:
+          'Don\u2019t stress, it can be tricky to stay on top of what\u2019s in the fridge with everything life throws at you.',
+      },
+      {
+        id: 6,
+        name: 'useThisWeek',
+        title: 'Anything you\u2019re keen to use up this week?',
+        subTitle:
+          'Found some ingredients in your fridge that still have some life left? Let us know and we\u2019ll suggest a few meals.',
+        ingredients: [
+          'Almonds', 'Anchovies', 'Asian greens', 'Asparagus', 'Bacon',
+          'Balsamic vinegar', 'Blackberry', 'Brown rice', 'Barley', 'Bamboo',
+          'Basil', 'Carrot', 'Celery', 'Cherry', 'Chocolate', 'Corn', 'Coconut milk',
+        ],
+      },
+    ],
+  };
+}
+
+export function buildTipsFromConfig(config: SurveyConfigResponse): Array<{
+  id: number;
+  title: string;
+  description: string;
+}> {
+  const activeTips = config.weeklyTips
+    .filter((t: SurveyConfigWeeklyTip) => t.isActive)
+    .sort((a: SurveyConfigWeeklyTip, b: SurveyConfigWeeklyTip) => a.order - b.order);
+
+  if (activeTips.length === 0) return TIPSOFTHEWEEK;
+
+  return activeTips.map((tip: SurveyConfigWeeklyTip, index: number) => ({
+    id: index,
+    title: tip.title,
+    description: tip.content,
+  }));
+}
 
 export const IMPROVEMENT_REASONS = [
   { id: 0, label: 'Too bland', key: 'bland' },
@@ -41,9 +162,6 @@ export const STORAGE_OPTIONS = [
   },
 ] as const;
 
-/**
- * Builds a user-friendly "use by" label from an AI shelf-life estimate.
- */
 export function formatUseByLabel(shelfLifeDays: number, useByDate: string): string {
   const expiresAt = new Date(useByDate);
   if (shelfLifeDays <= 1) {
@@ -368,77 +486,6 @@ export const TRACK = [
     heading: 'you’ve saved',
     value: '$183.00',
     image: require('../../../../assets/placeholder/bowl.png'),
-  },
-];
-
-export const WEEKLYSURVEY = ({
-  // co2SavingsPersonalBest,
-  // costSavingsPersonalBest,
-  // foodSavedPersonalBest,
-  co2Savings = '0',
-  costSavings = '0',
-  foodSaved = '0',
-  currencySymbol = '$',
-}: {
-  co2Savings: string;
-  co2SavingsPersonalBest?: string | null;
-  costSavings: string;
-  costSavingsPersonalBest?: string | null;
-  foodSaved: string;
-  foodSavedPersonalBest?: string | null;
-  currencySymbol?: string;
-}) => [
-  {
-    id: 0,
-    title: 'waste',
-    isBest: false,
-    image: require('../../../../assets/placeholder/big-savings.png'),
-    status:
-      foodSaved && foodSaved.length > 0 && foodSaved?.charAt(0) === '-'
-        ? 'more'
-        : 'less',
-    value: `${(Number(foodSaved ? foodSaved?.replace(/-/g, '') : '0') / 1000).toFixed(
-      2,
-    )}KG`,
-    output: `potential ${
-      foodSaved && foodSaved.length > 0 && foodSaved?.charAt(0) === '-'
-        ? 'more'
-        : 'less'
-    } waste`,
-  },
-  {
-    id: 1,
-    title: 'savings',
-    isBest: false,
-    image: require('../../../../assets/placeholder/money.png'),
-    status:
-      costSavings && costSavings.length > 0 && costSavings?.charAt(0) === '-'
-        ? 'more'
-        : 'less',
-    value: `${currencySymbol}${Math.abs(Number(costSavings || 0)).toFixed(2)}`,
-    output: `potential ${
-      costSavings && costSavings.length > 0 && costSavings?.charAt(0) === '-'
-        ? 'cost'
-        : 'savings'
-    }`,
-  },
-  {
-    id: 2,
-    title: 'co2',
-    isBest: false,
-    image: require('../../../../assets/placeholder/cloud.png'),
-    status:
-      co2Savings && co2Savings.length > 0 && co2Savings?.charAt(0) === '-'
-        ? 'more'
-        : 'less',
-    value: `${(Number(co2Savings ? co2Savings?.replace(/-/g, '') : '0') / 1000).toFixed(
-      2,
-    )}KG`,
-    output: `potential CO2 ${
-      co2Savings && co2Savings.length > 0 && co2Savings?.charAt(0) === '-'
-        ? 'spent'
-        : 'saved'
-    }`,
   },
 ];
 
