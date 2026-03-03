@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -12,7 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import tw from '../../../common/tailwind';
 import { useGetCurrentUserQuery } from '../../auth/api';
-import { useGetLeaderboardQuery } from '../api/api';
+import { useGetLeaderboardQuery, useGetMyLeaderboardProfileQuery } from '../api/api';
 import { LeaderboardEntry, MetricFilter, TimeFilter } from '../api/types';
 import { getCurrencySymbol } from '../../../common/utils/currency';
 import {
@@ -24,8 +24,8 @@ import {
   subheadMediumUppercase,
 } from '../../../theme/typography';
 import { cardDrop } from '../../../theme/shadow';
+import JoinLeaderboardPrompt from './JoinLeaderboardPrompt';
 
-// ─── Country helpers ──────────────────────────────────────────────────────────
 
 const COUNTRY_NAME_TO_CODE: Record<string, string> = {
   india: 'IN',
@@ -52,7 +52,6 @@ const normalizeCountryCode = (country?: string) => {
   return COUNTRY_NAME_TO_CODE[trimmed.toLowerCase()];
 };
 
-// ─── Filter configs ───────────────────────────────────────────────────────────
 
 const timeFilters: { key: TimeFilter; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { key: 'today', label: 'Today', icon: 'today' },
@@ -76,7 +75,6 @@ const metricFilters: {
   { key: 'co2',    label: 'CO2e',    icon: 'cloud-outline', color: '#4A5568', bgColor: '#F7FAFC' },
 ];
 
-// ─── Rank theme helpers ───────────────────────────────────────────────────────
 
 const RANK_THEMES = {
   1: { medal: 'star',   medalColor: '#F59E0B', borderColor: '#F59E0B', headerBg: '#FEF3C7', avatarBg: '#FFFBEB', textColor: '#92400E' },
@@ -110,7 +108,7 @@ function getUserInitials(name?: string) {
   return name.slice(0, 2).toUpperCase();
 }
 
-// ─── Metric helpers ───────────────────────────────────────────────────────────
+// ─── Metric helpers 
 
 function getMetricValue(entry: LeaderboardEntry, metric: MetricFilter) {
   switch (metric) {
@@ -167,7 +165,6 @@ function getMetricIcon(metric: MetricFilter): keyof typeof Ionicons.glyphMap {
   }
 }
 
-// ─── PodiumCard (Top 3) ───────────────────────────────────────────────────────
 
 function PodiumCard({ item, rank, metric }: { item: LeaderboardEntry; rank: 1 | 2 | 3; metric: MetricFilter }) {
   const theme = RANK_THEMES[rank];
@@ -397,12 +394,20 @@ export default function LeaderboardTab() {
   const { data: currentUser } = useGetCurrentUserQuery();
   const normalizedUserCountry = normalizeCountryCode(currentUser?.country);
 
+  const { data: profileData, isLoading: isProfileLoading, refetch: refetchProfile } = useGetMyLeaderboardProfileQuery();
+
+  const hasJoined = profileData?.joined === true && profileData?.profile?.isActive === true;
+
+  const handleJoined = useCallback(() => {
+    refetchProfile();
+  }, [refetchProfile]);
+
   const { data: leaderboardRaw, isLoading, isFetching, refetch } = useGetLeaderboardQuery({
     limit: 100,
     period: timeFilter,
     metric: metricFilter,
     country: metricFilter === 'money' ? normalizedUserCountry : undefined,
-  });
+  }, { skip: !hasJoined });
 
   const leaderboard = useMemo(() => {
     if (!leaderboardRaw) return [];
@@ -556,6 +561,18 @@ export default function LeaderboardTab() {
       )}
     </View>
   );
+
+  if (isProfileLoading) {
+    return (
+      <View style={tw`flex-1 items-center justify-center bg-creme`}>
+        <ActivityIndicator size="large" color={tw.color('eggplant') || '#4B2176'} />
+      </View>
+    );
+  }
+
+  if (!hasJoined) {
+    return <JoinLeaderboardPrompt onJoined={handleJoined} />;
+  }
 
   if (isLoading) {
     return (

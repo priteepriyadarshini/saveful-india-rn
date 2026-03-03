@@ -119,6 +119,20 @@ export interface LeaderboardEntry {
   rank?: number;
 }
 
+export interface LeaderboardProfile {
+  userId: string;
+  displayName: string;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface LeaderboardProfileResponse {
+  joined: boolean;
+  profile: LeaderboardProfile | null;
+  message?: string;
+}
+
 export type TimeFilter = 'today' | 'weekly' | 'monthly' | 'all';
 
 export type MetricFilter = 'meals' | 'saved' | 'money' | 'badges' | 'co2' | 'all';

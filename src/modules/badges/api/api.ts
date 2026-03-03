@@ -3,6 +3,8 @@ import {
   Badge,
   UserBadge,
   LeaderboardEntry,
+  LeaderboardProfile,
+  LeaderboardProfileResponse,
   BadgeStats,
   BadgesResponse,
   UserBadgesResponse,
@@ -155,6 +157,44 @@ const badgesApi = api
         }),
         invalidatesTags: ['UserBadges', 'BadgeStats'],
       }),
+
+      // Get my leaderboard profile (opt-in status)
+      getMyLeaderboardProfile: builder.query<LeaderboardProfileResponse, void>({
+        query: () => ({
+          url: '/api/analytics/leaderboard/my-profile',
+          method: 'GET',
+        }),
+        providesTags: ['Leaderboard'],
+      }),
+
+      // Join the leaderboard with a display name
+      joinLeaderboard: builder.mutation<LeaderboardProfileResponse, { displayName: string }>({
+        query: ({ displayName }) => ({
+          url: '/api/analytics/leaderboard/join',
+          method: 'POST',
+          body: { displayName },
+        }),
+        invalidatesTags: ['Leaderboard'],
+      }),
+
+      // Update leaderboard display name
+      updateLeaderboardProfile: builder.mutation<LeaderboardProfileResponse, { displayName?: string; isActive?: boolean }>({
+        query: (body) => ({
+          url: '/api/analytics/leaderboard/update-profile',
+          method: 'PATCH',
+          body,
+        }),
+        invalidatesTags: ['Leaderboard'],
+      }),
+
+      // Leave the leaderboard
+      leaveLeaderboard: builder.mutation<LeaderboardProfileResponse, void>({
+        query: () => ({
+          url: '/api/analytics/leaderboard/leave',
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['Leaderboard'],
+      }),
     }),
   });
 
@@ -168,4 +208,8 @@ export const {
   useMarkBadgeAsViewedMutation,
   useCheckMyMilestonesMutation,
   useLazyGetBadgeByIdQuery,
+  useGetMyLeaderboardProfileQuery,
+  useJoinLeaderboardMutation,
+  useUpdateLeaderboardProfileMutation,
+  useLeaveLeaderboardMutation,
 } = badgesApi;
