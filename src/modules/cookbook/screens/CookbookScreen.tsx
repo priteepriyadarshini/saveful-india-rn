@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
+import { Image as ExpoImage } from 'expo-image';
 import {
   View,
   Text,
@@ -55,7 +56,11 @@ function RecipeCard({
             { height: heroHeight },
           ]}
         >
-          <Feather name="book-open" size={34} color={tw.color('stone') || '#78716C'} />
+          <ExpoImage
+            source={require('../../../../assets/iconss/My Kitchen 2.svg')}
+            style={{ width: heroHeight * 0.75, height: heroHeight * 0.75 }}
+            contentFit="contain"
+          />
         </View>
       )}
       <View style={tw`px-4 pt-4 pb-4`}>
@@ -107,7 +112,11 @@ function EmptyState({ onAddRecipe }: { onAddRecipe: () => void }) {
   return (
     <View style={tw`items-center justify-center px-10 mt-10`}>
       <View style={tw`w-20 h-20 rounded-full bg-gray-100 items-center justify-center mb-6`}>
-        <Feather name="book-open" size={40} color={tw.color('stone') || '#78716C'} />
+       <ExpoImage
+                       source={require('../../../../assets/iconss/My Cookbook colour.svg')}
+                       style={{ width: 54, height: 54 }}
+                       contentFit="contain"
+                     />
       </View>
       <Text style={tw.style(bodyMediumBold, 'text-stone text-center mt-4')}>
         Your CookBook is Empty
@@ -185,11 +194,19 @@ export default function CookbookScreen() {
         <>
         {/* Header */}
         <View style={tw`flex-row items-center justify-between px-5 pt-3 pb-2`}>
-          <View>
-            <Text style={tw.style(h6TextStyle, 'text-gray-900')}>My CookBook</Text>
-            <Text style={tw.style(bodyMediumRegular, 'text-green-600 text-xs mt-0.5')}>
-              {sortedRecipes.length} {sortedRecipes.length === 1 ? 'recipe' : 'recipes'}
-            </Text>
+          <View style={tw`flex-row items-center`}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={tw`w-9 h-9 rounded-full bg-gray-100 items-center justify-center mr-3`}
+            >
+              <Feather name="arrow-left" size={18} color={tw.color('gray-900') || '#111827'} />
+            </Pressable>
+            <View>
+              <Text style={tw.style(h6TextStyle, 'text-gray-900')}>My CookBook</Text>
+              <Text style={tw.style(bodyMediumRegular, 'text-green-600 text-xs mt-0.5')}>
+                {sortedRecipes.length} {sortedRecipes.length === 1 ? 'recipe' : 'recipes'}
+              </Text>
+            </View>
           </View>
           <Pressable
             onPress={navigateToAddRecipe}

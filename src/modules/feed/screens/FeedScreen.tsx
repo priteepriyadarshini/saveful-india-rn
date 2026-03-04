@@ -11,8 +11,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { Image as ExpoImage } from 'expo-image';
 import tw from "../../../common/tailwind";
 import { useLinkTo, useNavigation } from "@react-navigation/native";
+import { useGetCurrentUserQuery } from "../../auth/api";
 import useAnalytics from "../../analytics/hooks/useAnalytics";
 import { mixpanelEventName } from "../../analytics/analytics";
 import { useCurentRoute } from "../../route/context/CurrentRouteContext";
@@ -44,6 +46,9 @@ export default function FeedScreen() {
     // sendFailedEventAnalytics,
   } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
+
+  const { data: user } = useGetCurrentUserQuery();
+  const firstName = user?.first_name?.split(' ')[0] ?? user?.name?.split(' ')[0] ?? '';
 
   const onSearchTapped = useCallback(() => {
     sendAnalyticsEvent({
@@ -141,7 +146,11 @@ export default function FeedScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Open digital inventory"
               >
-                <Ionicons name="cube-outline" size={20} color={tw.color('eggplant')} />
+                <ExpoImage
+                source={require('../../../../assets/iconss/My Kitchen 2.svg')}
+                style={{ width: 32, height: 32 }}
+                contentFit="contain"
+              />
               </Pressable>
 
               <Pressable
@@ -150,11 +159,14 @@ export default function FeedScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Open AI CookBook"
               >
-                <Feather name="book-open" size={18} color={tw.color('kale')} />
+                <ExpoImage
+                source={require('../../../../assets/iconss/My Cookbook colour.svg')}
+                style={{ width: 32, height: 32 }}
+                contentFit="contain"
+              />
               </Pressable>
             </View>
 
-            {/* Right - Shopping List & Leaderboard */}
             <View style={tw`flex-row items-center`}>
               <Pressable
                 onPress={onShoppingListTapped}
@@ -162,7 +174,11 @@ export default function FeedScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Open shopping list"
               >
-                <Ionicons name="list" size={20} color={tw.color('eggplant')} />
+                <ExpoImage
+                source={require('../../../../assets/iconss/My Shopping List 2.svg')}
+                style={{ width: 32, height: 32 }}
+                contentFit="contain"
+              />
               </Pressable>
               
               <Pressable
@@ -171,7 +187,11 @@ export default function FeedScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Open leaderboard"
               >
-                <Ionicons name="trophy" size={20} color={tw.color('eggplant')} />
+                 <ExpoImage
+                source={require('../../../../assets/iconss/Kitchen Wins colour.svg')}
+                style={{ width: 32, height: 32 }}
+                contentFit="contain"
+              />
               </Pressable>
             </View>
           </View>
@@ -180,7 +200,8 @@ export default function FeedScreen() {
 
           <FeedSearchBarHeader
             onPress={onSearchTapped}
-            title="What are you cooking with?"
+            title="What are you cooking with"
+            name={firstName || undefined}
           />
 
  <FeedNotification setIsNotification={setIsNotification} />

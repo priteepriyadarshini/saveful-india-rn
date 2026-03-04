@@ -62,9 +62,9 @@ export default function RelevantIngredients({
               Ingredients
             </Text>
             {hasScaledQuantities && (
-              <View style={tw`rounded-full bg-[#FF6B35] bg-opacity-25 px-2 py-0.5`}>
+              <View style={tw`rounded-full bg-[#FF6B35] bg-opacity-40 px-3 py-1`}>
                 <Text
-                  style={tw.style('font-sans text-[10px] text-[#FF6B35]')}
+                  style={tw.style('font-sans-bold text-sm text-[#FF6B35]')}
                   maxFontSizeMultiplier={1}
                 >
                   Scaled
@@ -113,8 +113,8 @@ export default function RelevantIngredients({
                   <View style={tw`w-21`}>
                     <Text
                       style={tw.style(
-                        bodyMediumRegular,
-                        isScaled ? 'text-[#FF6B35]' : 'text-creme',
+                        bodyLargeBold,
+                        isScaled ? 'text-[#FF6B35] text-xl' : 'text-creme',
                       )}
                     >
                       {displayQuantity}

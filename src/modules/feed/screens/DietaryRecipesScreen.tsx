@@ -56,7 +56,7 @@ const DIETARY_TAGS: TagConfig[] = [
   makeTag('vegan',       'Vegan',             'leaf-outline'),
   makeTag('vegetarian',  'Vegetarian',        'leaf'),
   makeTag('dairyFree',   'Dairy-Free',        'water-outline'),
-  makeTag('glutenFree',  'Gluten-Free',       'wheat-off',    'mci'),
+  makeTag('glutenFree',  'Gluten-Free',       'barley-off',   'mci'),
   makeTag('nutFree',     'Nut-Free',          'peanut-off',   'mci'),
   makeTag('diabetes',    'Diabetic-Friendly', 'pulse-outline'),
 ];

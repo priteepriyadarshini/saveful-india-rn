@@ -47,9 +47,17 @@ export default function PrepServingSelector({
 }: PrepServingSelectorProps) {
   const originalServings = parseServingsFromPortions(originalPortions);
   const [servings, setServings] = useState(originalServings);
+  const [confirmedServings, setConfirmedServings] = useState<number | null>(null);
   const isOriginal = servings === originalServings;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const [showNotes, setShowNotes] = useState(false);
+
+  useEffect(() => {
+    setServings(parseServingsFromPortions(originalPortions));
+    setConfirmedServings(null);
+    setShowNotes(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [originalPortions]);
 
   useEffect(() => {
     if (isLoading) {
@@ -89,12 +97,14 @@ export default function PrepServingSelector({
   const handleReset = useCallback(() => {
     if (!isLoading) {
       setServings(originalServings);
+      setConfirmedServings(null);
       onConfirmServings(originalServings);
     }
   }, [isLoading, originalServings, onConfirmServings]);
 
   const handleConfirm = useCallback(() => {
     if (!isLoading) {
+      setConfirmedServings(servings);
       onConfirmServings(servings);
     }
   }, [isLoading, servings, onConfirmServings]);
@@ -164,7 +174,7 @@ export default function PrepServingSelector({
             <ActivityIndicator size="small" color={tw.color('kale')} />
           ) : (
             <Text
-              style={tw.style(bodyLargeBold, !isOriginal ? 'text-[#FF6B35]' : 'text-black', 'text-center text-2xl')}
+              style={tw.style(bodyLargeBold, !isOriginal ? 'text-[#C4390A]' : 'text-black', 'text-center text-2xl')}
               maxFontSizeMultiplier={1}
             >
               {servings}
@@ -192,7 +202,8 @@ export default function PrepServingSelector({
         </Pressable>
       </View>
 
-      {!isOriginal && !isScaled && (
+
+      {!isOriginal && servings !== (confirmedServings ?? originalServings) && (
         <Pressable
           onPress={handleConfirm}
           disabled={isLoading}
@@ -216,12 +227,12 @@ export default function PrepServingSelector({
         </Pressable>
       )}
 
-      {/* Success indicator */}
-      {isScaled && !isOriginal && (
+      {/* Success indicator — only after a serving count has been confirmed */}
+      {isScaled && confirmedServings !== null && confirmedServings !== originalServings && (
         <View style={tw`mt-2 flex-row items-center justify-center gap-1.5`}>
           <Feather name="check-circle" size={14} color="#22c55e" />
           <Text style={tw.style(bodySmallBold, 'text-[#22c55e]')}>
-            Ingredients adjusted for {servings} servings
+            Ingredients adjusted for {confirmedServings} servings
           </Text>
         </View>
       )}

@@ -15,7 +15,6 @@ import { Ionicons } from '@expo/vector-icons';
 import tw from '../../../common/tailwind';
 import { useNavigation } from '@react-navigation/native';
 import FocusAwareStatusBar from '../../../common/components/FocusAwareStatusBar';
-import Pill from '../../../common/components/Pill';
 import {
   bodyMediumRegular,
   bodyMediumBold,
@@ -35,6 +34,7 @@ import {
 import AddInventoryItemModal from '../components/AddInventoryItemModal';
 import EditInventoryItemModal from '../components/EditInventoryItemModal';
 import DiscardItemModal from '../components/DiscardItemModal';
+import { Image as ExpoImage } from 'expo-image';
 
 type StorageTab = 'all' | StorageLocation;
 
@@ -64,7 +64,7 @@ function getFreshnessLabel(status: FreshnessStatus): string {
     case FreshnessStatus.FRESH:
       return 'Fresh';
     case FreshnessStatus.EXPIRING_SOON:
-      return 'Expiring Soon';
+      return 'Use Soon';
     case FreshnessStatus.EXPIRED:
       return 'Expired';
     default:
@@ -129,7 +129,7 @@ export default function InventoryScreen() {
   const handleDelete = (item: InventoryItem) => {
     Alert.alert(
       'Remove Item',
-      `Remove "${item.name}" from inventory?`,
+      `Remove ${item.name.toLowerCase()} from my kitchen?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -153,19 +153,31 @@ export default function InventoryScreen() {
 
       {/* Header */}
       <View style={tw`px-5 pt-3 pb-2 flex-row items-center justify-between`}>
-        <Text style={tw.style(h6TextStyle, 'text-gray-900')}>My Kitchen</Text>
+        <View style={tw`flex-row items-center gap-2`}>
+          <Pressable onPress={() => navigation.goBack()} hitSlop={10}>
+            <Ionicons name="arrow-back" size={24} color="#111827" />
+          </Pressable>
+          <Text style={tw.style(h6TextStyle, 'text-gray-900')}>My Kitchen</Text>
+        </View>
         <View style={tw`flex-row items-center gap-3`}>
           <Pressable
             onPress={() => navigation.navigate('InventoryVoiceAdd')}
-            style={tw`w-10 h-10 rounded-full bg-green-50 items-center justify-center`}
+            style={tw`w-10 h-10 rounded-full bg-kale/10 items-center justify-center`}
           >
-            <Ionicons name="mic-outline" size={22} color="#16A34A" />
+            <Ionicons name="mic-outline" size={22} color={tw.color('kale')} />
           </Pressable>
           <Pressable
             onPress={() => setShowAddModal(true)}
-            style={tw`w-10 h-10 rounded-full bg-green-600 items-center justify-center`}
+            style={tw`w-10 h-10 rounded-full bg-kale items-center justify-center`}
           >
             <Ionicons name="add" size={24} color="white" />
+          </Pressable>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            hitSlop={10}
+            style={tw`w-10 h-10 rounded-full bg-gray-100 items-center justify-center`}
+          >
+            <Ionicons name="close" size={22} color="#6B7280" />
           </Pressable>
         </View>
       </View>
@@ -173,34 +185,46 @@ export default function InventoryScreen() {
       {grouped?.summary && (
         <View style={tw`px-5 py-3 flex-row gap-3`}>
           <View style={tw`flex-1 bg-white border border-strokecream rounded-xl p-3 items-center`}>
-            <Text style={tw.style(bodyMediumBold, 'text-green-700')}>
+            <Text style={tw.style(bodyMediumBold, 'text-green-700 mt-1')}>
               {grouped.summary.total}
             </Text>
-            <Text style={tw.style(bodyMediumRegular, 'text-green-600 text-xs')}>
-              Total Items
-            </Text>
+            <ExpoImage
+              source={require('../../../../assets/inventory/Total items.svg')}
+              style={{ width: 72, height: 72 }}
+              contentFit="contain"
+            />
+            
+           
           </View>
           <Pressable
             onPress={() => navigation.navigate('InventoryExpiring')}
             style={tw`flex-1 bg-white border border-strokecream rounded-xl p-3 items-center`}
           >
-            <Text style={tw.style(bodyMediumBold, 'text-amber-700')}>
+            <Text style={tw.style(bodyMediumBold, 'text-amber-700 mt-1')}>
               {grouped.summary.expiringSoon}
             </Text>
-            <Text style={tw.style(bodyMediumRegular, 'text-amber-600 text-xs')}>
-              Expiring Soon
-            </Text>
+            <ExpoImage
+              source={require('../../../../assets/inventory/Use soon.svg')}
+              style={{ width: 72, height: 72 }}
+              contentFit="contain"
+            />
+            
+            
           </Pressable>
           <Pressable
           onPress={() => navigation.navigate('InventoryWasteAnalytics')}
             style={tw`flex-1 bg-white border border-strokecream rounded-xl p-3 items-center`}
           >
-            <Text style={tw.style(bodyMediumBold, 'text-red-700')}>
+             <Text style={tw.style(bodyMediumBold, 'text-red-700 mt-1')}>
               {grouped.summary.expired}
             </Text>
-            <Text style={tw.style(bodyMediumRegular, 'text-red-600 text-xs')}>
-              Expired
-            </Text>
+            <ExpoImage
+              source={require('../../../../assets/inventory/expired.svg')}
+              style={{ width: 72, height: 72 }}
+              contentFit="contain"
+            />
+           
+            
           </Pressable>
         </View>
       )}
@@ -258,7 +282,7 @@ export default function InventoryScreen() {
             >
               <Ionicons name="pie-chart-outline" size={14} color={tw.color('eggplant-vibrant') || '#7E42FF'} />
               <Text style={tw.style(subheadMediumUppercase, 'text-eggplant-vibrant')}>
-                Waste Tracker
+                Unused Tracker
               </Text>
             </Pressable>
           </View>
@@ -267,8 +291,8 @@ export default function InventoryScreen() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            style={tw`mb-2 max-h-10`}
-            contentContainerStyle={tw`px-5 gap-1 items-center`}
+            style={tw`mb-2 max-h-12`}
+            contentContainerStyle={tw`px-5 gap-2 items-center`}
           >
             {STORAGE_TABS.map((tab) => {
               const isActive = activeTab === tab.key;
@@ -278,14 +302,29 @@ export default function InventoryScreen() {
                   : (grouped?.[tab.key as StorageLocation] || []).length;
 
               return (
-                <Pill
+                <Pressable
                   key={tab.key}
-                  text={`${tab.label} (${count})`}
-                  size="small"
-                  kind="vibrant"
-                  isActive={isActive}
-                  setIsActive={() => setActiveTab(tab.key)}
-                />
+                  onPress={() => setActiveTab(tab.key)}
+                  style={tw.style(
+                    'flex-row items-center rounded-full px-3 py-2 gap-1.5',
+                    isActive ? 'bg-eggplant-vibrant' : 'bg-gray-50 border border-gray-200',
+                  )}
+                >
+                  <Ionicons
+                    name={tab.icon as any}
+                    size={14}
+                    color={isActive ? 'white' : '#6B7280'}
+                  />
+                  <Text
+                    style={tw.style(
+                      'text-xs font-medium',
+                      isActive ? 'text-white' : 'text-gray-600',
+                    )}
+                    numberOfLines={1}
+                  >
+                    {tab.label} ({count})
+                  </Text>
+                </Pressable>
               );
             })}
           </ScrollView>

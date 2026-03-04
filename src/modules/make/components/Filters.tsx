@@ -6,16 +6,36 @@ import { mixpanelEventName } from '../../analytics/analytics';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
 import { useCurentRoute } from '../../route/context/CurrentRouteContext';
 import { frameworkCategoryApiService } from '../../frameworkCategory/api/frameworkCategoryApiService';
-// import FILTERS from 'modules/make/data/filters';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, View } from 'react-native';
+import { Animated, ScrollView, Text, View } from 'react-native';
+import { subheadMediumUppercase } from '../../../theme/typography';
+
+interface DietaryTag {
+  key: string;
+  label: string;
+}
+
+const DIETARY_TAGS: DietaryTag[] = [
+  { key: 'vegan', label: 'Vegan' },
+  { key: 'vegetarian', label: 'Vegetarian' },
+  { key: 'dairyFree', label: 'Dairy-Free' },
+  { key: 'glutenFree', label: 'Gluten-Free' },
+  { key: 'nutFree', label: 'Nut-Free' },
+  { key: 'diabetes', label: 'Diabetic-Friendly' },
+];
 
 export default function Filters({
   selectedFilters,
   setSelectedFilters,
+  selectedDietaryFilters,
+  setSelectedDietaryFilters,
+  activeDietaryKeys = [],
 }: {
   selectedFilters: string[];
   setSelectedFilters: React.Dispatch<React.SetStateAction<string[]>>;
+  selectedDietaryFilters: string[];
+  setSelectedDietaryFilters: React.Dispatch<React.SetStateAction<string[]>>;
+  activeDietaryKeys?: string[];
 }) {
   const { sendAnalyticsEvent } = useAnalytics();
   const { newCurrentRoute } = useCurentRoute();
@@ -45,7 +65,12 @@ export default function Filters({
   const [categories, setCategories] = React.useState<ICategory[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
-  // Helper to normalize Mongo ObjectId or string to string
+  const toggleDietaryKey = (key: string) => {
+    setSelectedDietaryFilters(prev =>
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key],
+    );
+  };
+
   const extractId = (value: any): string => {
     if (typeof value === 'string') return value;
     if (value?.$oid) return value.$oid;
@@ -55,10 +80,8 @@ export default function Filters({
 
   const getCategoriesData = async () => {
     try {
-      // First try to fetch from new API
       const frameworkCategories = await frameworkCategoryApiService.getAllCategories();
       
-      // Convert framework categories to ICategory format
       const convertedCategories: ICategory[] = frameworkCategories.map(cat => ({
         id: extractId(cat._id as any),
         title: cat.title,
@@ -83,7 +106,6 @@ export default function Filters({
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching framework categories from new API:', error);
-      // Do not fallback to Craft CMS; keep only API usage
       setCategories([]);
       setIsLoading(false);
     }
@@ -150,7 +172,6 @@ export default function Filters({
           }}
         />
       </View>
-      {/* Hidden measurer – renders once off-screen to get real height */}
       {contentHeight === 0 && (
         <View
           style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
@@ -160,6 +181,16 @@ export default function Filters({
             {categories.map((item, index) => (
               <Pill key={index} text={item.title} size="small" isActive={false} setIsActive={() => {}} />
             ))}
+          </View>
+          <View style={tw`mt-3 w-full`}>
+            <View style={tw`flex-row items-center gap-1.5 mb-2 justify-center`}>
+              <Text style={tw.style(subheadMediumUppercase)}>Dietary filters</Text>
+            </View>
+            <View style={tw`gap-2 flex-row flex-wrap justify-center`}>
+              {DIETARY_TAGS.map(tag => (
+                <Pill key={tag.key} text={tag.label} size="small" isActive={false} setIsActive={() => {}} />
+              ))}
+            </View>
           </View>
         </View>
       )}
@@ -191,6 +222,32 @@ export default function Filters({
               }}
             />
           ))}
+        </View>
+
+        <View style={tw`mt-3 w-full`}>
+          <View style={tw`flex-row items-center gap-1.5 mb-2 justify-center`}>
+            <Text style={tw.style(subheadMediumUppercase, 'text-eggplant')}>
+              Dietary filters
+            </Text>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={tw`gap-2 justify-center w-full flex-row flex-wrap`}
+          >
+            {DIETARY_TAGS.map(tag => {
+              const isActive = selectedDietaryFilters.includes(tag.key);
+              return (
+                <Pill
+                  key={tag.key}
+                  text={tag.label}
+                  size="small"
+                  isActive={isActive}
+                  setIsActive={() => toggleDietaryKey(tag.key)}
+                />
+              );
+            })}
+          </ScrollView>
         </View>
       </Animated.View>
     </View>

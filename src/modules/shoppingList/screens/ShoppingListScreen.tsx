@@ -28,9 +28,10 @@ import {
 const FILTER_TABS: Array<'ALL' | 'PENDING' | 'PURCHASED'> = ['ALL', 'PENDING', 'PURCHASED'];
 
 export default function ShoppingListScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'PURCHASED'>('ALL');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [openAddModalInVoiceMode, setOpenAddModalInVoiceMode] = useState(false);
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
   const [deleteConfirmModal, setDeleteConfirmModal] = useState<{ visible: boolean; index?: number }>({ visible: false });
   const [archiveConfirmModal, setArchiveConfirmModal] = useState(false);
@@ -106,6 +107,24 @@ export default function ShoppingListScreen() {
     setArchiveConfirmModal(true);
   };
 
+  const handleBackPress = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+    navigation.navigate('FeedHome');
+  };
+
+  const openManualAdd = () => {
+    setOpenAddModalInVoiceMode(false);
+    setShowAddModal(true);
+  };
+
+  const openVoiceAdd = () => {
+    setOpenAddModalInVoiceMode(true);
+    setShowAddModal(true);
+  };
+
   const confirmArchive = async () => {
     try {
       await archiveList().unwrap();
@@ -118,11 +137,21 @@ export default function ShoppingListScreen() {
   };
 
   const displayItems = useMemo(() => {
-    return items.map((item, index) => ({
-      ...item,
-      index,
-    }));
-  }, [items]);
+    return items
+      .map((item, index) => ({
+        ...item,
+        index,
+      }))
+      .sort((a, b) => {
+        if (filter === 'ALL' && a.status !== b.status) {
+          return a.status === 'PENDING' ? -1 : 1;
+        }
+
+        const aTime = new Date(a.addedAt || 0).getTime();
+        const bTime = new Date(b.addedAt || 0).getTime();
+        return bTime - aTime;
+      });
+  }, [items, filter]);
 
   return (
     <SafeAreaView style={tw`flex-1 bg-white`} edges={['top']}>
@@ -130,11 +159,21 @@ export default function ShoppingListScreen() {
       
       {/* Header */}
       <View style={tw`px-5 pt-3 pb-2 flex-row items-center justify-between bg-white border-b border-strokecream`}>
-        <View>
+        <View style={tw`flex-row items-center flex-1 mr-3`}>
+          <Pressable
+            onPress={handleBackPress}
+            style={tw`mr-3 w-9 h-9 rounded-full bg-gray-100 items-center justify-center`}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="arrow-back" size={20} color="#111827" />
+          </Pressable>
+          <View style={tw`flex-1`}>
           <Text style={tw.style(h6TextStyle, 'text-gray-900')}>Shopping List</Text>
           <Text style={tw.style(bodyMediumRegular, 'text-gray-500 text-xs mt-0.5')}>
             Track what to buy and what you purchased
           </Text>
+          </View>
         </View>
         <View style={tw`flex-row items-center gap-3`}>
           <Pressable
@@ -145,8 +184,9 @@ export default function ShoppingListScreen() {
           >
             <Ionicons name="refresh" size={20} color="#16A34A" />
           </Pressable>
+         
           <Pressable
-            onPress={() => setShowAddModal(true)}
+            onPress={openManualAdd}
             style={tw`w-10 h-10 rounded-full bg-green-600 items-center justify-center`}
             accessibilityRole="button"
             accessibilityLabel="Add item to shopping list"
@@ -156,7 +196,6 @@ export default function ShoppingListScreen() {
         </View>
       </View>
 
-      {/* Summary */}
       <View style={tw`px-5 py-3 flex-row gap-3 bg-white`}>
         <View style={tw`flex-1 bg-white border border-strokecream rounded-xl p-3 items-center`}>
           <Text style={tw.style(bodyMediumBold, 'text-green-700')}>
@@ -184,7 +223,6 @@ export default function ShoppingListScreen() {
         </View>
       </View>
 
-      {/* Content */}
       {isLoading ? (
         <View style={tw`flex-1 items-center justify-center`}>
           <ActivityIndicator size="large" color={tw.color('eggplant')} />
@@ -262,7 +300,6 @@ export default function ShoppingListScreen() {
                       style={tw`bg-white rounded-xl mb-2.5 p-3 border border-gray-100 shadow-sm`}
                     >
                       <View style={tw`flex-row items-start`}>
-                        {/* Checkbox */}
                         <Pressable
                           onPress={() => handleToggleSelect(item.index)}
                           style={tw`mr-3 mt-1`}
@@ -284,7 +321,6 @@ export default function ShoppingListScreen() {
                           </View>
                         </Pressable>
 
-                        {/* Content */}
                         <View style={tw`flex-1`}>
                           <View style={tw`flex-row items-start justify-between`}>
                             <View style={tw`flex-1`}>
@@ -301,11 +337,10 @@ export default function ShoppingListScreen() {
                                 {item.unit ? ` ${item.unit}` : ''}
                               </Text>
 
-                              {item.source === 'RECIPE' && item.recipeId && (
+                              {item.source === 'RECIPE' && (
                                 <View style={tw`flex-row items-center mt-1.5`}>
-                                  <Ionicons name="restaurant" size={12} color={tw.color('orange')} />
-                                  <Text style={tw.style(bodyMediumRegular, 'text-orange ml-1 text-xs')}>
-                                    From {item.recipeId.name}
+                                  <Text style={tw.style(bodyMediumRegular, 'text-orange text-xs')}>
+                                    Recipe: {item.recipeId?.name || 'Added from recipe'}
                                   </Text>
                                 </View>
                               )}
@@ -317,7 +352,6 @@ export default function ShoppingListScreen() {
                               )}
                             </View>
 
-                            {/* Delete Button */}
                             <Pressable
                               onPress={() => handleDeleteItem(item.index)}
                               style={tw`ml-2 w-8 h-8 rounded-full bg-red-50 items-center justify-center`}
@@ -331,7 +365,6 @@ export default function ShoppingListScreen() {
                   ))}
                 </View>
 
-                {/* Mark as Purchased Button - Shows when items are selected */}
                 {selectedIndices.size > 0 && (
                   <View style={tw`px-5 pb-3 pt-1`}>
                     <Pressable
@@ -353,7 +386,6 @@ export default function ShoppingListScreen() {
                   </View>
                 )}
 
-                {/* Create New List Button - Shows when all items are purchased */}
                 {allItemsPurchased && (
                   <View style={tw`px-5 pb-5`}>
                     <Pressable
@@ -380,14 +412,16 @@ export default function ShoppingListScreen() {
         </View>
       )}
 
-      {/* Add Manual Item Modal */}
       <AddManualItemModal
         isVisible={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        startListeningOnOpen={openAddModalInVoiceMode}
+        onClose={() => {
+          setShowAddModal(false);
+          setOpenAddModalInVoiceMode(false);
+        }}
         onSuccess={refetch}
       />
 
-      {/* Delete Confirmation Modal */}
       <ConfirmationModal
         isVisible={deleteConfirmModal.visible}
         onClose={() => setDeleteConfirmModal({ visible: false })}
@@ -401,7 +435,6 @@ export default function ShoppingListScreen() {
         iconColor="validation"
       />
 
-      {/* Archive List Confirmation Modal */}
       <ConfirmationModal
         isVisible={archiveConfirmModal}
         onClose={() => setArchiveConfirmModal(false)}

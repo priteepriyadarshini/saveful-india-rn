@@ -19,7 +19,7 @@ import {
 import { useGetWasteAnalyticsQuery } from '../api/inventoryApi';
 
 const WASTE_TYPE_CONFIG: Record<string, { label: string; color: string; icon: string }> = {
-  wet_waste: { label: 'Wet Waste', color: '#22C55E', icon: 'leaf-outline' },
+  wet_waste: { label: 'Wet/Organic Waste', color: '#22C55E', icon: 'leaf-outline' },
   dry_waste: { label: 'Dry Waste', color: '#3B82F6', icon: 'cube-outline' },
   hazardous: { label: 'Hazardous', color: '#EF4444', icon: 'warning-outline' },
 };
@@ -38,18 +38,17 @@ export default function WasteAnalyticsScreen() {
 
   return (
     <SafeAreaView style={tw`flex-1 bg-white`} edges={['top']}>
-      {/* Header */}
       <View style={tw`px-5 pt-3 pb-2 flex-row items-center`}>
         <Pressable onPress={() => navigation.goBack()} style={tw`mr-3`}>
           <Ionicons name="arrow-back" size={24} color="#111827" />
         </Pressable>
         <Text style={tw.style(h6TextStyle, 'text-gray-900')}>
-          Waste Tracker
+          Unused Tracker
         </Text>
       </View>
-
       <ImageBackground
-        style={tw`flex-1 opacity-90`}
+        style={tw`flex-1`}
+        imageStyle={{ opacity: 0.5 }}
         source={require('../../../../assets/ribbons/lemon.png')}
       >
         {isLoading ? (
@@ -98,7 +97,7 @@ export default function WasteAnalyticsScreen() {
             {/* Waste Type Breakdown */}
             <View>
               <Text style={tw.style(bodyMediumBold, 'text-gray-800 mb-2')}>
-                By Waste Type
+                By Unused Type
               </Text>
               <View style={tw`flex-row gap-2`}>
                 {Object.entries(data.byWasteType).map(([type, count]) => {
@@ -188,7 +187,7 @@ export default function WasteAnalyticsScreen() {
             {data.topWastedItems.length > 0 && (
               <View>
                 <Text style={tw.style(bodyMediumBold, 'text-gray-800 mb-2')}>
-                  Most Wasted Items
+                  Most Unused Items
                 </Text>
                 {data.topWastedItems.map((item, index) => (
                   <View

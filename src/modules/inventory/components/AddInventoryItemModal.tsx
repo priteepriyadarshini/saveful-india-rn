@@ -106,21 +106,21 @@ export default function AddInventoryItemModal({ visible, onClose }: Props) {
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={tw`flex-1`}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={tw`flex-1`}
+      >
         <Pressable
           onPress={onClose}
-          style={tw`flex-1 bg-black/40`}
-        />
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={tw`flex-1 bg-black/40 justify-end`}
         >
-          <Animatable.View
-            animation="slideInUp"
-            duration={250}
-            style={[tw`bg-white rounded-t-3xl px-5 pt-5 pb-8`, { maxHeight: Dimensions.get('window').height * 0.85 }]}
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            style={[tw`bg-white rounded-t-3xl`, { maxHeight: Dimensions.get('window').height * 0.90 }]}
           >
+            <Animatable.View animation="slideInUp" duration={250}>
               {/* Header */}
-              <View style={tw`flex-row items-center justify-between mb-4`}>
+              <View style={tw`flex-row items-center justify-between px-5 pt-5 pb-3`}>
                 <Text style={tw.style(bodyMediumBold, 'text-gray-900 text-lg')}>
                   Add Item
                 </Text>
@@ -129,7 +129,12 @@ export default function AddInventoryItemModal({ visible, onClose }: Props) {
                 </Pressable>
               </View>
 
-              <ScrollView showsVerticalScrollIndicator={false} style={tw`flex-shrink`}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={tw`px-5`}
+                contentContainerStyle={tw`pb-8`}
+                keyboardShouldPersistTaps="handled"
+              >
                 {/* Name Input with Autocomplete */}
                 <View style={tw`mb-3`}>
                   <Text style={tw`text-xs text-gray-500 mb-1`}>
@@ -209,9 +214,7 @@ export default function AddInventoryItemModal({ visible, onClose }: Props) {
                             onPress={() => setUnit(u)}
                             style={tw.style(
                               'px-3 py-2 rounded-lg',
-                              unit === u
-                                ? 'bg-green-600'
-                                : 'bg-gray-100',
+                              unit === u ? 'bg-kale' : 'bg-gray-100',
                             )}
                           >
                             <Text
@@ -239,25 +242,28 @@ export default function AddInventoryItemModal({ visible, onClose }: Props) {
                       <Pressable
                         key={opt.key}
                         onPress={() => setStorage(opt.key)}
-                        style={tw.style(
-                          'flex-1 p-3 rounded-xl items-center',
-                          storage === opt.key
-                            ? 'bg-green-600'
-                            : 'bg-gray-50 border border-gray-200',
-                        )}
+                        style={[
+                          tw.style(
+                            'flex-1 rounded-xl items-center',
+                            storage === opt.key
+                              ? 'bg-kale'
+                              : 'bg-gray-50 border border-gray-200',
+                          ),
+                          { paddingVertical: 10, paddingHorizontal: 4 },
+                        ]}
                       >
                         <Ionicons
                           name={opt.icon as any}
-                          size={20}
+                          size={18}
                           color={storage === opt.key ? 'white' : '#6B7280'}
                         />
                         <Text
                           style={tw.style(
-                            'text-xs mt-1',
-                            storage === opt.key
-                              ? 'text-white'
-                              : 'text-gray-600',
+                            'text-xs mt-1 text-center',
+                            storage === opt.key ? 'text-white' : 'text-gray-600',
                           )}
+                          numberOfLines={1}
+                          adjustsFontSizeToFit
                         >
                           {opt.label}
                         </Text>
@@ -271,17 +277,18 @@ export default function AddInventoryItemModal({ visible, onClose }: Props) {
                   <Text style={tw`text-xs text-gray-500 mb-1`}>
                     Expires in (days)
                   </Text>
-                  <View style={tw`flex-row gap-2`}>
+                  <View style={tw`flex-row flex-wrap gap-2`}>
                     {['1', '3', '5', '7', '14', '30'].map((d) => (
                       <Pressable
                         key={d}
                         onPress={() => setExpiryDays(d)}
-                        style={tw.style(
-                          'flex-1 py-2 rounded-lg items-center',
-                          expiryDays === d
-                            ? 'bg-amber-500'
-                            : 'bg-gray-100',
-                        )}
+                        style={[
+                          tw.style(
+                            'rounded-lg items-center',
+                            expiryDays === d ? 'bg-amber-500' : 'bg-gray-100',
+                          ),
+                          { minWidth: 40, paddingVertical: 8, paddingHorizontal: 10 },
+                        ]}
                       >
                         <Text
                           style={tw.style(
@@ -317,7 +324,7 @@ export default function AddInventoryItemModal({ visible, onClose }: Props) {
                   disabled={isLoading || !name.trim()}
                   style={tw.style(
                     'rounded-xl py-3.5 items-center',
-                    isLoading || !name.trim() ? 'bg-gray-200' : 'bg-green-600',
+                    isLoading || !name.trim() ? 'bg-gray-200' : 'bg-kale',
                   )}
                 >
                   {isLoading ? (
@@ -334,9 +341,10 @@ export default function AddInventoryItemModal({ visible, onClose }: Props) {
                   )}
                 </Pressable>
               </ScrollView>
-          </Animatable.View>
-        </KeyboardAvoidingView>
-      </View>
+            </Animatable.View>
+          </Pressable>
+        </Pressable>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

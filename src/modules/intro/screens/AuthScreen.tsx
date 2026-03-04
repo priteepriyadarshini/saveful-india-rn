@@ -77,12 +77,11 @@ export default function AuthScreen({ navigation }: any) {
           await dispatch(saveSessionData({ access_token: result.accessToken, refresh_token: result.refreshToken }));
 
           try {
-            await TokenManager.shared.uploadToken();
-          } catch { /* non-critical */ }
-
-          try {
             const user = await loadCurrentUser({ accessToken: result.accessToken }).unwrap();
             if (user) {
+              try {
+                TokenManager.shared.identifyUser(user);
+              } catch { /* non-critical */ }
               try {
                 sendAliasUserID(user.id);
                 sendAnalyticsUserID(user.id, { id: user.id, first_name: user.first_name || name, email: user.email });
@@ -98,7 +97,6 @@ export default function AuthScreen({ navigation }: any) {
     }
   };
 
-  // ── Forgot Password – send OTP ────────────────────────────────────────────
   const handleForgotPassword = async () => {
     const trimmed = forgotEmail.trim();
     if (!trimmed) {
@@ -111,7 +109,7 @@ export default function AuthScreen({ navigation }: any) {
     }
     try {
       await forgotPassword({ email: trimmed.toLowerCase() }).unwrap();
-      setForgotEmail(trimmed.toLowerCase()); // normalise state so reset step uses same casing
+      setForgotEmail(trimmed.toLowerCase()); 
       setActiveView('resetPassword');
     } catch (error: any) {
       const msg = error?.data?.message || error?.message || 'Something went wrong. Please try again.';
@@ -119,7 +117,6 @@ export default function AuthScreen({ navigation }: any) {
     }
   };
 
-  // ── Reset Password – verify OTP + set new password ────────────────────────
   const handleResetPassword = async () => {
     if (!resetOTP.trim()) { Alert.alert('Error', 'Please enter the OTP sent to your email'); return; }
     if (!newPassword) { Alert.alert('Error', 'Please enter a new password'); return; }

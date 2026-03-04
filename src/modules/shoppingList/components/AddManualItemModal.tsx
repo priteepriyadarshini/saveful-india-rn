@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Animatable from 'react-native-animatable';
@@ -17,17 +18,24 @@ import tw from '../../../common/tailwind';
 import { bodyMediumRegular, bodyMediumBold } from '../../../theme/typography';
 import { useAddShoppingListItemMutation } from '../api/shoppingListApi';
 import { useGetAllIngredientsQuery } from '../../ingredients/api/ingredientsApi';
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+  isSpeechRecognitionAvailable,
+} from '../../inventory/utils/speechRecognition';
 
 const COMMON_UNITS = ['piece', 'kg', 'g', 'litre', 'ml', 'bunch', 'pack', 'cup', 'tbsp', 'tsp', 'dozen'];
 
 interface AddManualItemModalProps {
   isVisible: boolean;
+  startListeningOnOpen?: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
 
 export default function AddManualItemModal({
   isVisible,
+  startListeningOnOpen = false,
   onClose,
   onSuccess,
 }: AddManualItemModalProps) {
@@ -41,6 +49,33 @@ export default function AddManualItemModal({
   const [unit, setUnit] = useState('piece');
   const [notes, setNotes] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const finalTranscriptRef = useRef('');
+
+  useSpeechRecognitionEvent('result', (event) => {
+    const latest = event.results?.[0]?.transcript || '';
+    if (!latest) return;
+
+    if (event.isFinal) {
+      finalTranscriptRef.current = latest;
+      setIngredientName(latest);
+      setSearchText(latest);
+      setSelectedIngredientId(undefined);
+    } else {
+      const interimText = latest;
+      setIngredientName(interimText);
+      setSearchText(interimText);
+      setSelectedIngredientId(undefined);
+    }
+  });
+
+  useSpeechRecognitionEvent('end', () => {
+    setIsListening(false);
+  });
+
+  useSpeechRecognitionEvent('error', () => {
+    setIsListening(false);
+  });
 
   // Filter ingredients for autocomplete
   const filteredIngredients =
@@ -87,6 +122,41 @@ export default function AddManualItemModal({
     }
   };
 
+  const stopListening = useCallback(() => {
+    setIsListening(false);
+    if (ExpoSpeechRecognitionModule) {
+      ExpoSpeechRecognitionModule.stop();
+    }
+  }, []);
+
+  const startListening = useCallback(async () => {
+    if (!isSpeechRecognitionAvailable || !ExpoSpeechRecognitionModule) {
+      Alert.alert('Voice unavailable', 'Voice input requires a development build.');
+      return;
+    }
+
+    try {
+      const { granted } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+      if (!granted) {
+        Alert.alert('Permission Required', 'Microphone permission is needed for voice input.');
+        return;
+      }
+
+      finalTranscriptRef.current = '';
+      setIsListening(true);
+      setSelectedIngredientId(undefined);
+
+      ExpoSpeechRecognitionModule.start({
+        lang: 'en-IN',
+        interimResults: true,
+        continuous: false,
+      });
+    } catch (error) {
+      setIsListening(false);
+      Alert.alert('Error', 'Unable to start voice input on this device.');
+    }
+  }, []);
+
   const resetForm = () => {
     setSearchText('');
     setSelectedIngredientId(undefined);
@@ -95,12 +165,26 @@ export default function AddManualItemModal({
     setUnit('piece');
     setNotes('');
     setErrorMessage('');
+    finalTranscriptRef.current = '';
+    stopListening();
   };
 
   const handleClose = () => {
     resetForm();
     onClose();
   };
+
+  useEffect(() => {
+    if (!isVisible && isListening) {
+      stopListening();
+    }
+  }, [isVisible, isListening, stopListening]);
+
+  useEffect(() => {
+    if (isVisible && startListeningOnOpen && !isListening) {
+      startListening();
+    }
+  }, [isVisible, startListeningOnOpen, isListening, startListening]);
 
   const isValid = ingredientName.trim().length > 0 && quantity.trim().length > 0;
 
@@ -184,6 +268,21 @@ export default function AddManualItemModal({
                     style={tw.style(bodyMediumRegular, 'flex-1 text-gray-800')}
                     autoCapitalize="words"
                   />
+                  <Pressable
+                    onPress={isListening ? stopListening : startListening}
+                    style={tw.style(
+                      'w-8 h-8 rounded-full items-center justify-center ml-2',
+                      isListening ? 'bg-red-100' : 'bg-purple-100',
+                    )}
+                    accessibilityRole="button"
+                    accessibilityLabel={isListening ? 'Stop voice input' : 'Start voice input'}
+                  >
+                    <Ionicons
+                      name={isListening ? 'stop' : 'mic'}
+                      size={16}
+                      color={isListening ? '#EF4444' : '#7C3AED'}
+                    />
+                  </Pressable>
                   {selectedIngredientId && (
                     <Pressable
                       onPress={() => {
@@ -196,6 +295,9 @@ export default function AddManualItemModal({
                     </Pressable>
                   )}
                 </View>
+                <Text style={tw.style(bodyMediumRegular, 'text-gray-400 text-xs mt-1')}>
+                  {isListening ? 'Listening… tap stop when done' : 'Tap mic to speak ingredient name'}
+                </Text>
 
                 {/* Autocomplete dropdown */}
                 {filteredIngredients.length > 0 && (

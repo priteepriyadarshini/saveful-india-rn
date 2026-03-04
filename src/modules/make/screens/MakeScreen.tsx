@@ -1,5 +1,5 @@
 ﻿import { useNavigation } from '@react-navigation/native';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   Dimensions,
   Image,
@@ -22,9 +22,83 @@ import MealCard from '../components/MealCard';
 import useMeals from '../hooks/useMeals';
 import { IFramework } from '../../../models/craft';
 import { InitialNavigationStackParams } from '../../navigation/navigator/InitialNavigator';
+import { useGetCurrentUserQuery } from '../../auth/api';
 
 const windowWidth = Dimensions.get('window').width;
-const ITEM_HEIGHT = 350; // estimated height of a MealCard
+
+interface MakeListHeaderProps {
+  onSearchTapped: () => void;
+  selectedFilters: string[];
+  setSelectedFilters: React.Dispatch<React.SetStateAction<string[]>>;
+  selectedDietaryFilters: string[];
+  setSelectedDietaryFilters: React.Dispatch<React.SetStateAction<string[]>>;
+  activeDietaryKeys: string[];
+  isLoading: boolean;
+  skeletonStyles: string[];
+}
+
+const MakeListHeader = React.memo(function MakeListHeader({
+  onSearchTapped,
+  selectedFilters,
+  setSelectedFilters,
+  selectedDietaryFilters,
+  setSelectedDietaryFilters,
+  activeDietaryKeys,
+  isLoading,
+  skeletonStyles,
+}: MakeListHeaderProps) {
+  return (
+    <>
+      <View style={tw`relative z-10`}>
+        <Image
+          style={tw`absolute top-0 w-[${windowWidth}px] h-[${(windowWidth * 241) / 375}px]`}
+          resizeMode="contain"
+          source={require('../../../../assets/placeholder/make-bg.png')}
+          accessibilityIgnoresInvertColors
+        />
+        <SafeAreaView style={tw`pt-[25px]`}>
+          <FeedSearchBarHeader
+            onPress={onSearchTapped}
+            title="What Are you USING UP?"
+          />
+          <View style={tw`mt-5`}>
+            <Image
+              style={tw`w-[${windowWidth}px] h-[${
+                (windowWidth * 184) / 375
+              }px]`}
+              resizeMode="contain"
+              source={require('../../../../assets/placeholder/this-plus-that.png')}
+              accessibilityIgnoresInvertColors
+            />
+          </View>
+        </SafeAreaView>
+      </View>
+
+      <View style={tw`bg-creme`}>
+        <MakeHeader />
+
+        <Filters
+          selectedFilters={selectedFilters}
+          setSelectedFilters={setSelectedFilters}
+          selectedDietaryFilters={selectedDietaryFilters}
+          setSelectedDietaryFilters={setSelectedDietaryFilters}
+          activeDietaryKeys={activeDietaryKeys}
+        />
+      </View>
+
+      {/* Show skeleton while loading */}
+      {isLoading && (
+        <View style={tw`flex-row flex-wrap justify-center pt-5`}>
+          {Array.from(Array(2).keys()).map((_, index: number) => (
+            <View key={index}>
+              <SkeletonLoader styles={skeletonStyles} />
+            </View>
+          ))}
+        </View>
+      )}
+    </>
+  );
+});
 
 export default function MakeScreen() {
   const navigation = useNavigation<InitialNavigationStackParams<'Ingredients'>['navigation']>();
@@ -47,7 +121,32 @@ export default function MakeScreen() {
   }, [navigation, newCurrentRoute, sendAnalyticsEvent]);
 
   const [selectedFilters, setSelectedFilters] = React.useState<string[]>([]);
-  const { frameworks, isLoading } = useMeals(selectedFilters);
+  const [selectedDietaryFilters, setSelectedDietaryFilters] = React.useState<string[]>([]);
+  const { frameworks, isLoading } = useMeals(selectedFilters, selectedDietaryFilters);
+
+  // ─── Derive dietary keys from user profile & auto-sync once ───
+  const { data: currentUser } = useGetCurrentUserQuery();
+
+  const activeDietaryKeys = useMemo(() => {
+    const keys: string[] = [];
+    if (!currentUser) return keys;
+    const vType = currentUser.vegType ?? currentUser.dietary_profile?.veg_type;
+    if (vType === 'VEGAN') keys.push('vegan');
+    else if (vType === 'VEGETARIAN') keys.push('vegetarian');
+    if (currentUser.dairyFree ?? currentUser.dietary_profile?.dairy_free) keys.push('dairyFree');
+    if (currentUser.glutenFree ?? currentUser.dietary_profile?.gluten_free) keys.push('glutenFree');
+    if (currentUser.nutFree ?? currentUser.dietary_profile?.nut_free) keys.push('nutFree');
+    if (currentUser.hasDiabetes ?? currentUser.dietary_profile?.has_diabetes) keys.push('diabetes');
+    return keys;
+  }, [currentUser]);
+
+  const dietarySynced = useRef(false);
+  useEffect(() => {
+    if (!dietarySynced.current && activeDietaryKeys.length > 0) {
+      setSelectedDietaryFilters(activeDietaryKeys);
+      dietarySynced.current = true;
+    }
+  }, [activeDietaryKeys]);
 
   const onScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -72,56 +171,23 @@ export default function MakeScreen() {
     [],
   );
 
-  const ListHeader = useCallback(
+  // Render the header as a JSX element with a stable component type.
+  // MakeListHeader is defined at module level → its identity never changes →
+  // FlashList will never unmount/remount the header tree on re-renders.
+  const listHeader = useMemo(
     () => (
-      <>
-        <View style={tw`relative z-10`}>
-          <Image
-            style={tw`absolute top-0 w-[${windowWidth}px] h-[${(windowWidth * 241) / 375}px]`}
-            resizeMode="contain"
-            source={require('../../../../assets/placeholder/make-bg.png')}
-            accessibilityIgnoresInvertColors
-          />
-          <SafeAreaView style={tw`pt-[25px]`}>
-            <FeedSearchBarHeader
-              onPress={onSearchTapped}
-              title="What Are you USING UP?"
-            />
-            <View style={tw`mt-5`}>
-              <Image
-                style={tw`w-[${windowWidth}px] h-[${
-                  (windowWidth * 184) / 375
-                }px]`}
-                resizeMode="contain"
-                source={require('../../../../assets/placeholder/this-plus-that.png')}
-                accessibilityIgnoresInvertColors
-              />
-            </View>
-          </SafeAreaView>
-        </View>
-
-        <View style={tw`bg-creme`}>
-          <MakeHeader />
-
-          <Filters
-            selectedFilters={selectedFilters}
-            setSelectedFilters={setSelectedFilters}
-          />
-        </View>
-
-        {/* Show skeleton while loading */}
-        {isLoading && (
-          <View style={tw`flex-row flex-wrap justify-center pt-5`}>
-            {Array.from(Array(2).keys()).map((_, index: number) => (
-              <View key={index}>
-                <SkeletonLoader styles={skeletonStyles} />
-              </View>
-            ))}
-          </View>
-        )}
-      </>
+      <MakeListHeader
+        onSearchTapped={onSearchTapped}
+        selectedFilters={selectedFilters}
+        setSelectedFilters={setSelectedFilters}
+        selectedDietaryFilters={selectedDietaryFilters}
+        setSelectedDietaryFilters={setSelectedDietaryFilters}
+        activeDietaryKeys={activeDietaryKeys}
+        isLoading={isLoading}
+        skeletonStyles={skeletonStyles}
+      />
     ),
-    [onSearchTapped, selectedFilters, setSelectedFilters, isLoading, skeletonStyles],
+    [onSearchTapped, selectedFilters, setSelectedFilters, selectedDietaryFilters, setSelectedDietaryFilters, activeDietaryKeys, isLoading, skeletonStyles],
   );
 
   return (
@@ -130,8 +196,7 @@ export default function MakeScreen() {
         data={isLoading ? [] : frameworks}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
-        estimatedItemSize={ITEM_HEIGHT}
-        ListHeaderComponent={ListHeader}
+        ListHeaderComponent={listHeader}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
         onScroll={onScroll as any}

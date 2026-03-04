@@ -116,9 +116,9 @@ const MealCard = React.memo(function MealCard({
         pointerEvents="none"
       >
         <CarrotIcon size={14} filled />
-        {totalRatings > 0 && (
-          <Text style={tw`text-[11px] font-sans-bold text-carrot`}>{averageRating.toFixed(1)}</Text>
-        )}
+        <Text style={tw`text-[11px] font-sans-bold text-carrot`}>
+          {totalRatings > 0 ? averageRating.toFixed(1) : '0'}
+        </Text>
       </View>
       {heroImage?.[0]?.url && (
         <Image

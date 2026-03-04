@@ -38,7 +38,7 @@ export default function ExpiringItemsScreen() {
         </Pressable>
         <View style={tw`flex-1`}>
           <Text style={tw.style(h6TextStyle, 'text-gray-900')}>
-            Expiring Soon
+            Use Soon
           </Text>
           <Text style={tw.style(bodyMediumRegular, 'text-gray-500 text-xs')}>
             Items that need your attention
@@ -182,7 +182,7 @@ export default function ExpiringItemsScreen() {
                   style={tw`bg-amber-100 px-3 py-1.5 rounded-full`}
                 >
                   <Text style={tw`text-xs text-amber-700 font-medium`}>
-                    Discard
+                    Throw out
                   </Text>
                 </Pressable>
               </View>

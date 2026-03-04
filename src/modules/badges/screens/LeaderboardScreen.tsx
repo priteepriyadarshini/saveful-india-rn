@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import tw from '../../../common/tailwind';
@@ -61,17 +60,12 @@ export default function LeaderboardScreen() {
       >
         <Image
           resizeMode="cover"
-          style={tw.style(`h-full w-full bg-eggplant`)}
+          style={tw.style(`h-full w-full`, { tintColor: '#c80855', backgroundColor: '#eba4c1' })}
           source={require('../../../../assets/ribbons/eggplant-tall.png')}
         />
       </View>
       <View style={tw`flex-1`}>
-        <LinearGradient
-          colors={[tw.color('eggplant') || '#4B2176', tw.color('eggplant') || '#4B2176']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <SafeAreaView edges={['top']}>
+        <SafeAreaView edges={['top']} style={tw`z-10`}>
             <View style={tw`flex-row items-center justify-between px-5 py-4`}>
               <Pressable
                 onPress={() => navigation.goBack()}
@@ -82,7 +76,7 @@ export default function LeaderboardScreen() {
                 <Ionicons name="arrow-back" size={22} color="white" />
               </Pressable>
               <Text style={tw.style(h5TextStyle, 'flex-1 text-center text-white')}>
-                Achievements
+                Kitchen Wins
               </Text>
               <Pressable
                 onPress={handleCheckBadges}
@@ -129,14 +123,14 @@ export default function LeaderboardScreen() {
                         <Ionicons
                           name={tab.icon as any}
                           size={18}
-                          color={isActive ? tw.color('eggplant') || '#4B2176' : 'white'}
+                          color={isActive ? '#eba4c1' : 'white'}
                         />
                       </View>
                       <Text
                         style={tw.style(
                           subheadSmallUppercase,
                           'mt-1.5',
-                          isActive ? 'text-eggplant' : 'text-white'
+                          isActive ? 'text-[#eba4c1]' : 'text-white'
                         )}
                         numberOfLines={1}
                       >
@@ -149,7 +143,6 @@ export default function LeaderboardScreen() {
               </View>
             </View>
           </SafeAreaView>
-        </LinearGradient>
 
         {/* Tab Content */}
         {renderTabContent()}

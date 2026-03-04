@@ -359,7 +359,12 @@ export default function MealSuggestionsScreen({
                     maxHeight={maxHeight}
                     setMaxHeight={setMaxHeight}
                   />
-                  <View style={tw`mt-2 px-1`}>
+                  <View
+                    style={[
+                      tw`bg-white rounded-b-2xl px-3 pb-3 pt-2`,
+                      { borderWidth: 1, borderTopWidth: 0, borderColor: '#E5E7EB' },
+                    ]}
+                  >
                     <View style={tw`flex-row items-center flex-wrap gap-1.5`}>
                       <View
                         style={[
@@ -392,7 +397,7 @@ export default function MealSuggestionsScreen({
                       )}
                     </View>
                     <Text
-                      style={[tw.style(bodyMediumRegular, 'text-gray-500 mt-1'), { fontSize: 12 }]}
+                      style={[tw.style(bodyMediumRegular, 'text-gray-600 mt-1'), { fontSize: 12 }]}
                     >
                       {matched.length} ingredient
                       {matched.length !== 1 ? 's' : ''}{' '}
@@ -405,7 +410,7 @@ export default function MealSuggestionsScreen({
                       )}
                     </Text>
                     <Text
-                      style={[tw.style(bodyMediumRegular, 'text-gray-400 mt-0.5'), { fontSize: 11 }]}
+                      style={[tw.style(bodyMediumRegular, 'text-gray-500 mt-0.5'), { fontSize: 11 }]}
                     >
                       {getInsightText(suggestion)}
                     </Text>

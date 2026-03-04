@@ -33,7 +33,7 @@ const DIETARY_TAGS: DietaryTag[] = [
   { key: 'vegan', label: 'Vegan', iconName: 'leaf-outline', lib: 'ion' },
   { key: 'vegetarian', label: 'Vegetarian', iconName: 'leaf', lib: 'ion' },
   { key: 'dairyFree', label: 'Dairy-Free', iconName: 'water-outline', lib: 'ion' },
-  { key: 'glutenFree', label: 'Gluten-Free', iconName: 'wheat-off', lib: 'mci' },
+  { key: 'glutenFree', label: 'Gluten-Free', iconName: 'barley-off', lib: 'mci' },
   { key: 'nutFree', label: 'Nut-Free', iconName: 'peanut-off', lib: 'mci' },
   { key: 'diabetes', label: 'Diabetic-Friendly', iconName: 'pulse-outline', lib: 'ion' },
 ];

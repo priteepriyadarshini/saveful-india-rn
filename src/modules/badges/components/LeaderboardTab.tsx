@@ -289,8 +289,6 @@ function PodiumCard({ item, rank, metric }: { item: LeaderboardEntry; rank: 1 | 
   );
 }
 
-// ─── ListRow (Rank 4+) ────────────────────────────────────────────────────────
-
 function ListRow({ item, rank, metric }: { item: LeaderboardEntry; rank: number; metric: MetricFilter }) {
   const accentColor = getRankAccentColor(rank);
   const initials = getUserInitials(item.userName);
@@ -385,8 +383,6 @@ function ListRow({ item, rank, metric }: { item: LeaderboardEntry; rank: number;
   );
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
-
 export default function LeaderboardTab() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [metricFilter, setMetricFilter] = useState<MetricFilter>('all');
@@ -425,7 +421,6 @@ export default function LeaderboardTab() {
 
   const renderHeader = () => (
     <View>
-      {/* ── Time filter tabs ── */}
       <ImageBackground
         source={require('../../../../assets/ribbons/ingredients-ribbons/eggplant-light2.png')}
         resizeMode="cover"
@@ -441,7 +436,7 @@ export default function LeaderboardTab() {
                   onPress={() => setTimeFilter(filter.key)}
                   style={tw.style(
                     'flex-1 items-center rounded-2xl border py-3',
-                    isActive ? 'border-eggplant bg-eggplant' : 'border-strokecream bg-white',
+                    isActive ? 'border-[#c80855] bg-[#c80855]' : 'border-strokecream bg-white',
                   )}
                 >
                   <View
@@ -453,7 +448,7 @@ export default function LeaderboardTab() {
                     <Ionicons
                       name={filter.icon}
                       size={16}
-                      color={isActive ? '#FFFFFF' : tw.color('eggplant') || '#4B2176'}
+                      color={isActive ? '#FFFFFF' : '#eba4c1'}
                     />
                   </View>
                   <Text style={tw.style(subheadSmallUppercase, isActive ? 'text-white' : 'text-stone')}>
@@ -466,7 +461,6 @@ export default function LeaderboardTab() {
         </View>
       </ImageBackground>
 
-      {/* ── Metric filter chips ── */}
       <View style={tw`border-t border-strokecream bg-white`}>
         <ScrollView
           horizontal

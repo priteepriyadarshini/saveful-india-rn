@@ -1,9 +1,9 @@
 ﻿const INTRO = [
   {
     id: 1,
-    heading: 'Turn on-hand ingredients into chef-approved food',
+    heading: 'The smarter way to cook what you already have',
     description:
-      'Tell us what’s in your kitchen. We’ll show you how to turn it into something delicious.',
+      'Add what’s in your fridge, freezer and pantry and turn it into something delicious.',
     image: require('../../../../assets/intro/01.png'),
   },
   // {
@@ -15,9 +15,9 @@
   // },
   {
     id: 3,
-    heading: 'Track your impact',
+    heading: 'See how much you’re saving.',
     description:
-      'Keep tabs on how much food and money you could be saving in your personal dashboard.',
+      'Track the food and money you save every time you cook with what you already have.',
     image: require('../../../../assets/intro/04.png'),
   },
 ];

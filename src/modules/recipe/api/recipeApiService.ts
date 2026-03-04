@@ -207,6 +207,7 @@ class RecipeApiService {
   async scaleServings(params: {
     originalServings: number;
     desiredServings: number;
+    recipeId?: string;
     recipeTitle?: string;
     ingredients: {
       ingredientName: string;

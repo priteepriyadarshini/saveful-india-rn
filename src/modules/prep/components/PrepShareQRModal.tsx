@@ -88,7 +88,7 @@ export default function PrepShareQRModal({
 
               {/* Instructions */}
               <Text style={tw.style(bodySmallRegular, 'text-center text-gray-600 mb-6')}>
-                Scan this QR code to view the recipe on any device
+                Scan this QR code to view the recipe on any device using the Saveful app.
               </Text>
 
               {/* Share Button */}

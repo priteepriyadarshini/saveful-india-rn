@@ -125,6 +125,49 @@ export default function PrepScreen({
   const [scaledQuantities, setScaledQuantities] = useState<Record<string, string>>({});
   const [desiredServings, setDesiredServings] = useState<number | null>(null);
   const [cookingNotes, setCookingNotes] = useState<string | undefined>(undefined);
+  // In-memory cache for the current session (per-recipe, cleared on slug change).
+  const scaleCacheRef = useRef<Map<number, { quantities: Record<string, string>; notes?: string }>>(new Map());
+
+  /** Build the AsyncStorage key that holds all pre-computed scales for a recipe. */
+  const scaleStorageKey = useCallback(
+    (recipeId: string) => `serving-scale:${recipeId}`,
+    [],
+  );
+
+  /**
+   * Warm the in-memory scaleCacheRef from AsyncStorage so that previously
+   * computed scales are available instantly even after the app is restarted.
+   */
+  const warmScaleCacheFromStorage = useCallback(async (recipeId: string) => {
+    try {
+      const raw = await AsyncStorage.getItem(scaleStorageKey(recipeId));
+      if (!raw) return;
+      const stored: Record<number, { quantities: Record<string, string>; notes?: string }> = JSON.parse(raw);
+      Object.entries(stored).forEach(([servingsStr, entry]) => {
+        scaleCacheRef.current.set(Number(servingsStr), entry);
+      });
+    } catch {
+      // Not critical — ignore read failures
+    }
+  }, [scaleStorageKey]);
+
+  /** Persist a newly computed scale result to AsyncStorage. */
+  const persistScaleToStorage = useCallback(async (
+    recipeId: string,
+    servings: number,
+    entry: { quantities: Record<string, string>; notes?: string },
+  ) => {
+    try {
+      const key = scaleStorageKey(recipeId);
+      const raw = await AsyncStorage.getItem(key);
+      const existing: Record<number, { quantities: Record<string, string>; notes?: string }> =
+        raw ? JSON.parse(raw) : {};
+      existing[servings] = entry;
+      await AsyncStorage.setItem(key, JSON.stringify(existing));
+    } catch {
+      // Not critical — ignore write failures
+    }
+  }, [scaleStorageKey]);
 
   const [allRequiredIngredients, setAllRequiredIngredients] = useArrayState<
     {
@@ -234,6 +277,9 @@ export default function PrepScreen({
         setSelectedFlavor(convertedFramework.variantTags[0]?.id || '');
         setIsLoading(false);
         setDefaultRequiredIngredients();
+        // Warm the in-memory scale cache from AsyncStorage so any previously
+        // computed (and persisted) results are available without an API call.
+        warmScaleCacheFromStorage(convertedFramework.id);
         return;
       }
 
@@ -267,6 +313,12 @@ export default function PrepScreen({
   }, []);
 
   useEffect(() => {
+    // Reset all serving-scale state so a new recipe always starts fresh.
+    setIsScaled(false);
+    setScaledQuantities({});
+    setDesiredServings(null);
+    setCookingNotes(undefined);
+    scaleCacheRef.current.clear();
     getFrameworksData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
@@ -316,15 +368,36 @@ export default function PrepScreen({
     async (servings: number) => {
       if (!framework || allIngredientsForScaling.length === 0) return;
 
+      const originalServings = parseServingsFromPortions(framework.portions);
+
+      // Resetting to original — no API call needed.
+      if (servings === originalServings) {
+        setScaledQuantities({});
+        setDesiredServings(null);
+        setCookingNotes(undefined);
+        setIsScaled(false);
+        return;
+      }
+
+      // Return instantly if we already scaled to this count.
+      const cached = scaleCacheRef.current.get(servings);
+      if (cached) {
+        setScaledQuantities(cached.quantities);
+        setDesiredServings(servings);
+        setCookingNotes(cached.notes);
+        setIsScaled(true);
+        return;
+      }
+
       setIsScaling(true);
       setIsScaled(false);
       setCookingNotes(undefined);
 
       try {
-        const originalServings = parseServingsFromPortions(framework.portions);
         const response = await recipeApiService.scaleServings({
           originalServings,
           desiredServings: servings,
+          recipeId: framework.id,
           recipeTitle: framework.title,
           ingredients: allIngredientsForScaling.map(ing => ({
             ingredientName: ing.title,
@@ -345,6 +418,16 @@ export default function PrepScreen({
           }
         });
 
+        // Populate client-side cache so re-confirming the same count is instant.
+        const cacheEntry = {
+          quantities: newScaled,
+          notes: response.cookingNotes ?? undefined,
+        };
+        scaleCacheRef.current.set(servings, cacheEntry);
+
+        // Persist to AsyncStorage so the result survives app restarts.
+        persistScaleToStorage(framework.id, servings, cacheEntry);
+
         setScaledQuantities(newScaled);
         setDesiredServings(servings);
         setCookingNotes(response.cookingNotes ?? undefined);
@@ -356,7 +439,7 @@ export default function PrepScreen({
         setIsScaling(false);
       }
     },
-    [framework, allIngredientsForScaling],
+    [framework, allIngredientsForScaling, persistScaleToStorage],
   );
 
   const [createUserMeal, { isLoading: isCreateUserMealLoading }] =

@@ -16,16 +16,13 @@ export default function IntroScreen() {
 
   const handleGetStarted = async () => {
     try {
-      // Mark intro as seen
       await AsyncStorage.setItem(HAS_SEEN_INTRO_KEY, 'true');
-      // Navigate to Auth screen
       (navigation as any).reset({
         index: 0,
         routes: [{ name: 'Auth' }],
       });
     } catch (error) {
       console.error('Error saving intro seen status:', error);
-      // Navigate anyway
       (navigation as any).reset({
         index: 0,
         routes: [{ name: 'Auth' }],

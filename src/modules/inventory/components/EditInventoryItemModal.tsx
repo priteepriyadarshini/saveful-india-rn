@@ -174,15 +174,19 @@ export default function EditInventoryItemModal({ visible, onClose, item }: Props
                     <ScrollView
                       horizontal
                       showsHorizontalScrollIndicator={false}
-                      contentContainerStyle={tw`gap-2 py-1`}
+                      contentContainerStyle={tw`flex-row gap-2 py-1`}
                     >
                       {COMMON_UNITS.map((u) => (
                         <Pressable
                           key={u}
                           onPress={() => setUnit(u)}
-                          style={tw`px-3 py-2 rounded-lg ${
-                            unit === u ? 'bg-emerald-500' : 'bg-gray-100'
-                          }`}
+                          style={[
+                            tw.style(
+                              'rounded-lg',
+                              unit === u ? 'bg-kale' : 'bg-gray-100',
+                            ),
+                            { paddingHorizontal: 10, paddingVertical: 8 },
+                          ]}
                         >
                           <Text
                             style={tw.style(
@@ -208,24 +212,28 @@ export default function EditInventoryItemModal({ visible, onClose, item }: Props
                       <Pressable
                         key={opt.key}
                         onPress={() => setStorage(opt.key)}
-                        style={tw`flex-1 items-center py-3 rounded-xl border ${
-                          storage === opt.key
-                            ? 'bg-emerald-50 border-emerald-500'
-                            : 'bg-gray-50 border-gray-200'
-                        }`}
+                        style={[
+                          tw.style(
+                            'flex-1 items-center rounded-xl border',
+                            storage === opt.key
+                              ? 'bg-kale border-kale'
+                              : 'bg-gray-50 border-gray-200',
+                          ),
+                          { paddingVertical: 10, paddingHorizontal: 4 },
+                        ]}
                       >
                         <Ionicons
                           name={opt.icon as any}
-                          size={20}
-                          color={storage === opt.key ? '#10B981' : '#9CA3AF'}
+                          size={18}
+                          color={storage === opt.key ? 'white' : '#9CA3AF'}
                         />
                         <Text
                           style={tw.style(
                             bodyMediumRegular,
-                            `text-xs mt-1 ${
-                              storage === opt.key ? 'text-emerald-700' : 'text-gray-500'
-                            }`,
+                            `text-xs mt-1 text-center ${storage === opt.key ? 'text-white' : 'text-gray-500'}`,
                           )}
+                          numberOfLines={1}
+                          adjustsFontSizeToFit
                         >
                           {opt.label}
                         </Text>
@@ -239,14 +247,18 @@ export default function EditInventoryItemModal({ visible, onClose, item }: Props
                   <Text style={tw.style(bodyMediumRegular, 'text-sm text-gray-600 mb-1')}>
                     Days Until Expiry
                   </Text>
-                  <View style={tw`flex-row gap-2`}>
+                  <View style={tw`flex-row flex-wrap gap-2`}>
                     {['1', '3', '5', '7', '14', '30'].map((d) => (
                       <Pressable
                         key={d}
                         onPress={() => setExpiryDays(d)}
-                        style={tw`px-3 py-2 rounded-lg ${
-                          expiryDays === d ? 'bg-amber-500' : 'bg-gray-100'
-                        }`}
+                        style={[
+                          tw.style(
+                            'rounded-lg items-center',
+                            expiryDays === d ? 'bg-amber-500' : 'bg-gray-100',
+                          ),
+                          { minWidth: 40, paddingVertical: 8, paddingHorizontal: 10 },
+                        ]}
                       >
                         <Text
                           style={tw.style(
@@ -278,9 +290,12 @@ export default function EditInventoryItemModal({ visible, onClose, item }: Props
                     style={tw`flex-row items-center gap-3 py-2`}
                   >
                     <View
-                      style={tw`w-6 h-6 rounded-md border-2 items-center justify-center ${
-                        isStaple ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300'
-                      }`}
+                      style={[
+                        tw.style(
+                          'w-6 h-6 rounded-md border-2 items-center justify-center',
+                          isStaple ? 'bg-kale border-kale' : 'border-gray-300',
+                        ),
+                      ]}
                     >
                       {isStaple && (
                         <Ionicons name="checkmark" size={16} color="white" />
@@ -301,9 +316,10 @@ export default function EditInventoryItemModal({ visible, onClose, item }: Props
                 <Pressable
                   onPress={handleSubmit}
                   disabled={isLoading || !name.trim() || !quantity}
-                  style={tw`bg-emerald-500 py-4 rounded-2xl items-center ${
-                    isLoading || !name.trim() || !quantity ? 'opacity-50' : ''
-                  }`}
+                  style={[
+                    tw`py-4 rounded-2xl items-center bg-kale`,
+                    (isLoading || !name.trim() || !quantity) && { opacity: 0.5 },
+                  ]}
                 >
                   {isLoading ? (
                     <ActivityIndicator color="white" />

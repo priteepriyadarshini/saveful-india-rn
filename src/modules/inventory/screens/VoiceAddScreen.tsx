@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -48,14 +48,25 @@ export default function VoiceAddScreen() {
   const [manualText, setManualText] = useState('');
   const [parsedItems, setParsedItems] = useState<ParsedVoiceItem[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const finalTranscriptRef = useRef('');
 
   const [voiceAdd, { isLoading: isParsing }] = useVoiceAddMutation();
   const [voiceConfirm, { isLoading: isConfirming }] = useVoiceConfirmMutation();
   const { notifyIfNewMatches } = useRecipeMatchNotification();
 
   useSpeechRecognitionEvent('result', (event) => {
-    if (event.results?.[0]?.transcript) {
-      setTranscript(event.results[0].transcript);
+    const latest = event.results?.[0]?.transcript || '';
+    if (event.isFinal) {
+      finalTranscriptRef.current = finalTranscriptRef.current
+        ? finalTranscriptRef.current + ', ' + latest
+        : latest;
+      setTranscript(finalTranscriptRef.current);
+    } else {
+      setTranscript(
+        finalTranscriptRef.current
+          ? finalTranscriptRef.current + ', ' + latest
+          : latest,
+      );
     }
   });
 
@@ -87,6 +98,7 @@ export default function VoiceAddScreen() {
       setIsListening(true);
       setTranscript('');
       setParsedItems([]);
+      finalTranscriptRef.current = '';
 
       ExpoSpeechRecognitionModule.start({
         lang: 'en-IN',
@@ -174,7 +186,7 @@ export default function VoiceAddScreen() {
             Add by Voice
           </Text>
           <Text style={tw.style(bodyMediumRegular, 'text-gray-500 text-xs')}>
-            Speak your ingredients and review before adding
+            Share your ingredients and review before adding
           </Text>
         </View>
       </View>
@@ -212,8 +224,8 @@ export default function VoiceAddScreen() {
                 </Text>
                 <Text style={tw.style(bodyMediumRegular, 'text-gray-500 mt-1 text-center text-xs')}>
                   {isListening
-                    ? 'Tap again to stop and parse'
-                    : 'Say all ingredients in one sentence'}
+                    ? 'Tap again to stop when done'
+                    : 'Say all ingredients in one go'}
                 </Text>
               </>
             ) : (
@@ -298,7 +310,7 @@ export default function VoiceAddScreen() {
                       : 'text-white',
                   )}
                 >
-                  Parse Ingredients
+                  Identify Ingredients
                 </Text>
               </View>
             )}
@@ -431,23 +443,27 @@ function ParsedItemCard({
         </View>
 
         <Text style={tw`text-xs text-gray-500 mb-1`}>Storage</Text>
-        <View style={tw`flex-row gap-1.5 mb-3`}>
+        <View style={tw`flex-row flex-wrap gap-1.5 mb-3`}>
           {STORAGE_OPTIONS.map((opt) => (
             <Pressable
               key={opt.key}
               onPress={() => setEditStorage(opt.key)}
-              style={tw.style(
-                'flex-1 py-2 rounded-lg items-center border',
-                editStorage === opt.key
-                  ? 'bg-eggplant border-eggplant'
-                  : 'bg-white border-strokecream',
-              )}
+              style={[
+                tw.style(
+                  'rounded-lg items-center border',
+                  editStorage === opt.key
+                    ? 'bg-eggplant border-eggplant'
+                    : 'bg-white border-strokecream',
+                ),
+                { paddingVertical: 8, paddingHorizontal: 12, minWidth: '45%', flexGrow: 1 },
+              ]}
             >
               <Text
                 style={tw.style(
-                  'text-xs',
+                  'text-xs text-center',
                   editStorage === opt.key ? 'text-white' : 'text-gray-600',
                 )}
+                numberOfLines={1}
               >
                 {opt.label}
               </Text>

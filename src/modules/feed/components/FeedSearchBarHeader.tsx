@@ -6,18 +6,21 @@ import { bodyMediumRegular, h7TextStyle } from '../../../theme/typography';
 
 interface Props {
   title: string;
+  name?: string;
   onPress?: () => void; // Made optional
 }
 
-const FeedSearchBarHeader: React.FC<Props> = ({ title, onPress }) => {
+const FeedSearchBarHeader: React.FC<Props> = ({ title, name, onPress }) => {
   return (
     <View style={tw``}>
       <View style={tw``}>
         <Text
           style={tw.style(h7TextStyle, 'mb-3 text-center text-white')}
           maxFontSizeMultiplier={1}
+          numberOfLines={1}
+          adjustsFontSizeToFit
         >
-          {title}
+          {title}{name ? <>{' '}<Text style={tw`text-yellow-400`}>{name}</Text>{'?'}</> : '?'}
         </Text>
         <Pressable
           accessibilityRole="button"

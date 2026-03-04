@@ -57,13 +57,7 @@ export function useMakeItTTS(
       text += `${step.title}. `;
     }
 
-    // Add step instructions
-    if (step.stepInstructions) {
-      const cleanInstructions = stripHTML(step.stepInstructions);
-      text += `${cleanInstructions}. `;
-    }
-
-    // Add ingredients only if they changed from previous step
+    // Add ingredients first so the listener knows what to grab before hearing the instruction
     if (includeIngredients && step.ingredients && step.ingredients.length > 0) {
       text += 'Ingredients needed: ';
       step.ingredients.forEach((ingredient, idx) => {
@@ -73,6 +67,12 @@ export function useMakeItTTS(
         }
       });
       text += '. ';
+    }
+
+    // Add step instructions after ingredients
+    if (step.stepInstructions) {
+      const cleanInstructions = stripHTML(step.stepInstructions);
+      text += `${cleanInstructions}. `;
     }
 
     // Add hack or tip if present

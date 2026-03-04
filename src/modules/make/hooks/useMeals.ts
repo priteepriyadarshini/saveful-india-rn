@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { skipToken } from '@reduxjs/toolkit/query/react';
 import { filterAllergiesByUserPreferences } from '../../../common/helpers/filterIngredients';
 import { IFramework } from '../../../models/craft';
 import { useGetUserOnboardingQuery } from '../../../modules/intro/api/api';
 import { useGetCurrentUserQuery } from '../../auth/api';
 import { recipeApiService } from '../../recipe/api/recipeApiService';
 import { recipesToFrameworks } from '../../recipe/adapters/recipeAdapter';
+import { useGetDietaryRecommendationsQuery } from '../../recipe/api/recipeApi';
 
 // Helper to extract category ID from various formats
 const extractCategoryId = (category: any): string => {
@@ -32,12 +34,44 @@ const extractCategoryId = (category: any): string => {
   return '';
 };
 
-export default function useMeals(filters: string[]) {
+/** Map dietary UI keys to API query params (same as DietaryRecipesScreen). */
+function buildDietaryQueryParams(dietaryFilters: string[], country?: string) {
+  let vegType: string | undefined;
+  if (dietaryFilters.includes('vegan'))           vegType = 'VEGAN';
+  else if (dietaryFilters.includes('vegetarian')) vegType = 'VEGETARIAN';
+
+  return {
+    vegType,
+    dairyFree:   dietaryFilters.includes('dairyFree'),
+    nutFree:     dietaryFilters.includes('nutFree'),
+    glutenFree:  dietaryFilters.includes('glutenFree'),
+    hasDiabetes: dietaryFilters.includes('diabetes'),
+    country,
+  };
+}
+
+export default function useMeals(filters: string[], dietaryFilters: string[] = []) {
   const { data: userOnboarding } = useGetUserOnboardingQuery();
   const { data: currentUser, isLoading: isCurrentUserLoading } = useGetCurrentUserQuery();
 
   // Prefer user profile country; fall back to onboarding suburb (which stores country name).
   const userCountry = currentUser?.country || userOnboarding?.suburb;
+
+  // ─── Dietary recommendations query (skipped when no dietary filters active) ───
+  const dietaryQueryParams = useMemo(
+    () => buildDietaryQueryParams(dietaryFilters, userCountry),
+    [dietaryFilters, userCountry],
+  );
+  const skipDietaryQuery = dietaryFilters.length === 0;
+  const { data: dietaryRecipes } = useGetDietaryRecommendationsQuery(
+    skipDietaryQuery ? skipToken : dietaryQueryParams,
+  );
+
+  // Build a Set of matching recipe IDs for fast in-memory filtering
+  const dietaryRecipeIds = useMemo(() => {
+    if (!dietaryRecipes || dietaryFilters.length === 0) return null;
+    return new Set(dietaryRecipes.map(r => r._id));
+  }, [dietaryRecipes, dietaryFilters]);
 
   const [frameworks, setFrameworks] = useState<IFramework[]>([]);
   const allFrameworksRef = useRef<IFramework[]>([]);
@@ -82,35 +116,49 @@ export default function useMeals(filters: string[]) {
     getFrameworksData();
   }, [getFrameworksData]);
 
-  // When filters change, do instant client-side filtering from cached data
+  // When filters or dietary results change, do instant client-side filtering from cached data
   useEffect(() => {
     const allFrameworks = allFrameworksRef.current;
     // If no data loaded yet, skip
     if (allFrameworks.length === 0) return;
 
-    if (!filters || filters.length === 0) {
+    const hasCategoryFilters = filters && filters.length > 0;
+    const hasDietaryFilters = dietaryFilters.length > 0 && dietaryRecipeIds !== null;
+
+    if (!hasCategoryFilters && !hasDietaryFilters) {
       setFrameworks(allFrameworks);
       return;
     }
 
-    // Client-side filter first (instant)
-    const clientFiltered = allFrameworks.filter(framework =>
-      framework.frameworkCategories?.some(category => {
-        const categoryId = extractCategoryId(category);
-        return filters.includes(categoryId);
-      }),
-    );
+    let result = allFrameworks;
 
-    // Show client-filtered results immediately
-    if (clientFiltered.length > 0) {
-      setFrameworks(clientFiltered);
-    } else {
-      // If client-side found nothing, show all (don't blank out the list)
-      setFrameworks(allFrameworks);
+    // Apply category filters
+    if (hasCategoryFilters) {
+      const categoryFiltered = result.filter(framework =>
+        framework.frameworkCategories?.some(category => {
+          const categoryId = extractCategoryId(category);
+          return filters.includes(categoryId);
+        }),
+      );
+      if (categoryFiltered.length > 0) {
+        result = categoryFiltered;
+      }
     }
 
+    // Apply dietary filters (in-memory intersection with dietary API results)
+    if (hasDietaryFilters && dietaryRecipeIds) {
+      const dietaryFiltered = result.filter(framework =>
+        dietaryRecipeIds.has(framework.id),
+      );
+      if (dietaryFiltered.length > 0) {
+        result = dietaryFiltered;
+      }
+    }
+
+    setFrameworks(result);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, [filters, dietaryFilters, dietaryRecipeIds]);
 
   return { frameworks, isLoading };
 }
