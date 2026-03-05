@@ -21,7 +21,7 @@ import { recipeApiService } from '../../recipe/api/recipeApiService';
 import { recipeToFramework } from '../../recipe/adapters/recipeAdapter';
 import { ingredientApiService } from '../../ingredients/api/ingredientApiService';
 import { transformIngredientToLegacyFormat } from '../../ingredients/helpers/ingredientTransformers';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -55,11 +55,13 @@ export default function MakeItScreen({
   >([]);
   const [isTTSEnabled, setIsTTSEnabled] = useState(false);
   const [isIngredientsActive, setIsIngredientsActive] = useState<boolean>(false);
+  // Prevents the survey modal from re-appearing after the user has already started cooking
+  const hasCookStartedRef = useRef(false);
 
   // Convert the pre-computed scaled quantities from nav params (Record) into a Map
   const scaledQuantities = useMemo(() => {
     if (!scaledQuantitiesRecord) return new Map<string, string>();
-    return new Map(Object.entries(scaledQuantitiesRecord));
+    return new Map<string, string>(Object.entries(scaledQuantitiesRecord) as [string, string][]);
   }, [scaledQuantitiesRecord]);
 
   const getFrameworksData = async () => {
@@ -130,7 +132,8 @@ export default function MakeItScreen({
 
   useEffect(() => {
     // Only evaluate tutorial/modal visibility when this screen is focused
-    if (!isFocused) return;
+    // and only before the user has started cooking (prevents double notification)
+    if (!isFocused || hasCookStartedRef.current) return;
 
     const checkIsFirstMakeTutorial = async () => {
       const isFirstMakeTutorial = await AsyncStorage.getItem(StorageKey);
@@ -394,7 +397,10 @@ export default function MakeItScreen({
       <MakeItSurveyModal
         isVisible={isFocused && isIngredientsModalVisible}
         setIsVisible={setIngredientsModalVisible}
-        onProceed={() => setIsSavingsPreviewVisible(true)}
+        onProceed={() => {
+          hasCookStartedRef.current = true;
+          setIsSavingsPreviewVisible(true);
+        }}
         frameworkId={id}
         title={framework.title}
         mealId={mealId}

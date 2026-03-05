@@ -1,18 +1,21 @@
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { useCheckNewRecipeMatchesMutation } from '../api/inventoryApi';
 import useNotifications from '../../notifications/hooks/useNotifications';
+
+
+let lastNotifiedTimestamp = 0;
 
 export default function useRecipeMatchNotification() {
   const [checkNewMatches] = useCheckNewRecipeMatchesMutation();
   const { scheduleNotification } = useNotifications();
-  const lastNotifiedRef = useRef<number>(0);
 
   const notifyIfNewMatches = useCallback(
     async (country?: string) => {
       const now = Date.now();
-      if (now - lastNotifiedRef.current < 30_000) {
+      if (now - lastNotifiedTimestamp < 30_000) {
         return;
       }
+      lastNotifiedTimestamp = now;
 
       try {
         const result = await checkNewMatches(
@@ -20,8 +23,6 @@ export default function useRecipeMatchNotification() {
         ).unwrap();
 
         if (result.hasNewMatches && result.topNewMatch) {
-          lastNotifiedRef.current = now;
-
           const matchCount = result.newMatchCount;
           const topRecipe = result.topNewMatch.recipe.title;
           const matchPct = result.topNewMatch.matchPercentage;
@@ -36,8 +37,11 @@ export default function useRecipeMatchNotification() {
             delayInSeconds: 3,
             url: '/inventory/meal-suggestions',
           });
+        } else {
+          lastNotifiedTimestamp = 0;
         }
       } catch (error) {
+        lastNotifiedTimestamp = 0;
         console.warn('Recipe match notification check failed:', error);
       }
     },

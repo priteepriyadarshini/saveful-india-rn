@@ -51,6 +51,9 @@ export type InitialStackParamList = {
       preparation?: string;
     }[];
     mealId: string;
+    scaledQuantities?: Record<string, string>;
+    desiredServings?: number;
+    cookingNotes?: string;
   };
   HackVideo: { videoString: string }; // id: string
 };
