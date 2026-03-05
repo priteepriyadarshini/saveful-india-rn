@@ -9,7 +9,7 @@ import IngredientsList from '../../../modules/ingredients/components/Ingredients
 import IngredientsSearchBarHeader from '../../../modules/ingredients/components/IngredientsSearchBarHeader';
 import { IngredientsStackScreenProps } from '../../../modules/ingredients/navigation/IngredientsNavigator';
 import { useGetUserOnboardingQuery } from '../../../modules/intro/api/api';
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   Animated,
   Dimensions,
@@ -30,22 +30,18 @@ export default function IngredientsScreen({
 }: IngredientsStackScreenProps<'IngredientsHome'>) {
   const offset = useRef(new Animated.Value(0)).current;
   const [selectedIngredients, setSelectedIngredients] = React.useState<string[]>([]);
-  const [, updateState] = React.useState<unknown>();
-  const forceUpdate = React.useCallback(() => updateState({}), []);
-  const onValueChecked = (value: string) => {
-    const valueIndex = selectedIngredients.findIndex(x => x === value);
 
-    if (valueIndex === -1) {
-      setSelectedIngredients([...selectedIngredients, value]);
-    } else {
-      const updatedArray = [...selectedIngredients];
-      updatedArray.splice(valueIndex, 1);
-
-      setSelectedIngredients(updatedArray);
-    }
-
-    forceUpdate();
-  };
+  // Stable callback — functional setState so it never closes over the stale array,
+  // meaning IngredientsList and its memoised rows don't re-render just because this ref changed.
+  const onValueChecked = useCallback((value: string) => {
+    setSelectedIngredients(prev => {
+      const idx = prev.findIndex(x => x === value);
+      if (idx === -1) return [...prev, value];
+      const updated = [...prev];
+      updated.splice(idx, 1);
+      return updated;
+    });
+  }, []);
 
   const { data: userOnboarding } = useGetUserOnboardingQuery();
   
@@ -60,28 +56,28 @@ export default function IngredientsScreen({
   );
   const isApiLoading = isCurrentUserLoading || isIngredientsLoading;
   
-  const [ingredients, setIngredients] = React.useState<IIngredient[]>([]);
-  // Removed Craft frameworks dependency; use backend ingredients only
-
-  useEffect(() => {
-    if (apiIngredients) {
-      // Use API data only - transform to legacy format
-      const transformedData = transformIngredientsToLegacyFormat(apiIngredients);
-      setIngredients(transformedData);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiIngredients]);
+  // Derive ingredient list synchronously — no extra state/useEffect double-render
+  const ingredients = useMemo(
+    () => apiIngredients ? transformIngredientsToLegacyFormat(apiIngredients) : [],
+    [apiIngredients],
+  );
 
   const [searchInput, setSearchInput] = React.useState<string>('');
 
-  // Show all backend ingredients; optionally filter by search input and selection
-  const filteredIngredients = ingredients;
+  // Memoised — only recomputes when the list or search text actually changes
+  const filteredData = useMemo(() => {
+    const lower = searchInput.toLowerCase();
+    return ingredients.filter(item =>
+      selectedIngredients.includes(item.id) ||
+      item.title.toLowerCase().includes(lower),
+    );
+  }, [ingredients, searchInput, selectedIngredients]);
 
-  const filteredData = filteredIngredients.filter(item => {
-    const matchInput = item.title.toLowerCase().includes(searchInput.toLowerCase());
-    const activeIngredients = selectedIngredients.includes(item.id);
-    return activeIngredients || matchInput;
-  });
+  // Memoised footer selection — avoids O(n) filter on every render
+  const selectedIngredientObjects = useMemo(
+    () => ingredients.filter(x => selectedIngredients.includes(x.id)),
+    [ingredients, selectedIngredients],
+  );
 
   const skeletonStyles = [`w-[${itemLength}px] h-8 my-2`];
 
@@ -131,9 +127,7 @@ export default function IngredientsScreen({
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <IngredientsFooter
-          selectedIngredients={ingredients.filter(x =>
-            selectedIngredients.includes(x.id),
-          )}
+          selectedIngredients={selectedIngredientObjects}
           onValueChecked={onValueChecked}
           navigation={navigation}
         />

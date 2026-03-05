@@ -393,6 +393,20 @@ export default function InventoryScreen() {
 }
 
 
+function getStorageIconProps(location: StorageLocation): { icon: string; color: string; bg: string } {
+  switch (location) {
+    case StorageLocation.FRIDGE:
+      return { icon: 'snow-outline', color: '#3B82F6', bg: '#EFF6FF' };
+    case StorageLocation.FREEZER:
+      return { icon: 'cube-outline', color: '#06B6D4', bg: '#ECFEFF' };
+    case StorageLocation.PANTRY:
+      return { icon: 'file-tray-stacked-outline', color: '#F59E0B', bg: '#FFFBEB' };
+    case StorageLocation.OTHER:
+    default:
+      return { icon: 'ellipsis-horizontal-outline', color: '#6B7280', bg: '#F3F4F6' };
+  }
+}
+
 function InventoryItemCard({
   item,
   onEdit,
@@ -405,22 +419,20 @@ function InventoryItemCard({
   onDelete: () => void;
 }) {
   const freshnessColor = getFreshnessColor(item.freshnessStatus);
+  const storageIconProps = getStorageIconProps(item.storageLocation);
 
   return (
     <View
       style={tw`flex-row items-center bg-white rounded-lg border border-gray-100 px-2.5 py-2 shadow-sm`}
     >
-      {/* Image / Icon */}
-      <View style={tw`w-10 h-10 rounded-md bg-gray-100 items-center justify-center mr-2.5`}>
-        {item.heroImageUrl ? (
-          <Image
-            source={{ uri: item.heroImageUrl }}
-            style={tw`w-10 h-10 rounded-md`}
-            resizeMode="cover"
-          />
-        ) : (
-          <Ionicons name="nutrition-outline" size={20} color="#9CA3AF" />
-        )}
+      {/* Storage Location Icon */}
+      <View
+        style={[
+          tw`w-10 h-10 rounded-md items-center justify-center mr-2.5`,
+          { backgroundColor: storageIconProps.bg },
+        ]}
+      >
+        <Ionicons name={storageIconProps.icon as any} size={22} color={storageIconProps.color} />
       </View>
 
       {/* Info */}

@@ -9,9 +9,11 @@ const ingredientsApi = api.injectEndpoints({
         country
           ? `/api/ingredients?country=${encodeURIComponent(country)}`
           : '/api/ingredients',
+      keepUnusedDataFor: 300, // 5 minutes — avoids re-fetching on every screen visit
     }),
     getIngredientById: builder.query<Ingredient, string>({
       query: (id) => `/api/ingredients/${id}`,
+      keepUnusedDataFor: 300,
     }),
     getAllIngredientCategories: builder.query<IngredientCategory[], void>({
       query: () => '/api/ingredients/category',

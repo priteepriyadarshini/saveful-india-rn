@@ -11,6 +11,7 @@ import {
   ScrollView,
   ActivityIndicator,
   ImageBackground,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -50,6 +51,7 @@ export default function AddRecipeScreen() {
   const [link, setLink] = useState('');
   const [addRecipe, { isLoading }] = useAddRecipeFromLinkMutation();
   const [submitted, setSubmitted] = useState(false);
+  const [showQueuedModal, setShowQueuedModal] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
   const handlePaste = useCallback(async () => {
@@ -80,12 +82,12 @@ export default function AddRecipeScreen() {
 
     try {
       const result = await addRecipe({
-        message: `Generate recipe for ${trimmedLink} link`,
+        message: trimmedLink,
       }).unwrap();
 
       if (result.success && result.queued) {
         setLink('');
-        navigation.replace('CookbookHome');
+        setShowQueuedModal(true);
       } else if (result.success && result.data) {
         // Fallback: if server returns data directly (backward compat)
         setLink('');
@@ -112,6 +114,39 @@ export default function AddRecipeScreen() {
   return (
     <SafeAreaView style={tw`flex-1 bg-white`} edges={['top']}>
       <FocusAwareStatusBar statusBarStyle="dark" />
+
+      {/* Recipe Queued Modal */}
+      <Modal
+        visible={showQueuedModal}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <View style={tw`flex-1 bg-black/50 items-center justify-center px-8`}>
+          <View style={tw`bg-white rounded-2xl p-6 w-full items-center`}>
+            <View style={tw`w-16 h-16 rounded-full bg-green-100 items-center justify-center mb-4`}>
+              <Feather name="bell" size={28} color={tw.color('green-600') || '#16A34A'} />
+            </View>
+            <Text style={tw.style(bodyMediumBold, 'text-gray-900 text-center text-base mb-3')}>
+              Your recipe is getting generated!
+            </Text>
+            <Text style={tw.style(bodyMediumRegular, 'text-stone text-center leading-5 mb-6')}>
+              Please wait while we are doing it. You will be notified once your recipe is ready in your cookbook.
+            </Text>
+            <Pressable
+              onPress={() => {
+                setShowQueuedModal(false);
+                navigation.replace('CookbookHome');
+              }}
+              style={tw`bg-green-600 py-3.5 px-10 rounded-full`}
+            >
+              <Text style={tw.style(bodyMediumBold, 'text-white')}>
+                OK
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
       <View style={tw`flex-row items-center px-5 pt-3 pb-2`}>
         <Pressable
           onPress={() => navigation.goBack()}

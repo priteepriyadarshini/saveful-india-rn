@@ -38,31 +38,63 @@ function RecipeCard({
 }) {
   const heroHeight = Math.max(220, cardWidth * 0.65);
 
+  if (!recipe.heroImageUrl) {
+    return (
+      <Pressable
+        onPress={onPress}
+        style={tw`mb-4 overflow-hidden rounded-2xl border border-strokecream bg-creme`}
+      >
+        <View style={tw`flex-row items-center px-4 pt-4 pb-4`}>
+          <View style={tw`w-14 h-14 rounded-xl bg-white items-center justify-center mr-3 flex-shrink-0`}>
+            <ExpoImage
+              source={require('../../../../assets/iconss/My Cookbook colour.svg')}
+              style={{ width: 42, height: 42 }}
+              contentFit="contain"
+            />
+          </View>
+          <View style={tw`flex-1`}>
+            <Text style={tw.style(bodyMediumBold, 'text-black text-base mb-0.5')} numberOfLines={2}>
+              {recipe.title}
+            </Text>
+            {recipe.shortDescription ? (
+              <Text style={tw.style(bodyMediumRegular, 'text-stone text-xs leading-4')} numberOfLines={2}>
+                {recipe.shortDescription}
+              </Text>
+            ) : null}
+            <View style={tw`mt-2 flex-row flex-wrap`}>
+              {recipe.prepCookTime > 0 && (
+                <View style={tw`mr-2 mb-1 flex-row items-center rounded-full bg-white px-2.5 py-1`}>
+                  <Feather name="clock" size={11} color={tw.color('kale')} />
+                  <Text style={tw.style(bodyMediumBold, 'ml-1 text-xs text-black')}>
+                    {recipe.prepCookTime} min
+                  </Text>
+                </View>
+              )}
+              {recipe.portions && (
+                <View style={tw`mr-2 mb-1 flex-row items-center rounded-full bg-white px-2.5 py-1`}>
+                  <Feather name="users" size={11} color={tw.color('kale')} />
+                  <Text style={tw.style(bodyMediumBold, 'ml-1 text-xs text-black')}>
+                    {recipe.portions} portions
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </View>
+      </Pressable>
+    );
+  }
+
   return (
     <Pressable
       onPress={onPress}
       style={tw`mb-4 overflow-hidden rounded-2xl border border-strokecream bg-creme`}
     >
-      {recipe.heroImageUrl ? (
-        <Image
-          source={{ uri: recipe.heroImageUrl }}
-          style={[tw`w-full`, { height: heroHeight }]}
-          resizeMode="cover"
-        />
-      ) : (
-        <View
-          style={[
-            tw`w-full bg-white items-center justify-center`,
-            { height: heroHeight },
-          ]}
-        >
-          <ExpoImage
-            source={require('../../../../assets/iconss/My Kitchen 2.svg')}
-            style={{ width: heroHeight * 0.75, height: heroHeight * 0.75 }}
-            contentFit="contain"
-          />
-        </View>
-      )}
+      <Image
+        source={{ uri: recipe.heroImageUrl }}
+        style={[tw`w-full`, { height: heroHeight }]}
+        resizeMode="cover"
+      />
       <View style={tw`px-4 pt-4 pb-4`}>
         <Text style={tw.style(bodyMediumBold, 'text-black text-lg mb-1')} numberOfLines={2}>
           {recipe.title}
@@ -88,20 +120,6 @@ function RecipeCard({
               </Text>
             </View>
           )}
-
-          <View
-            style={tw`mb-2 self-start rounded-full border px-3 py-1.5 ${
-              recipe.status === 'accepted'
-                ? 'bg-green-50 border-green-200'
-                : recipe.status === 'pending'
-                ? 'bg-amber-50 border-amber-200'
-                : 'bg-red-50 border-red-200'
-            }`}
-          >
-            <Text style={tw.style(subheadMediumUppercase, 'text-gray-700 capitalize')}>
-              {recipe.status === 'accepted' ? 'AI Generated' : recipe.status}
-            </Text>
-          </View>
         </View>
       </View>
     </Pressable>

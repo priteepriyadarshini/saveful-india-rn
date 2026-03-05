@@ -12,6 +12,7 @@ import { useAppDispatch } from '../../../store/hooks';
 import { TokenManager } from '../../pushNotifications/TokenManager';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
 import { bodyMediumRegular, bodySmallRegular, h6TextStyle, subheadSmallUppercase } from '../../../theme/typography';
+import * as WebBrowser from 'expo-web-browser';
 import { getSafeErrorMessage } from '../../../modules/forms/validation';
 import { cardDrop } from '../../../theme/shadow';
 
@@ -153,7 +154,7 @@ export default function AuthScreen({ navigation }: any) {
           showsVerticalScrollIndicator={false}
         >
           {/* Logo */}
-          <View style={tw`items-center pt-4 pb-4`}>
+          <View style={tw`items-center pt-2 pb-2`}>
             <Image
               style={tw.style('h-[58px] w-[111px]')}
               resizeMode="contain"
@@ -169,7 +170,7 @@ export default function AuthScreen({ navigation }: any) {
                 resizeMode="cover"
                 imageStyle={{ opacity: 0.1 }}
               >
-              <View style={tw`px-4 pb-4 pt-4`}>
+              <View style={tw`px-4 pb-3 pt-3`}>
                 <View style={tw`mb-3 rounded-xl border border-strokecream bg-creme p-1`}>
                   <View style={tw`flex-row`}>
                     <TouchableOpacity
@@ -193,20 +194,17 @@ export default function AuthScreen({ navigation }: any) {
                   </View>
                 </View>
 
-                <View style={tw`mb-4`}>
-                <Text style={tw.style(h6TextStyle, 'text-center text-eggplant mb-2')}>
+                <View style={tw`mb-2`}>
+                <Text style={tw.style(h6TextStyle, 'text-center text-eggplant')}>
                   {isLogin ? 'WELCOME BACK' : 'JOIN SAVEFUL'}
-                </Text>
-                <Text style={tw.style(bodyMediumRegular, 'text-center text-stone')}>
-                  {isLogin ? 'Sign in to continue your culinary journey' : 'Create your account to get started'}
                 </Text>
               </View>
 
               <View style={tw`gap-3`}>
                 {!isLogin && (
                   <View>
-                    <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>Full Name *</Text>
-                    <View style={tw`flex-row items-center rounded-xl border border-strokecream bg-creme px-3 py-2.5`}>
+                    <Text style={tw.style(bodySmallRegular, 'text-stone mb-1')}>Full Name *</Text>
+                    <View style={tw`flex-row items-center rounded-xl border border-strokecream bg-creme px-3 py-2`}>
                       <Feather name="user" size={18} color={tw.color('stone') || '#6D6D72'} style={tw`mr-2.5`} />
                       <TextInput
                         style={tw`flex-1 text-base text-black`}
@@ -240,8 +238,8 @@ export default function AuthScreen({ navigation }: any) {
                 </View>
 
                 <View>
-                  <View style={tw`flex-row justify-between items-center mb-1.5`}>
-                    <Text style={tw.style(bodyMediumRegular, 'text-stone')}>Password *</Text>
+                  <View style={tw`flex-row justify-between items-center mb-1`}>
+                    <Text style={tw.style(bodySmallRegular, 'text-stone')}>Password *</Text>
                     {isLogin && (
                       <TouchableOpacity
                         onPress={() => { setForgotEmail(email); setActiveView('forgot'); }}
@@ -252,7 +250,7 @@ export default function AuthScreen({ navigation }: any) {
                       </TouchableOpacity>
                     )}
                   </View>
-                  <View style={tw`flex-row items-center rounded-xl border border-strokecream bg-creme px-3 py-2.5`}>
+                  <View style={tw`flex-row items-center rounded-xl border border-strokecream bg-creme px-3 py-2`}>
                     <Feather name="lock" size={18} color={tw.color('stone') || '#6D6D72'} style={tw`mr-2.5`} />
                     <TextInput
                       style={tw`flex-1 text-base text-black`}
@@ -272,8 +270,8 @@ export default function AuthScreen({ navigation }: any) {
 
                 {!isLogin && (
                   <View>
-                    <Text style={tw.style(bodyMediumRegular, 'text-stone mb-1.5')}>Confirm Password *</Text>
-                    <View style={tw`flex-row items-center rounded-xl border border-strokecream bg-creme px-3 py-2.5`}>
+                    <Text style={tw.style(bodySmallRegular, 'text-stone mb-1')}>Confirm Password *</Text>
+                    <View style={tw`flex-row items-center rounded-xl border border-strokecream bg-creme px-3 py-2`}>
                       <Feather name="lock" size={18} color={tw.color('stone') || '#6D6D72'} style={tw`mr-2.5`} />
                       <TextInput
                         style={tw`flex-1 text-base text-black`}
@@ -293,7 +291,7 @@ export default function AuthScreen({ navigation }: any) {
                 )}
               </View>
 
-              <View style={tw`mt-4`}>
+              <View style={tw`mt-3`}>
                 <PrimaryButton onPress={handleAuth} disabled={isLoading} buttonSize="large" width="full">
                   {isLoading ? (
                     <View style={tw`flex-row items-center justify-center gap-2`}>
@@ -309,10 +307,30 @@ export default function AuthScreen({ navigation }: any) {
                 </PrimaryButton>
               </View>
 
+              {!isLogin && (
+                <Text style={tw.style(bodySmallRegular, 'text-center text-stone mt-2 px-2')}>
+                  By continuing, you agree to our{' '}
+                  <Text
+                    style={tw`font-sans-semibold text-eggplant`}
+                    onPress={() => WebBrowser.openBrowserAsync('https://www.saveful.com/terms-of-service')}
+                  >
+                    Terms of Service
+                  </Text>
+                  {' '}and{' '}
+                  <Text
+                    style={tw`font-sans-semibold text-eggplant`}
+                    onPress={() => WebBrowser.openBrowserAsync('https://www.saveful.com/privacy-policy')}
+                  >
+                    Privacy Policy
+                  </Text>
+                  .
+                </Text>
+              )}
+
               <TouchableOpacity
                 onPress={() => setIsLogin(!isLogin)}
                 disabled={isLoading}
-                style={tw`mt-3 items-center rounded-full border border-strokecream bg-creme px-4 py-2.5`}
+                style={tw`mt-2 items-center rounded-full border border-strokecream bg-creme px-4 py-2`}
               >
                 <Text style={tw.style(bodySmallRegular, 'text-center text-stone')}>
                   {isLogin ? "Don't have an account? " : 'Already have an account? '}

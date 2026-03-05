@@ -45,6 +45,7 @@ const recipeApi = api.injectEndpoints({
       keepUnusedDataFor: 300,
     }),
     getRecipesByIngredients: builder.query<Recipe[], { ingredientIds: string[]; country?: string }>({
+      keepUnusedDataFor: 300, // 5 minutes — avoids re-firing N requests on every results screen visit
       async queryFn(arg, _queryApi, _extraOptions, fetchWithBQ) {
         const ingredientIds: string[] = arg?.ingredientIds ?? [];
         const country: string | undefined = arg?.country;

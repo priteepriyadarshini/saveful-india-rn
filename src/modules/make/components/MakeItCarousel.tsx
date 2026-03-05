@@ -72,6 +72,7 @@ export default function MakeItCarousel({
   const [isModalVisible, setModalVisible] = useState(false);
   const [showShoppingListModal, setShowShoppingListModal] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  const completionInFlightRef = useRef(false);
   const [optimisticMealsCooked, setOptimisticMealsCooked] = useState<number | null>(null);
   const [createFeedback, { isLoading: isCreateFeedbackLoading }] =
     useCreateFeedbackMutation();
@@ -110,10 +111,11 @@ export default function MakeItCarousel({
 
   const onCompleteCook = async () => {
     try {
-      if (isCompleting || isCreateFeedbackLoading) {
+      if (completionInFlightRef.current || isCompleting || isCreateFeedbackLoading) {
         return;
       }
 
+      completionInFlightRef.current = true;
       setIsCompleting(true);
       completedSteps();
       sendAnalyticsEvent({
@@ -170,6 +172,7 @@ export default function MakeItCarousel({
       Alert.alert('User update error', JSON.stringify(error));
     } finally {
       setIsCompleting(false);
+      completionInFlightRef.current = false;
     }
   };
 

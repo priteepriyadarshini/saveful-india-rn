@@ -86,48 +86,60 @@ export function userRecipeToFramework(recipe: UserRecipe): IFramework {
           includedInVariants = [...variantTags];
         }
 
-        const requiredIngredients = comp.requiredIngredients.map((ri, riIdx) => ({
-          id: `ri-${compId}-${riIdx}`,
-          recommendedIngredient: [
-            {
-              id: extractId(ri.recommendedIngredient),
-              title: extractName(ri.recommendedIngredient),
-              averageWeight: 0,
-            },
-          ],
-          alternativeIngredients: ri.alternativeIngredients.map((ai, aiIdx) => ({
-            id: `ai-${compId}-${riIdx}-${aiIdx}`,
-            quantity: ai.inheritQuantity ? ri.quantity : (ai.quantity || ri.quantity),
-            preparation: ai.inheritPreparation ? ri.preparation : (ai.preparation || ri.preparation),
-            ingredient: [
+        const requiredIngredients = comp.requiredIngredients.map((ri, riIdx) => {
+          const riId = extractId(ri.recommendedIngredient);
+          const riName = ri.ingredientName || extractName(ri.recommendedIngredient) || '';
+          return {
+            id: `ri-${compId}-${riIdx}`,
+            recommendedIngredient: [
               {
-                id: extractId(ai.ingredient),
-                title: extractName(ai.ingredient),
+                id: riId || `name-${riName}`,
+                title: riName,
                 averageWeight: 0,
               },
             ],
-            alternativeOptions: [
-              ...(ai.inheritQuantity ? ['inheritQuantity' as const] : []),
-              ...(ai.inheritPreparation ? ['inheritPreparation' as const] : []),
-            ] as ['inheritQuantity' | 'inheritPreparation'],
-          })),
-          quantity: ri.quantity,
-          preparation: ri.preparation,
-        }));
+            alternativeIngredients: ri.alternativeIngredients.map((ai, aiIdx) => {
+              const aiId = extractId(ai.ingredient);
+              const aiName = ai.ingredientName || extractName(ai.ingredient) || '';
+              return {
+                id: `ai-${compId}-${riIdx}-${aiIdx}`,
+                quantity: ai.inheritQuantity ? ri.quantity : (ai.quantity || ri.quantity),
+                preparation: ai.inheritPreparation ? ri.preparation : (ai.preparation || ri.preparation),
+                ingredient: [
+                  {
+                    id: aiId || `name-${aiName}`,
+                    title: aiName,
+                    averageWeight: 0,
+                  },
+                ],
+                alternativeOptions: [
+                  ...(ai.inheritQuantity ? ['inheritQuantity' as const] : []),
+                  ...(ai.inheritPreparation ? ['inheritPreparation' as const] : []),
+                ] as ['inheritQuantity' | 'inheritPreparation'],
+              };
+            }),
+            quantity: ri.quantity,
+            preparation: ri.preparation,
+          };
+        });
 
         // Convert optional ingredients
-        const optionalIngredients = comp.optionalIngredients.map((oi, oiIdx) => ({
-          id: `oi-${compId}-${oiIdx}`,
-          ingredient: [
-            {
-              id: extractId(oi.ingredient),
-              title: extractName(oi.ingredient),
-              averageWeight: 0,
-            },
-          ],
-          quantity: oi.quantity,
-          preparation: oi.preparation,
-        }));
+        const optionalIngredients = comp.optionalIngredients.map((oi, oiIdx) => {
+          const oiId = extractId(oi.ingredient);
+          const oiName = oi.ingredientName || extractName(oi.ingredient) || '';
+          return {
+            id: `oi-${compId}-${oiIdx}`,
+            ingredient: [
+              {
+                id: oiId || `name-${oiName}`,
+                title: oiName,
+                averageWeight: 0,
+              },
+            ],
+            quantity: oi.quantity,
+            preparation: oi.preparation,
+          };
+        });
 
         // Convert component steps
         const componentSteps: IFrameworkComponentStep[] = comp.componentSteps.map(

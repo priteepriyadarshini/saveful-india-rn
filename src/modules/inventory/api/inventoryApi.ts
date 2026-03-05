@@ -81,6 +81,7 @@ const inventoryApi = api
           params: params || undefined,
         }),
         providesTags: ['MealSuggestions'],
+        keepUnusedDataFor: 180, // 3 min — matches server Redis TTL
       }),
 
       checkNewRecipeMatches: builder.mutation<

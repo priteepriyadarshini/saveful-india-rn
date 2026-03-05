@@ -5,6 +5,7 @@ import tw from '../../../common/tailwind';
 import { IFramework } from '../../../models/craft';
 import { mixpanelEventName } from '../../../modules/analytics/analytics';
 import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
+import CompletedCookWithSurvey from '../../../modules/make/components/CompletedCookWithSurvey';
 import MakeItCarousel from '../../../modules/make/components/MakeItCarousel';
 import MakeItHeader from '../../../modules/make/components/MakeItHeader';
 import MakeItNavigation from '../../../modules/make/components/MakeItNavigation';
@@ -48,6 +49,7 @@ export default function MakeItScreen({
   const [isFirstMakeSession, setIsFirstMakeSession] = useState<boolean>(false);
   const [isIngredientsModalVisible, setIngredientsModalVisible] =
     useState(false);
+  const [isSavingsPreviewVisible, setIsSavingsPreviewVisible] = useState(false);
   const [preExistingIngredients, setPreExistingIngredients] = useState<
     { id: string; title: string; averageWeight: number }[]
   >([]);
@@ -151,46 +153,51 @@ export default function MakeItScreen({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [slideIndex, setSlideIndex] = useState(0);
 
-  const makeItSteps = framework?.components
-    .filter(component =>
-      component.includedInVariants?.some(item => item.id === variant),
-    )
-    .flatMap(component =>
-      component.componentSteps.map(step => ({
-        ...step,
-        title: component.componentTitle,
-        ingredients: ingredients.filter(item => item.id === component.id),
-      })),
-    )
-    .filter((item, index, array) => {
-      if (item.alwaysShow || index === array.length - 1) {
-        return true;
-      }
-      return item.ingredients.length > 0;
-    })
-    .filter((item, index, array) => {
-      if (item.alwaysShow || index === array.length - 1) {
-        return true;
-      }
-      if (item.relevantIngredients.length === 0) {
-        return true;
-      }
-      return item.ingredients?.some(
-        ingredient =>
-          item.relevantIngredients.findIndex(
-            item => item.title === ingredient.title,
-          ) !== -1,
-      );
-    })
-    .concat({
-      title: 'Let\'s eat',
-      ingredients: [],
-      id: 'lets-eat',
-      stepInstructions: `<p>That\'s it! Time to eat!</p>`,
-      hackOrTip: [],
-      relevantIngredients: [],
-      alwaysShow: true,
-    }) || [];
+  const makeItSteps = useMemo(() => {
+    if (!framework) return [];
+    return (
+      framework.components
+        .filter(component =>
+          component.includedInVariants?.some(item => item.id === variant),
+        )
+        .flatMap(component =>
+          component.componentSteps.map(step => ({
+            ...step,
+            title: component.componentTitle,
+            ingredients: ingredients.filter(item => item.id === component.id),
+          })),
+        )
+        .filter((item, index, array) => {
+          if (item.alwaysShow || index === array.length - 1) {
+            return true;
+          }
+          return item.ingredients.length > 0;
+        })
+        .filter((item, index, array) => {
+          if (item.alwaysShow || index === array.length - 1) {
+            return true;
+          }
+          if (item.relevantIngredients.length === 0) {
+            return true;
+          }
+          return item.ingredients?.some(
+            ingredient =>
+              item.relevantIngredients.findIndex(
+                item => item.title === ingredient.title,
+              ) !== -1,
+          );
+        })
+        .concat({
+          title: "Let's eat",
+          ingredients: [],
+          id: 'lets-eat',
+          stepInstructions: `<p>That's it! Time to eat!</p>`,
+          hackOrTip: [],
+          relevantIngredients: [],
+          alwaysShow: true,
+        })
+    );
+  }, [framework, variant, ingredients]);
 
   const { isSpeaking } = useMakeItTTS(currentIndex, makeItSteps, isTTSEnabled);
 
@@ -296,7 +303,7 @@ export default function MakeItScreen({
   );
 
   const completedSteps = () => {
-    const percentage = (currentIndex + 1 / makeItSteps.length) * 100;
+    const percentage = ((currentIndex + 1) / makeItSteps.length) * 100;
     sendAnalyticsEvent({
       event: mixpanelEventName.actionClicked,
       properties: {
@@ -387,6 +394,7 @@ export default function MakeItScreen({
       <MakeItSurveyModal
         isVisible={isFocused && isIngredientsModalVisible}
         setIsVisible={setIngredientsModalVisible}
+        onProceed={() => setIsSavingsPreviewVisible(true)}
         frameworkId={id}
         title={framework.title}
         mealId={mealId}
@@ -397,6 +405,12 @@ export default function MakeItScreen({
         preExistingIngredients={preExistingIngredients}
         setPreExistingIngredients={setPreExistingIngredients}
         totalWeightOfSelectedIngredients={totalWeightOfSelectedIngredients}
+      />
+
+      <CompletedCookWithSurvey
+        isModalVisible={isSavingsPreviewVisible}
+        totalWeightOfSelectedIngredients={totalWeightOfSelectedIngredients}
+        setIsModalVisible={setIsSavingsPreviewVisible}
       />
 
       <TutorialModal

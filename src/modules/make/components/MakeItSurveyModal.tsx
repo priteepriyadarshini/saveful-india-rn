@@ -30,6 +30,7 @@ import { InventoryIngredient } from '../../inventory/api/types';
 export default function MakeItSurveyModal({
   isVisible,
   setIsVisible,
+  onProceed,
   frameworkId,
   title,
   mealId,
@@ -41,6 +42,7 @@ export default function MakeItSurveyModal({
 }: {
   isVisible: boolean;
   setIsVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  onProceed: () => void;
   frameworkId: string;
   title: string;
   mealId: string;
@@ -186,6 +188,7 @@ export default function MakeItSurveyModal({
       });
 
       setIsVisible(false);
+      onProceed();
     } catch (error: unknown) {
       console.error('Error creating feedback:', error);
       const errorMessage = error && typeof error === 'object' && 'data' in error 

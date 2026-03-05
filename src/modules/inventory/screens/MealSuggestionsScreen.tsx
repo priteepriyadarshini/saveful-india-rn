@@ -16,6 +16,7 @@ import {
   bodyMediumRegular,
   bodyMediumBold,
   h6TextStyle,
+  subheadSmallUppercase,
 } from '../../../theme/typography';
 import {
   useGetMealSuggestionsQuickQuery,
@@ -24,48 +25,6 @@ import {
 import MealCard from '../../make/components/MealCard';
 import { InventoryStackScreenProps } from '../navigation/InventoryNavigator';
 import { MealSuggestion } from '../api/types';
-
-function getMatchColor(pct: number): string {
-  if (pct >= 80) return '#22C55E';
-  if (pct >= 60) return '#F59E0B';
-  return '#3B82F6';
-}
-
-function getInsightText(suggestion: {
-  aiReason?: string;
-  matchedIngredients?: string[];
-  missingIngredients?: string[];
-  expiringIngredientsUsed?: string[];
-}) {
-  if (suggestion.aiReason?.trim()) {
-    return suggestion.aiReason.trim();
-  }
-
-  const matchedCount = (suggestion.matchedIngredients || []).length;
-  const missingCount = (suggestion.missingIngredients || []).length;
-  const expiringUsed = suggestion.expiringIngredientsUsed || [];
-
-  if (expiringUsed.length > 0) {
-    const firstExpiring = expiringUsed[0];
-    return `Great for reducing waste — this recipe helps use ${firstExpiring}${
-      expiringUsed.length > 1
-        ? ' and other expiring items'
-        : ''
-    }.`;
-  }
-
-  if (matchedCount > 0 && missingCount === 0) {
-    return `You already have everything needed for this recipe in your kitchen.`;
-  }
-
-  if (matchedCount > 0) {
-    return `You already have ${matchedCount} ingredient${
-      matchedCount > 1 ? 's' : ''
-    } for this recipe, so it needs only a small top-up.`;
-  }
-
-  return 'A flexible pick based on your pantry, fridge, and freezer items.';
-}
 
 export default function MealSuggestionsScreen({
   route,
@@ -345,10 +304,7 @@ export default function MealSuggestionsScreen({
 
             {/* Recipe Cards */}
             {displaySuggestions.map((suggestion: MealSuggestion) => {
-              const matchColor = getMatchColor(suggestion.matchPercentage ?? 0);
               const matched = suggestion.matchedIngredients || [];
-              const missing = suggestion.missingIngredients || [];
-              const expiringUsed = suggestion.expiringIngredientsUsed || [];
               return (
                 <View key={suggestion.recipe._id} style={tw`mb-4 px-4`}>
                   <MealCard
@@ -359,62 +315,35 @@ export default function MealSuggestionsScreen({
                     maxHeight={maxHeight}
                     setMaxHeight={setMaxHeight}
                   />
-                  <View
-                    style={[
-                      tw`bg-white rounded-b-2xl px-3 pb-3 pt-2`,
-                      { borderWidth: 1, borderTopWidth: 0, borderColor: '#E5E7EB' },
-                    ]}
-                  >
-                    <View style={tw`flex-row items-center flex-wrap gap-1.5`}>
-                      <View
-                        style={[
-                          tw`rounded-full px-2 py-0.5`,
-                          { backgroundColor: matchColor + '20' },
-                        ]}
+                  {matched.length > 0 && (
+                    <View
+                      style={[
+                        tw`bg-white rounded-b-2xl px-3 pb-3 pt-2`,
+                        { borderWidth: 1, borderTopWidth: 0, borderColor: '#E5E7EB' },
+                      ]}
+                    >
+                      <Text
+                        style={tw.style(
+                          subheadSmallUppercase,
+                          'mb-2 text-midgray',
+                        )}
                       >
-                        <Text
-                          style={[
-                            tw.style(bodyMediumBold),
-                            { color: matchColor, fontSize: 11 },
-                          ]}
-                        >
-                          {suggestion.matchPercentage ?? 0}% match
-                        </Text>
-                      </View>
-                      {expiringUsed.length > 0 && (
-                        <View
-                          style={tw`bg-amber-50 rounded-full px-2 py-0.5`}
-                        >
-                          <Text
-                            style={[
-                              tw.style(bodyMediumRegular, 'text-amber-700'),
-                              { fontSize: 11 },
-                            ]}
+                        This meal uses :
+                      </Text>
+                      <View style={tw`flex-row flex-wrap gap-1`}>
+                        {matched.map((ing, idx) => (
+                          <View
+                            key={idx}
+                            style={tw`rounded-lg bg-strokecream px-2 py-0.5`}
                           >
-                            Uses expiring ingredients
-                          </Text>
-                        </View>
-                      )}
+                            <Text style={tw.style(subheadSmallUppercase)}>
+                              {ing}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
                     </View>
-                    <Text
-                      style={[tw.style(bodyMediumRegular, 'text-gray-600 mt-1'), { fontSize: 12 }]}
-                    >
-                      {matched.length} ingredient
-                      {matched.length !== 1 ? 's' : ''}{' '}
-                      you have
-                      {missing.length > 0 && (
-                        <Text style={tw`text-gray-400`}>
-                          {' '}
-                          · {missing.length} missing
-                        </Text>
-                      )}
-                    </Text>
-                    <Text
-                      style={[tw.style(bodyMediumRegular, 'text-gray-500 mt-0.5'), { fontSize: 11 }]}
-                    >
-                      {getInsightText(suggestion)}
-                    </Text>
-                  </View>
+                  )}
                 </View>
               );
             })}

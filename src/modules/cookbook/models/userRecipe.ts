@@ -1,5 +1,6 @@
 export interface UserAlternativeIngredient {
-  ingredient: string;
+  ingredient?: string;
+  ingredientName?: string;
   inheritQuantity: boolean;
   inheritPreparation: boolean;
   quantity?: string;
@@ -7,14 +8,16 @@ export interface UserAlternativeIngredient {
 }
 
 export interface UserRequiredIngredient {
-  recommendedIngredient: string;
+  recommendedIngredient?: string;
+  ingredientName?: string;
   quantity: string;
   preparation: string;
   alternativeIngredients: UserAlternativeIngredient[];
 }
 
 export interface UserOptionalIngredient {
-  ingredient: string; 
+  ingredient?: string;
+  ingredientName?: string;
   quantity: string;
   preparation: string;
 }

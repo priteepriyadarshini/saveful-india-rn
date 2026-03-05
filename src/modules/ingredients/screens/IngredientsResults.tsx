@@ -51,32 +51,40 @@ export default function IngredientsResultsScreen({
     { ingredientIds, country: userCountry }
   );
 
-  // Sort recipes by number of matching ingredients
-  const sortedRecipes = useMemo(() => {
-    return [...recipes].sort((a, b) => {
-      // Count how many selected ingredients are in each recipe
-      const countMatchingIngredients = (recipe: Recipe) => {
-        let count = 0;
-        recipe.components?.forEach(wrapper => {
-          wrapper.component?.forEach(comp => {
-            // Check required ingredients
-            comp.requiredIngredients?.forEach(reqIng => {
-              if (ingredientIds.includes(reqIng.recommendedIngredient)) count++;
-              reqIng.alternativeIngredients?.forEach(altIng => {
-                if (ingredientIds.includes(altIng.ingredient)) count++;
-              });
-            });
-            // Check optional ingredients
-            comp.optionalIngredients?.forEach(optIng => {
-              if (ingredientIds.includes(optIng.ingredient)) count++;
-            });
+  // Backend populates ingredient refs as objects; extract the _id string regardless
+  const extractId = (val: any): string =>
+    val && typeof val === 'object' ? String(val._id) : String(val);
+
+  // For a recipe, return the titles of only those selected ingredients actually used in it
+  const getMatchingIngredientTitles = (recipe: Recipe): string[] => {
+    const matchingIds = new Set<string>();
+    recipe.components?.forEach(wrapper => {
+      wrapper.component?.forEach(comp => {
+        comp.requiredIngredients?.forEach(reqIng => {
+          const id = extractId(reqIng.recommendedIngredient);
+          if (ingredientIds.includes(id)) matchingIds.add(id);
+          reqIng.alternativeIngredients?.forEach(altIng => {
+            const altId = extractId(altIng.ingredient);
+            if (ingredientIds.includes(altId)) matchingIds.add(altId);
           });
         });
-        return count;
-      };
-
-      return countMatchingIngredients(b) - countMatchingIngredients(a);
+        comp.optionalIngredients?.forEach(optIng => {
+          const id = extractId(optIng.ingredient);
+          if (ingredientIds.includes(id)) matchingIds.add(id);
+        });
+      });
     });
+    return selectedIngredients
+      .filter((ing: any) => matchingIds.has(ing.id))
+      .map((ing: any) => ing.title);
+  };
+
+  // Sort recipes by number of matching ingredients (descending)
+  const sortedRecipes = useMemo(() => {
+    return [...recipes].sort((a, b) => {
+      return getMatchingIngredientTitles(b).length - getMatchingIngredientTitles(a).length;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recipes, ingredientIds]);
 
   const onValueChecked = (value: string) => {
@@ -161,6 +169,8 @@ export default function IngredientsResultsScreen({
                       ? [{ url: recipe.heroImageUrl }] 
                       : [];
                     
+                    const matchingTitles = getMatchingIngredientTitles(recipe);
+
                     return (
                       <RecipeCard
                         key={recipe._id}
@@ -168,7 +178,7 @@ export default function IngredientsResultsScreen({
                         title={recipe.title}
                         heroImage={heroImageAsset as any}
                         variantTags={[]}
-                        kind={selectedIngredients.map((ing: any) => ing.title)}
+                        kind={matchingTitles}
                         cardStyle={tw`mb-2 mr-0`}
                       />
                     );

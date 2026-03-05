@@ -29,7 +29,6 @@ import { mixpanelEventName } from '../../analytics/analytics';
 import TrackScreenHeader from '../components/TrackScreenHeader';
 import TrackTabChart from '../components/TrackTabChart';
 import WeeklySurveyCarousel from '../components/WeeklySurveyCarousel';
-import FaqContainer from '../components/FaqContainer';
 import getWeekNumber from '../helpers/getWeekNumber';
 import { TIPSOFTHEWEEK, buildTipsFromConfig } from '../data/data';
 import TipsOfTheWeekCarousel from '../components/TipsOfTheWeekCarousel';
@@ -132,7 +131,14 @@ export default function TrackScreen() {
           />
 
           <View style={tw.style('gap-4 px-5 pb-11')}>
-            <FaqContainer />
+            <Pressable
+              onPress={() => WebBrowser.openBrowserAsync('https://www.saveful.com/faq')}
+              style={tw`rounded-[10px] border border-strokecream bg-creme p-4`}
+            >
+              <Text style={tw.style(bodyLargeMedium, 'text-center underline')}>
+                Have questions? Visit our FAQ
+              </Text>
+            </Pressable>
             <View
               style={tw.style(
                 'rounded-[10px] border border-strokecream bg-creme p-4',

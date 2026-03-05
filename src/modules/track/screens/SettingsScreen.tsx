@@ -231,7 +231,7 @@ export default function SettingsScreen() {
               >
                 <Text
                   style={tw.style(
-                    item.url ? bodySmallRegular : bodyLargeMedium,
+                    bodyLargeMedium,
                     'text-midgray',
                   )}
                 >

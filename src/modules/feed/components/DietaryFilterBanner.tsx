@@ -46,16 +46,18 @@ function TagIcon({
   iconName,
   lib = 'ion',
   color,
+  size = 14,
 }: {
   iconName: string;
   lib?: 'ion' | 'mci';
   color: string;
+  size?: number;
 }) {
   if (lib === 'mci') {
-    return <MaterialCommunityIcons name={iconName as any} size={12} color={color} />;
+    return <MaterialCommunityIcons name={iconName as any} size={size} color={color} />;
   }
 
-  return <Ionicons name={iconName as any} size={12} color={color} />;
+  return <Ionicons name={iconName as any} size={size} color={color} />;
 }
 
 export default function DietaryFilterBanner() {
@@ -181,7 +183,7 @@ export default function DietaryFilterBanner() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={tw`px-4 pb-3 gap-2`}
+          contentContainerStyle={tw`px-4 pb-3 gap-2.5`}
         >
           {tagsToRender.map(tag => {
             const isActive = selectedKeys.includes(tag.key);
@@ -192,7 +194,7 @@ export default function DietaryFilterBanner() {
                 key={tag.key}
                 onPress={() => toggleKey(tag.key)}
                 style={tw.style(
-                  'flex-row items-center gap-1.5 rounded-full border px-3 py-1.5',
+                  'min-h-[44px] flex-row items-center gap-2 rounded-full border px-4 py-2.5',
                   isActive
                     ? 'border-eggplant bg-eggplant'
                     : 'border-strokecream bg-creme',
@@ -206,7 +208,7 @@ export default function DietaryFilterBanner() {
 
                 <Text
                   style={tw.style(
-                    subheadSmallUppercase,
+                    subheadMediumUppercase,
                     isActive ? 'text-white' : 'text-midgray',
                   )}
                 >
