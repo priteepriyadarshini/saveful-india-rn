@@ -292,7 +292,7 @@ export default function VoiceAddScreen() {
               <View style={tw`flex-row items-center gap-2`}>
                 <ActivityIndicator size="small" color="white" />
                 <Text style={tw.style(bodyMediumBold, 'text-white')}>
-                  AI is parsing...
+                  SavefulAI is parsing...
                 </Text>
               </View>
             ) : (

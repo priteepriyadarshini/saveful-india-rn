@@ -63,7 +63,7 @@ export default function CompletedCookWithSurvey({
                 style={tw.style(h7TextStyle, 'text-center text-black')}
                 maxFontSizeMultiplier={1}
               >
-                Small bites. big savings
+                Smart Swaps. Serious Savings
               </Text>
               <Text style={tw`pt-3.5 text-center text-midgray`}>
                 It might not seem like much, but making a meal like this a few

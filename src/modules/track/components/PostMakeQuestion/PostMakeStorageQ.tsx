@@ -231,7 +231,7 @@ export default function PostMakeStorageQ({
                         'ml-2 flex-1 text-eggplant',
                       )}
                     >
-                      AI-estimated for {dishName}
+                      SavefulAI-estimated for {dishName}
                     </Text>
                   </View>
                 )}

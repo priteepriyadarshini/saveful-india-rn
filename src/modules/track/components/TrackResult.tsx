@@ -61,7 +61,7 @@ export default function TrackResult({
         style={tw.style(h7TextStyle, 'pb-3.5 pt-7 text-center text-white')}
         maxFontSizeMultiplier={1}
       >
-        Small bites. big savings
+        Smart Swaps. Serious Savings
       </Text>
       <Text style={tw.style(bodySmallRegular, 'pb-2 text-center text-white')}>
         Making a meal like this five times a week adds up to significant savings

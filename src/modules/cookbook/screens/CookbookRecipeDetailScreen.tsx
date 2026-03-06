@@ -136,7 +136,6 @@ export default function CookbookRecipeDetailScreen() {
   useEffect(() => {
     if (!recipe) return;
 
-    // Collect only valid ObjectId strings — AI-generated recipes use plain names
     const ids = new Set<string>();
     for (const wrapper of recipe.components) {
       for (const comp of wrapper.component) {

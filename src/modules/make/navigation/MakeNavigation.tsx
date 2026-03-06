@@ -30,7 +30,7 @@ export type MakeStackParamList = {
     scaledQuantities?: Record<string, string>;
     /** User-chosen serving count (undefined = original) */
     desiredServings?: number;
-    /** AI cooking notes for the adjusted servings */
+    /** SavefulAI cooking notes for the adjusted servings */
     cookingNotes?: string;
   };
 };

@@ -155,7 +155,7 @@ export default function MealSuggestionsScreen({
             <Ionicons name="search" size={20} color="#9CA3AF" />
             <TextInput
               style={[tw.style(bodyMediumRegular, 'flex-1 ml-2 text-gray-900'), { fontSize: 14 }]}
-              placeholder="Search by ingredient or recipe name..."
+              placeholder="Search by ingredients..."
               placeholderTextColor="#9CA3AF"
               value={searchText}
               onChangeText={(text) => {

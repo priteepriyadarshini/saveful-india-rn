@@ -1,4 +1,5 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import LottieView from 'lottie-react-native';
 import { Image as ExpoImage } from 'expo-image';
 import {
   View,
@@ -27,6 +28,32 @@ import { useGetUserRecipesQuery } from '../api/cookbookApi';
 import { UserRecipe } from '../models/userRecipe';
 import { CookbookStackParamList } from '../navigation/CookbookNavigation';
 
+function PendingRecipeCard({ recipe }: { recipe: UserRecipe }) {
+  const lottieRef = useRef<LottieView>(null);
+  return (
+    <View style={tw`mb-4 overflow-hidden rounded-2xl border border-strokecream bg-creme`}>
+      <View style={tw`items-center px-4 py-6`}>
+        <LottieView
+          ref={lottieRef}
+          source={require('../../../../assets/food_loader.json')}
+          autoPlay
+          loop
+          style={{ width: 120, height: 144 }}
+        />
+        <Text
+          style={tw.style(bodyMediumBold, 'text-black text-base mt-3 text-center')}
+          numberOfLines={2}
+        >
+          {recipe.title || 'Your Recipe'}
+        </Text>
+        <Text style={tw.style(bodyMediumRegular, 'text-stone text-xs mt-1 text-center')}>
+          SavefulAI is crafting your recipe…
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 function RecipeCard({
   recipe,
   onPress,
@@ -36,6 +63,15 @@ function RecipeCard({
   onPress: () => void;
   cardWidth: number;
 }) {
+  
+  const isTrulyPending =
+    recipe.status === 'pending' &&
+    !recipe.shortDescription &&
+    (!recipe.components || recipe.components.length === 0);
+
+  if (isTrulyPending) {
+    return <PendingRecipeCard recipe={recipe} />;
+  }
   const heroHeight = Math.max(220, cardWidth * 0.65);
 
   if (!recipe.heroImageUrl) {
@@ -140,7 +176,7 @@ function EmptyState({ onAddRecipe }: { onAddRecipe: () => void }) {
         Your CookBook is Empty
       </Text>
       <Text style={tw.style(bodyMediumRegular, 'text-stone mt-1 text-center mb-8')}>
-        Paste a YouTube recipe link and our AI will extract the recipe for you.
+        Paste a YouTube recipe link and SavefulAI will extract the recipe for you.
         Build your personal cookbook!
       </Text>
       <Pressable
@@ -159,10 +195,19 @@ function EmptyState({ onAddRecipe }: { onAddRecipe: () => void }) {
 export default function CookbookScreen() {
   const { width } = useWindowDimensions();
   const navigation = useNavigation<NativeStackNavigationProp<CookbookStackParamList>>();
+  const [pollingInterval, setPollingInterval] = useState(0);
   const { data: recipes, isLoading, isError, refetch, isFetching } = useGetUserRecipesQuery(
     undefined,
-    { refetchOnMountOrArgChange: true },
+    // 30s threshold: skip refetch on mount if cache is fresh (e.g. just inserted
+    // a placeholder). This prevents the mount-refetch from wiping the pending
+    // card before the animation is ever shown. Polling handles live updates.
+    { refetchOnMountOrArgChange: 30, pollingInterval },
   );
+
+  useEffect(() => {
+    const hasPending = recipes?.some(r => r.status === 'pending') ?? false;
+    setPollingInterval(hasPending ? 5000 : 0);
+  }, [recipes]);
 
   const sortedRecipes = useMemo(() => {
     if (!recipes) return [];

@@ -30,6 +30,7 @@ import { userRecipeToFramework } from '../adapters/userRecipeAdapter';
 import { IFramework, IFrameworkComponentStep } from '../../../models/craft';
 import { CookbookStackParamList } from '../navigation/CookbookNavigation';
 import RelevantIngredients from '../../make/components/RelevantIngredients';
+import { useMakeItTTS } from '../../make/hooks/useMakeItTTS';
 import { subheadLargeUppercase } from '../../../theme/typography';
 
 // ── Step data model identical to MakeItScreen ──
@@ -207,6 +208,7 @@ export default function CookbookMakeItScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [slideIndex, setSlideIndex] = useState(0);
   const [isIngredientsActive, setIsIngredientsActive] = useState(false);
+  const [isTTSEnabled, setIsTTSEnabled] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
   // Convert recipe → framework → fill ingredient names
@@ -309,6 +311,8 @@ export default function CookbookMakeItScreen() {
     return steps;
   }, [framework, variant, passedIngredients]);
 
+  const { isSpeaking } = useMakeItTTS(currentIndex, makeItSteps, isTTSEnabled);
+
   const onScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       const offset = event.nativeEvent.contentOffset.x;
@@ -404,9 +408,8 @@ export default function CookbookMakeItScreen() {
         {/* ── Header (matches MakeItHeader) ── */}
         <View style={tw`absolute left-0 right-0 z-10`}>
           <SafeAreaView
-            style={tw`absolute left-0 right-0 z-20 flex-row items-end justify-between gap-3 px-5 pt-5 pb-6.5`}
+            style={tw`absolute left-18 right-0 z-20 flex-row items-end justify-between gap-3 px-5 pt-5 pb-6.5`}
           >
-            <View style={tw`h-5 w-5`} />
             {makeItSteps[currentIndex]?.title && (
               <Text
                 style={tw.style(subheadLargeUppercase, 'flex-1 text-center leading-5 text-white')}
@@ -416,13 +419,41 @@ export default function CookbookMakeItScreen() {
                 {makeItSteps[currentIndex].title}
               </Text>
             )}
-            <Pressable
-              style={tw`flex h-5 w-5 flex-shrink-0 items-center justify-center`}
-              onPress={() => navigation.goBack()}
-              accessibilityRole="button"
-            >
-              <Feather name="x" color={tw.color('white')} size={20} />
-            </Pressable>
+
+            <View style={tw`flex-row items-center gap-3`}>
+              {/* Speaker Button */}
+              <Pressable
+                onPress={() => setIsTTSEnabled(prev => !prev)}
+                style={tw.style(
+                  'h-8 w-8 flex-shrink-0 items-center justify-center rounded-full',
+                  isTTSEnabled ? 'bg-lemon' : 'bg-white/30',
+                )}
+                accessibilityLabel={isTTSEnabled ? 'Disable text-to-speech' : 'Enable text-to-speech'}
+                accessibilityRole="button"
+              >
+                <View style={tw`relative`}>
+                  <Feather
+                    name={isSpeaking ? 'volume-2' : isTTSEnabled ? 'volume-1' : 'volume-x'}
+                    color={isTTSEnabled ? tw.color('kale') : tw.color('white')}
+                    size={20}
+                  />
+                  {isSpeaking && (
+                    <View
+                      style={tw`absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-red-500`}
+                    />
+                  )}
+                </View>
+              </Pressable>
+
+              {/* Close Button */}
+              <Pressable
+                style={tw`flex h-5 w-5 flex-shrink-0 items-center justify-center`}
+                onPress={() => navigation.goBack()}
+                accessibilityRole="button"
+              >
+                <Feather name="x" color={tw.color('white')} size={20} />
+              </Pressable>
+            </View>
           </SafeAreaView>
         </View>
 

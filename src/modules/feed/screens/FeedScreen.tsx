@@ -157,7 +157,7 @@ export default function FeedScreen() {
                 onPress={onCookbookTapped}
                 style={tw`h-10 w-10 items-center justify-center rounded-full bg-white shadow-lg`}
                 accessibilityRole="button"
-                accessibilityLabel="Open AI CookBook"
+                accessibilityLabel="Open SavefulAI CookBook"
               >
                 <ExpoImage
                 source={require('../../../../assets/iconss/My Cookbook colour.svg')}

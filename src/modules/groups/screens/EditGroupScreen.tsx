@@ -59,9 +59,11 @@ export default function EditGroupScreen() {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
+      allowsMultipleSelection: false,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
+      legacy: true,
     });
 
     if (!result.canceled && result.assets[0]) {

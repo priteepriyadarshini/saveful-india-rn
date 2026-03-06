@@ -177,7 +177,7 @@ export default function AddRecipeScreen() {
               Paste a Recipe Link
             </Text>
             <Text style={tw.style(bodyMediumRegular, 'text-gray-500 mb-5 leading-5')}>
-              Copy a recipe link from YouTube and our AI will
+              Copy a recipe link from YouTube and SavefulAI will
               extract all the ingredients, steps, and details for you.
             </Text>
 
@@ -244,7 +244,7 @@ export default function AddRecipeScreen() {
                   Recipe is being generated!
                 </Text>
                 <Text style={tw.style(bodyMediumRegular, 'text-stone mt-2 text-center leading-5 px-4')}>
-                  Our AI is working on your recipe in the background. We'll send you a notification when it's ready in your cookbook.
+                  SavefulAI is working on your recipe in the background. We'll send you a notification when it's ready in your cookbook.
                 </Text>
                 <Pressable
                   onPress={() => navigation.replace('CookbookHome')}

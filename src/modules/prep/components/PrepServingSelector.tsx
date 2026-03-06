@@ -249,7 +249,7 @@ export default function PrepServingSelector({
               style={tw.style(bodySmallRegular, 'text-midgray underline')}
               maxFontSizeMultiplier={1}
             >
-              {showNotes ? 'Hide cooking notes' : 'View AI cooking notes'}
+              {showNotes ? 'Hide cooking notes' : 'View SavefulAI cooking notes'}
             </Text>
           </View>
           {showNotes && (

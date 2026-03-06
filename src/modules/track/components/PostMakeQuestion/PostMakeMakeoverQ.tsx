@@ -165,12 +165,12 @@ export default function PostMakeMakeoverQ({
                   'pt-2 text-center text-white/70',
                 )}
               >
-                AI is crafting makeover ideas for your {framework.title}...
+                SavefulAI is crafting makeover ideas for your {framework.title}...
               </Text>
             </View>
           )}
 
-          {/* AI-generated ideas — tappable & expandable */}
+          {/* SavefulAI-generated ideas - tappable & expandable */}
           {!isAiLoading && aiIdeas.length > 0 && (
             <Animatable.View
               animation="fadeInUp"
@@ -185,7 +185,7 @@ export default function PostMakeMakeoverQ({
                     'ml-1.5 text-center text-white/80',
                   )}
                 >
-                  AI-powered ideas
+                  SavefulAI-powered ideas
                 </Text>
               </View>
 
