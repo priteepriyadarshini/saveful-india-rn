@@ -3,10 +3,11 @@ const path = require('path');
 
 const rootDir = path.resolve(__dirname, '..');
 const androidGoogleServicesPath = path.join(rootDir, 'android', 'app', 'google-services.json');
+const iosGoogleServicesPlistPath = path.join(rootDir, 'GoogleService-Info.plist');
 
-function writeGoogleServices(envValue, destinationPath) {
+function copySecretFile(envVarName, envValue, destinationPath) {
   if (!envValue) {
-    console.warn('GOOGLE_SERVICES_JSON env var not set — skipping (will use committed file if present).');
+    console.warn(`${envVarName} env var not set — skipping (will use committed file if present).`);
     return;
   }
 
@@ -14,26 +15,17 @@ function writeGoogleServices(envValue, destinationPath) {
 
   if (fs.existsSync(envValue)) {
     fs.copyFileSync(envValue, destinationPath);
-    console.log(`Copied GOOGLE_SERVICES_JSON from ${envValue} to ${destinationPath}`);
+    console.log(`Copied ${envVarName} from ${envValue} to ${destinationPath}`);
     return;
   }
 
-  try {
-    JSON.parse(envValue);
-    fs.writeFileSync(destinationPath, envValue, 'utf8');
-    console.log(`Wrote GOOGLE_SERVICES_JSON content to ${destinationPath}`);
-    return;
-  } catch (_) {
-    // not valid JSON either
-  }
-
-  throw new Error(
-    `GOOGLE_SERVICES_JSON does not point to an existing file and is not valid JSON.\nValue starts with: ${envValue.slice(0, 80)}`
-  );
+  fs.writeFileSync(destinationPath, envValue, 'utf8');
+  console.log(`Wrote ${envVarName} content to ${destinationPath}`);
 }
 
 try {
-  writeGoogleServices(process.env.GOOGLE_SERVICES_JSON, androidGoogleServicesPath);
+  copySecretFile('GOOGLE_SERVICES_JSON', process.env.GOOGLE_SERVICES_JSON, androidGoogleServicesPath);
+  copySecretFile('GOOGLE_SERVICES_PLIST', process.env.GOOGLE_SERVICES_PLIST, iosGoogleServicesPlistPath);
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
