@@ -23,6 +23,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 
   android: {
     package: 'com.saveful.app',
+    googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './android/app/google-services.json',
     permissions: ['ACCESS_NETWORK_STATE', 'RECORD_AUDIO'],
     splash: {
       image: './assets/splash.png',
@@ -60,6 +61,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 
   ios: {
     bundleIdentifier: 'com.saveful.app',
+    googleServicesFile: process.env.GOOGLE_SERVICES_PLIST ?? './GoogleService-Info.plist',
     buildNumber: '1',
     supportsTablet: false,
     icon: './assets/icon.png',
