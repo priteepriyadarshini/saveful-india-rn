@@ -13,8 +13,8 @@ class IngredientApiService {
     return EnvironmentManager.shared.apiUrl();
   }
 
-  // --- In-memory cache (5-minute TTL) ---
-  private static CACHE_TTL = 5 * 60 * 1000;
+  // --- In-memory cache (20-minute TTL, aligned with backend Redis TTL) ---
+  private static CACHE_TTL = 20 * 60 * 1000;
   private cacheById = new Map<string, CacheEntry<Ingredient>>();
 
   private isCacheValid<T>(entry: CacheEntry<T> | undefined): entry is CacheEntry<T> {

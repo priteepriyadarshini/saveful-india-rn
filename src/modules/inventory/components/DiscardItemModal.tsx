@@ -48,7 +48,7 @@ const WASTE_OPTIONS: {
     label: 'Dry',
     icon: 'cube-outline',
     color: '#3B82F6',
-    desc: 'Recyclable\nblue bin',
+    desc: 'Recyclable',
   },
   {
     key: WasteType.HAZARDOUS,
@@ -130,6 +130,8 @@ export default function DiscardItemModal({ visible, item, onClose }: Props) {
     }
   };
 
+  const screenWidth = Dimensions.get('window').width;
+  const isSmallScreen = screenWidth < 380;
   const wasteOptionMinHeight = 112;
 
   return (
@@ -251,20 +253,34 @@ export default function DiscardItemModal({ visible, item, onClose }: Props) {
                   <Text style={tw`text-purple-500`}> · Saveful AI analysing...</Text>
                 )}
               </Text>
-              <View style={tw`flex-row gap-2 mb-4`}>
-                {WASTE_OPTIONS.map((opt) => (
+              <View
+                style={[
+                  tw`mb-4 flex-row flex-wrap`,
+                  {
+                    gap: 8,
+                    justifyContent: isSmallScreen ? 'space-between' : 'flex-start',
+                  },
+                ]}
+              >
+                {WASTE_OPTIONS.map((opt, index) => (
                   <Pressable
                     key={opt.key}
                     onPress={() => setWasteType(opt.key)}
                     style={[
                       tw.style(
-                        'flex-1 rounded-xl items-center border justify-center',
+                        'rounded-xl items-center border justify-center',
                         wasteType === opt.key ? 'border-2' : 'border-gray-200',
                       ),
                       {
-                        paddingVertical: 14,
+                        paddingVertical: isSmallScreen ? 16 : 14,
                         paddingHorizontal: 8,
-                        minHeight: wasteOptionMinHeight,
+                        minHeight: isSmallScreen ? 124 : wasteOptionMinHeight,
+                        width:
+                          isSmallScreen && index === WASTE_OPTIONS.length - 1
+                            ? '100%'
+                            : isSmallScreen
+                              ? '48.5%'
+                              : '31.5%',
                         ...(wasteType === opt.key && {
                           borderColor: opt.color,
                           backgroundColor: opt.color + '15',
@@ -287,6 +303,9 @@ export default function DiscardItemModal({ visible, item, onClose }: Props) {
                           color: wasteType === opt.key ? opt.color : '#6B7280',
                         },
                       ]}
+                      numberOfLines={2}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.85}
                     >
                       {opt.label}
                     </Text>
@@ -299,6 +318,9 @@ export default function DiscardItemModal({ visible, item, onClose }: Props) {
                           color: wasteType === opt.key ? opt.color : '#9CA3AF',
                         },
                       ]}
+                      numberOfLines={2}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.85}
                     >
                       {opt.desc}
                     </Text>

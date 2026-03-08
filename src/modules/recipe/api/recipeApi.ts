@@ -14,19 +14,19 @@ const recipeApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getAllRecipes: builder.query<Recipe[], void>({
       query: () => '/api/api/recipe',
-      keepUnusedDataFor: 300, // 5 minutes
+      keepUnusedDataFor: 1200, // 20 minutes — aligned with backend Redis TTL
     }),
     getRecipeById: builder.query<PopulatedRecipe, string>({
       query: (id) => `/api/api/recipe/${id}`,
-      keepUnusedDataFor: 300,
+      keepUnusedDataFor: 1200,
     }),
     getRecipesByCategory: builder.query<Recipe[], string>({
       query: (categoryId) => `/api/api/recipe/category/${categoryId}`,
-      keepUnusedDataFor: 300,
+      keepUnusedDataFor: 1200,
     }),
     getRecipesByIngredient: builder.query<Recipe[], string>({
       query: (ingredientId) => `/api/api/recipe/ingredient/${ingredientId}`,
-      keepUnusedDataFor: 300,
+      keepUnusedDataFor: 1200,
     }),
     getDietaryRecommendations: builder.query<Recipe[], DietaryRecommendationsParams>({
       query: (params) => {
@@ -42,10 +42,10 @@ const recipeApi = api.injectEndpoints({
         const query = qs.toString();
         return `/api/api/recipe/dietary-recommendations${query ? `?${query}` : ''}`;
       },
-      keepUnusedDataFor: 300,
+      keepUnusedDataFor: 1200,
     }),
     getRecipesByIngredients: builder.query<Recipe[], { ingredientIds: string[]; country?: string }>({
-      keepUnusedDataFor: 300, // 5 minutes — avoids re-firing N requests on every results screen visit
+      keepUnusedDataFor: 1200, // 20 minutes — aligned with backend Redis TTL
       async queryFn(arg, _queryApi, _extraOptions, fetchWithBQ) {
         const ingredientIds: string[] = arg?.ingredientIds ?? [];
         const country: string | undefined = arg?.country;

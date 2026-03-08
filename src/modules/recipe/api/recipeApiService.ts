@@ -22,8 +22,8 @@ class RecipeApiService {
     return EnvironmentManager.shared.apiUrl();
   }
 
-  // --- In-memory cache (5-minute TTL) ---
-  private static CACHE_TTL = 5 * 60 * 1000;
+  // --- In-memory cache (20-minute TTL, aligned with backend Redis TTL) ---
+  private static CACHE_TTL = 20 * 60 * 1000;
   private cacheById = new Map<string, CacheEntry<PopulatedRecipe>>();
   private cacheBySlug = new Map<string, CacheEntry<PopulatedRecipe>>();
   private cacheAllRecipes = new Map<string, CacheEntry<Recipe[]>>();
@@ -100,33 +100,31 @@ class RecipeApiService {
       this.cacheById.set(recipe._id || recipe.id, { data: recipe, expiry: Date.now() + RecipeApiService.CACHE_TTL });
       return recipe;
     } catch (error: any) {
-      // 404 means not found — don't throw
-      if (error?.response?.status === 404) {
-        try {
-          const recipes = await this.getAllRecipes();
-          const normalizedInputSlug = this.normalizeSlug(slug);
-          const matched = recipes.find(recipe => {
-            const titleSlug = this.normalizeSlug(recipe.title || '');
-            const legacySlug = (recipe.title || '').toLowerCase().replace(/\s+/g, '-');
-            return titleSlug === normalizedInputSlug || legacySlug === slug;
-          });
+      // For any API error (404, 500, network failure, etc.) fall back to
+      // fetching all recipes and matching the slug on the client side.
+      console.error(`Error fetching recipe by slug ${slug}:`, error?.response?.status ?? error?.message);
+      try {
+        const recipes = await this.getAllRecipes();
+        const normalizedInputSlug = this.normalizeSlug(slug);
+        const matched = recipes.find(recipe => {
+          const titleSlug = this.normalizeSlug(recipe.title || '');
+          const legacySlug = (recipe.title || '').toLowerCase().replace(/\s+/g, '-');
+          return titleSlug === normalizedInputSlug || legacySlug === slug;
+        });
 
-          if (!matched?._id) return null;
+        if (!matched?._id) return null;
 
-          const recipe = await this.getRecipeById(matched._id);
-          this.cacheBySlug.set(slug, { data: recipe, expiry: Date.now() + RecipeApiService.CACHE_TTL });
-          this.cacheBySlug.set(normalizedInputSlug, {
-            data: recipe,
-            expiry: Date.now() + RecipeApiService.CACHE_TTL,
-          });
-          return recipe;
-        } catch (fallbackError) {
-          console.error(`Fallback slug resolution failed for ${slug}:`, fallbackError);
-          return null;
-        }
+        const recipe = await this.getRecipeById(matched._id);
+        this.cacheBySlug.set(slug, { data: recipe, expiry: Date.now() + RecipeApiService.CACHE_TTL });
+        this.cacheBySlug.set(normalizedInputSlug, {
+          data: recipe,
+          expiry: Date.now() + RecipeApiService.CACHE_TTL,
+        });
+        return recipe;
+      } catch (fallbackError) {
+        console.error(`Fallback slug resolution failed for ${slug}:`, fallbackError);
+        return null;
       }
-      console.error(`Error fetching recipe by slug ${slug}:`, error);
-      throw error;
     }
   }
 

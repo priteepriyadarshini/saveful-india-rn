@@ -49,6 +49,7 @@ export interface UserRecipeComponentWrapper {
 }
 
 export type UserRecipeStatus = 'accepted' | 'pending' | 'rejected';
+export type UserRecipeSource = 'link' | 'ai_ingredients';
 
 export interface UserRecipe {
   _id: string;
@@ -72,6 +73,7 @@ export interface UserRecipe {
   order?: number;
   isActive: boolean;
   countries: string[];
+  source?: UserRecipeSource;
   createdAt: string;
   updatedAt: string;
 }
@@ -104,4 +106,28 @@ export interface UserRecipeByIdResponse {
 export interface DeleteRecipeResponse {
   success: boolean;
   message: string;
+}
+
+export interface GenerateFromIngredientsRequest {
+  ingredients: string[];
+  preference?: string;
+}
+
+export interface GenerateFromIngredientsResponse {
+  success: boolean;
+  message: string;
+  data?: UserRecipe;
+  queued?: boolean;
+  jobId?: string;
+  limitReached?: boolean;
+  count?: number;
+  limit?: number;
+  remaining?: number;
+}
+
+export interface AiGenerationCountResponse {
+  success: boolean;
+  count: number;
+  limit: number;
+  remaining: number;
 }

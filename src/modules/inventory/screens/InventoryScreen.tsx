@@ -322,8 +322,23 @@ export default function InventoryScreen() {
                     )}
                     numberOfLines={1}
                   >
-                    {tab.label} ({count})
+                    {tab.label}
                   </Text>
+                  <View
+                    style={tw.style(
+                      'min-w-[18px] rounded-full px-1.5 py-0.5 items-center justify-center',
+                      isActive ? 'bg-white/20' : 'bg-gray-200',
+                    )}
+                  >
+                    <Text
+                      style={tw.style(
+                        'text-[10px] font-semibold',
+                        isActive ? 'text-white' : 'text-gray-700',
+                      )}
+                    >
+                      {count}
+                    </Text>
+                  </View>
                 </Pressable>
               );
             })}

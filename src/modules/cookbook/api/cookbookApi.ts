@@ -6,6 +6,9 @@ import {
   AddRecipeRequest,
   AddRecipeResponse,
   DeleteRecipeResponse,
+  GenerateFromIngredientsRequest,
+  GenerateFromIngredientsResponse,
+  AiGenerationCountResponse,
 } from '../models/userRecipe';
 
 const COOKBOOK_API_PATH = '/api/cookbookai';
@@ -130,7 +133,8 @@ const cookbookApi = api.injectEndpoints({
                 }),
               );
             }
-           
+            // Invalidate the count cache (all recipe types share the same limit)
+            dispatch(cookbookApi.util.invalidateTags(['AiGenerationCount']));
           } else {
             removeLocalPendingById(tempId);
             dispatch(
@@ -157,6 +161,96 @@ const cookbookApi = api.injectEndpoints({
     
     }),
 
+    getAiGenerationCount: builder.query<AiGenerationCountResponse, void>({
+      query: () => `${COOKBOOK_API_PATH}/ai-generation-count`,
+      providesTags: ['AiGenerationCount'],
+      keepUnusedDataFor: 30,
+    }),
+
+    generateFromIngredients: builder.mutation<
+      GenerateFromIngredientsResponse,
+      GenerateFromIngredientsRequest
+    >({
+      query: (body) => ({
+        url: `${COOKBOOK_API_PATH}/generate-from-ingredients`,
+        method: 'POST',
+        body,
+      }),
+      async onQueryStarted(body, { dispatch, queryFulfilled, getState }) {
+        const tempId = `pending-${Date.now()}`;
+        const now = new Date().toISOString();
+        const placeholder: UserRecipe = {
+          _id: tempId,
+          userid: '',
+          status: 'pending',
+          title: `AI Recipe from: ${body.ingredients.slice(0, 3).join(', ')}${body.ingredients.length > 3 ? '...' : ''}`,
+          shortDescription: '',
+          longDescription: '',
+          hackOrTipIds: [],
+          heroImageUrl: undefined,
+          youtubeId: undefined,
+          portions: '',
+          prepCookTime: 0,
+          frameworkCategories: [],
+          useLeftoversIn: [],
+          components: [],
+          isActive: false,
+          countries: [],
+          source: 'ai_ingredients',
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        saveLocalPending(placeholder);
+
+        const selectUserRecipes = cookbookApi.endpoints.getUserRecipes.select(undefined);
+        const existingRecipes = selectUserRecipes(getState())?.data ?? [];
+        const seededRecipes = [
+          placeholder,
+          ...existingRecipes.filter((recipe) => recipe._id !== tempId),
+        ];
+
+        dispatch(cookbookApi.util.upsertQueryData('getUserRecipes', undefined, seededRecipes));
+
+        try {
+          const { data: result } = await queryFulfilled;
+          if (result.success && result.queued) {
+            if (result.data) {
+              removeLocalPendingById(tempId);
+              dispatch(
+                cookbookApi.util.updateQueryData('getUserRecipes', undefined, (draft) => {
+                  const idx = draft.findIndex((r) => r._id === tempId);
+                  if (idx !== -1) {
+                    draft.splice(idx, 1, result.data!);
+                  } else if (!draft.some((r) => r._id === result.data!._id)) {
+                    draft.unshift(result.data!);
+                  }
+                }),
+              );
+            }
+            // Invalidate the count cache
+            dispatch(cookbookApi.util.invalidateTags(['AiGenerationCount']));
+          } else {
+            removeLocalPendingById(tempId);
+            dispatch(
+              cookbookApi.util.updateQueryData('getUserRecipes', undefined, (draft) => {
+                const idx = draft.findIndex((r) => r._id === tempId);
+                if (idx !== -1) draft.splice(idx, 1);
+              }),
+            );
+          }
+        } catch {
+          removeLocalPendingById(tempId);
+          dispatch(
+            cookbookApi.util.updateQueryData('getUserRecipes', undefined, (draft) => {
+              const idx = draft.findIndex((r) => r._id === tempId);
+              if (idx !== -1) draft.splice(idx, 1);
+            }),
+          );
+        }
+      },
+    }),
+
     deleteCookbookRecipe: builder.mutation<DeleteRecipeResponse, string>({
       query: (id) => ({
         url: `/api/cookbookai/recipes/${id}`,
@@ -173,6 +267,8 @@ export const {
   useGetUserRecipeByIdQuery,
   useAddRecipeFromLinkMutation,
   useDeleteCookbookRecipeMutation,
+  useGenerateFromIngredientsMutation,
+  useGetAiGenerationCountQuery,
 } = cookbookApi;
 
 export default cookbookApi;

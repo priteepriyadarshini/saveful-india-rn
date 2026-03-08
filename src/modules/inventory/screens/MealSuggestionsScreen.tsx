@@ -8,11 +8,14 @@ import {
   ImageBackground,
   TextInput,
   Alert,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import tw from '../../../common/tailwind';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import {
   bodyMediumRegular,
   bodyMediumBold,
@@ -23,6 +26,10 @@ import {
   useGetMealSuggestionsQuickQuery,
   useGetInventoryGroupedQuery,
 } from '../api/inventoryApi';
+import {
+  useGenerateFromIngredientsMutation,
+  useGetAiGenerationCountQuery,
+} from '../../cookbook/api/cookbookApi';
 import MealCard from '../../make/components/MealCard';
 import { InventoryStackScreenProps } from '../navigation/InventoryNavigator';
 import { MealSuggestion } from '../api/types';
@@ -164,6 +171,89 @@ export default function MealSuggestionsScreen({
     setSearchText('');
     setSelectedIngredientId(undefined);
   }, []);
+
+  // --- AI Recipe Generation ---
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiPreference, setAiPreference] = useState('');
+  const [generateFromIngredients, { isLoading: isGenerating }] =
+    useGenerateFromIngredientsMutation();
+  const { data: aiCountData } = useGetAiGenerationCountQuery();
+
+  const aiRemaining = aiCountData?.remaining ?? 3;
+  const aiLimitReached = aiRemaining <= 0;
+
+  const handleAiGenerate = useCallback(async () => {
+    if (aiLimitReached) {
+      Alert.alert(
+        'Limit Reached',
+        'You have used all 3 of your free AI recipe generations. Stay tuned for our subscription plan!',
+      );
+      return;
+    }
+
+    const ingredientNames = inventoryIngredients.map((i) => i.name);
+    if (ingredientNames.length === 0) {
+      Alert.alert(
+        'No Ingredients',
+        'Add ingredients to your kitchen inventory first.',
+      );
+      return;
+    }
+
+    try {
+      const result = await generateFromIngredients({
+        ingredients: ingredientNames,
+        preference: aiPreference.trim() || undefined,
+      }).unwrap();
+
+      setShowAiModal(false);
+      setAiPreference('');
+
+      if (result.success && result.queued) {
+        Alert.alert(
+          'Recipe Being Generated!',
+          'Your AI recipe is being crafted. You\'ll be notified when it\'s ready in your Cookbook.',
+          [
+            {
+              text: 'Go to Cookbook',
+              onPress: () => {
+                navigation.dispatch(
+                  CommonActions.navigate({
+                    name: 'Cookbook',
+                    params: { screen: 'CookbookHome' },
+                  }),
+                );
+              },
+            },
+            { text: 'Stay Here', style: 'cancel' },
+          ],
+        );
+      } else if (result.limitReached) {
+        Alert.alert(
+          'Limit Reached',
+          result.message || 'You have used all your free recipe generations.',
+        );
+      } else {
+        Alert.alert(
+          'Generation Failed',
+          result.message || 'Could not generate recipe. Please try again.',
+        );
+      }
+    } catch (error: any) {
+      setShowAiModal(false);
+      const serverMsg =
+        typeof error?.data?.message === 'string'
+          ? error.data.message
+          : 'Something went wrong. Please try again.';
+      Alert.alert('Error', serverMsg);
+    }
+  }, [
+    aiLimitReached,
+    inventoryIngredients,
+    aiPreference,
+    generateFromIngredients,
+    navigation,
+  ]);
 
   return (
     <SafeAreaView style={tw`flex-1`} edges={['top']}>
@@ -324,7 +414,7 @@ export default function MealSuggestionsScreen({
             </Pressable>
           </View>
         ) : !displaySuggestions || displaySuggestions.length === 0 ? (
-          <View style={tw`items-center justify-center py-20 px-4`}>
+          <View style={tw`items-center justify-center py-12 px-4`}>
             <Ionicons name="nutrition-outline" size={48} color="#D1D5DB" />
             <Text style={tw.style(bodyMediumBold, 'text-gray-800 mt-3 text-center')}>
               {selectedIngredientId
@@ -347,6 +437,42 @@ export default function MealSuggestionsScreen({
                   Clear Filter
                 </Text>
               </Pressable>
+            )}
+
+            {/* AI Generation CTA in empty state */}
+            {inventoryIngredients.length > 0 && (
+              <View style={tw`mt-6 rounded-2xl bg-purple-50 border border-purple-200 px-5 py-5 w-full`}>
+                <View style={tw`items-center`}>
+                  <Ionicons name="sparkles" size={24} color="#7C3AED" />
+                  <Text style={tw.style(bodyMediumBold, 'text-gray-900 text-center mt-2')}>
+                    Let Saveful AI create a recipe for you
+                  </Text>
+                  <Text style={tw.style(bodyMediumRegular, 'text-gray-500 text-center text-xs mt-1')}>
+                    Using your kitchen ingredients
+                  </Text>
+                  <Pressable
+                    onPress={() => {
+                      if (aiLimitReached) {
+                        Alert.alert(
+                          'Limit Reached',
+                          'You have used all 3 of your free recipe generations. Stay tuned for our subscription plan!',
+                        );
+                      } else {
+                        setShowAiModal(true);
+                      }
+                    }}
+                    style={tw.style(
+                      'mt-3 px-6 py-2.5 rounded-full flex-row items-center',
+                      aiLimitReached ? 'bg-gray-300' : 'bg-purple-600',
+                    )}
+                  >
+                    <Ionicons name="sparkles" size={14} color="#fff" />
+                    <Text style={tw.style(bodyMediumBold, 'text-white ml-1.5 text-sm')}>
+                      {aiLimitReached ? 'Limit Reached' : 'Generate AI Recipe'}
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
             )}
           </View>
         ) : (
@@ -408,10 +534,147 @@ export default function MealSuggestionsScreen({
                 </View>
               );
             })}
+
+            {/* AI Recipe Generation CTA */}
+            <View style={tw`mx-4 mt-4 mb-2 rounded-2xl bg-purple-50 border border-purple-200 px-5 py-5`}>
+              <View style={tw`items-center`}>
+                <View style={tw`w-12 h-12 rounded-full bg-purple-100 items-center justify-center mb-3`}>
+                  <Ionicons name="sparkles" size={24} color="#7C3AED" />
+                </View>
+                <Text style={tw.style(bodyMediumBold, 'text-gray-900 text-center text-base')}>
+                  Not finding what you want?
+                </Text>
+                <Text style={tw.style(bodyMediumRegular, 'text-gray-500 text-center text-xs mt-1 leading-4')}>
+                  Let Saveful AI create a custom recipe{'\n'}using your kitchen ingredients
+                </Text>
+                {!aiLimitReached && (
+                  <Text style={tw.style(bodyMediumRegular, 'text-purple-600 text-xs mt-1')}>
+                    {aiRemaining} free generation{aiRemaining !== 1 ? 's' : ''} remaining
+                  </Text>
+                )}
+                <Pressable
+                  onPress={() => {
+                    if (aiLimitReached) {
+                      Alert.alert(
+                        'Limit Reached',
+                        'You have used all 3 of your free recipe generations. Stay tuned for our subscription plan!',
+                      );
+                    } else {
+                      setShowAiModal(true);
+                    }
+                  }}
+                  style={tw.style(
+                    'mt-3 px-6 py-3 rounded-full flex-row items-center',
+                    aiLimitReached ? 'bg-gray-300' : 'bg-purple-600',
+                  )}
+                >
+                  <Ionicons name="sparkles" size={16} color="#fff" />
+                  <Text style={tw.style(bodyMediumBold, 'text-white ml-2')}>
+                    {aiLimitReached ? 'Limit Reached' : 'Generate AI Recipe'}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
           </View>
         )}
       </ScrollView>
       </ImageBackground>
+
+      <Modal
+        visible={showAiModal}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        onRequestClose={() => !isGenerating && setShowAiModal(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={tw`flex-1`}
+        >
+          <Pressable
+            style={tw`flex-1 bg-black/50 items-center justify-center px-6`}
+            onPress={() => !isGenerating && setShowAiModal(false)}
+          >
+            <Pressable
+              style={tw`bg-white rounded-2xl p-6 w-full`}
+              onPress={() => {}}
+            >
+              <View style={tw`items-center mb-4`}>
+                <View style={tw`w-14 h-14 rounded-full bg-purple-100 items-center justify-center mb-3`}>
+                  <Ionicons name="sparkles" size={28} color="#7C3AED" />
+                </View>
+                <Text style={tw.style(bodyMediumBold, 'text-gray-900 text-center text-base')}>
+                  AI Recipe Generator
+                </Text>
+                <Text style={tw.style(bodyMediumRegular, 'text-gray-500 text-center text-xs mt-1')}>
+                  We'll use your {inventoryIngredients.length} kitchen ingredient{inventoryIngredients.length !== 1 ? 's' : ''} to create a recipe
+                </Text>
+              </View>
+
+              <Text style={tw.style(bodyMediumBold, 'text-gray-700 text-xs mb-1.5')}>
+                What kind of recipe do you want? (optional)
+              </Text>
+              <TextInput
+                style={[
+                  tw.style(
+                    bodyMediumRegular,
+                    'bg-gray-50 rounded-xl px-4 py-3 text-gray-900 border border-gray-200',
+                  ),
+                  { fontSize: 14, minHeight: 80, textAlignVertical: 'top' },
+                ]}
+                placeholder="e.g. something spicy, a quick snack, South Indian breakfast, healthy dinner..."
+                placeholderTextColor="#9CA3AF"
+                value={aiPreference}
+                onChangeText={setAiPreference}
+                multiline
+                maxLength={200}
+                editable={!isGenerating}
+              />
+
+              <View style={tw`flex-row gap-3 mt-5`}>
+                <Pressable
+                  onPress={() => {
+                    setShowAiModal(false);
+                    setAiPreference('');
+                  }}
+                  disabled={isGenerating}
+                  style={tw.style(
+                    'flex-1 py-3 rounded-full border border-gray-300 items-center',
+                    isGenerating ? 'opacity-50' : '',
+                  )}
+                >
+                  <Text style={tw.style(bodyMediumBold, 'text-gray-600')}>
+                    Cancel
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={handleAiGenerate}
+                  disabled={isGenerating}
+                  style={tw.style(
+                    'flex-1 py-3 rounded-full items-center flex-row justify-center',
+                    isGenerating ? 'bg-purple-400' : 'bg-purple-600',
+                  )}
+                >
+                  {isGenerating ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <>
+                      <Ionicons name="sparkles" size={14} color="#fff" />
+                      <Text style={tw.style(bodyMediumBold, 'text-white ml-1.5')}>
+                        Generate
+                      </Text>
+                    </>
+                  )}
+                </Pressable>
+              </View>
+
+              <Text style={tw.style(bodyMediumRegular, 'text-purple-500 text-center text-xs mt-3')}>
+                {aiRemaining} free generation{aiRemaining !== 1 ? 's' : ''} remaining
+              </Text>
+            </Pressable>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 }

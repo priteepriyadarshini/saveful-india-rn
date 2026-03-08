@@ -458,7 +458,7 @@ export default function AddRecipeScreen() {
                 )}
                 <View>
                   <Text style={tw.style(bodyMediumRegular, 'text-[11px] text-stone leading-4')}>
-                    • You can generate up to 5 recipes per day
+                    • You can generate up to 3 recipes total
                   </Text>
                 </View>
               </View>
