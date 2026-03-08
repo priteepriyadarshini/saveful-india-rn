@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   ImageBackground,
   TextInput,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,6 +26,11 @@ import {
 import MealCard from '../../make/components/MealCard';
 import { InventoryStackScreenProps } from '../navigation/InventoryNavigator';
 import { MealSuggestion } from '../api/types';
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+  isSpeechRecognitionAvailable,
+} from '../utils/speechRecognition';
 
 export default function MealSuggestionsScreen({
   route,
@@ -35,6 +41,48 @@ export default function MealSuggestionsScreen({
   const [selectedIngredientId, setSelectedIngredientId] = useState<
     string | undefined
   >();
+  const [isListening, setIsListening] = useState(false);
+  const finalTranscriptRef = useRef('');
+
+  useSpeechRecognitionEvent('result', (event: any) => {
+    const latest = event.results?.[0]?.transcript || '';
+    if (!latest) return;
+    if (event.isFinal) finalTranscriptRef.current = latest;
+    setSearchText(latest);
+    if (selectedIngredientId) setSelectedIngredientId(undefined);
+  });
+
+  useSpeechRecognitionEvent('end', () => setIsListening(false));
+  useSpeechRecognitionEvent('error', () => setIsListening(false));
+
+  const stopListening = useCallback(() => {
+    setIsListening(false);
+    ExpoSpeechRecognitionModule?.stop();
+  }, []);
+
+  const startListening = useCallback(async () => {
+    if (!isSpeechRecognitionAvailable || !ExpoSpeechRecognitionModule) {
+      Alert.alert('Voice unavailable', 'Voice input requires a development build.');
+      return;
+    }
+    try {
+      const { granted } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+      if (!granted) {
+        Alert.alert('Permission Required', 'Microphone permission is needed for voice search.');
+        return;
+      }
+      finalTranscriptRef.current = '';
+      setIsListening(true);
+      ExpoSpeechRecognitionModule.start({ lang: 'en-IN', interimResults: true, continuous: false });
+    } catch {
+      setIsListening(false);
+      Alert.alert('Error', 'Unable to start voice input on this device.');
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => { if (isListening) ExpoSpeechRecognitionModule?.stop(); };
+  }, [isListening]);
 
   const country = route.params?.country;
 
@@ -155,23 +203,36 @@ export default function MealSuggestionsScreen({
             <Ionicons name="search" size={20} color="#9CA3AF" />
             <TextInput
               style={[tw.style(bodyMediumRegular, 'flex-1 ml-2 text-gray-900'), { fontSize: 14 }]}
-              placeholder="Search by ingredients..."
-              placeholderTextColor="#9CA3AF"
+              placeholder={isListening ? 'Listening…' : 'Search by ingredients...'}
+              placeholderTextColor={isListening ? '#7C3AED' : '#9CA3AF'}
               value={searchText}
               onChangeText={(text) => {
                 setSearchText(text);
-                if (selectedIngredientId) {
-                  setSelectedIngredientId(undefined);
-                }
+                if (selectedIngredientId) setSelectedIngredientId(undefined);
               }}
               autoCapitalize="none"
               autoCorrect={false}
             />
-            {searchText.length > 0 && (
-              <Pressable onPress={handleClearSearch}>
+            {searchText.length > 0 && !isListening && (
+              <Pressable onPress={handleClearSearch} style={tw`mr-1`}>
                 <Ionicons name="close-circle" size={20} color="#9CA3AF" />
               </Pressable>
             )}
+            <Pressable
+              onPress={isListening ? stopListening : startListening}
+              style={tw.style(
+                'w-8 h-8 rounded-full items-center justify-center ml-1',
+                isListening ? 'bg-red-100' : 'bg-purple-100',
+              )}
+              accessibilityRole="button"
+              accessibilityLabel={isListening ? 'Stop voice search' : 'Start voice search'}
+            >
+              <Ionicons
+                name={isListening ? 'stop' : 'mic'}
+                size={16}
+                color={isListening ? '#EF4444' : '#7C3AED'}
+              />
+            </Pressable>
           </View>
 
           {/* Search Dropdown */}

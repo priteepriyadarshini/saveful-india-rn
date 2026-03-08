@@ -130,6 +130,8 @@ export default function DiscardItemModal({ visible, item, onClose }: Props) {
     }
   };
 
+  const wasteOptionMinHeight = 112;
+
   return (
     <Modal
       visible={visible}
@@ -153,11 +155,11 @@ export default function DiscardItemModal({ visible, item, onClose }: Props) {
             >
               {/* Header */}
               <View style={tw`flex-row items-center justify-between mb-4`}>
-                <View>
-                  <Text style={tw.style(bodyMediumBold, 'text-gray-900 text-lg')}>
+                <View style={tw`flex-1 pr-3`}>
+                  <Text style={tw.style(bodyMediumBold, 'text-gray-900 text-[22px] leading-7')}>
                     Throw Out Item
                   </Text>
-                  <Text style={tw.style(bodyMediumRegular, 'text-gray-500 text-sm')}>
+                  <Text style={tw.style(bodyMediumRegular, 'text-gray-500 text-base leading-6')}>
                     {item.name} - {item.quantity} {item.unit}
                   </Text>
                 </View>
@@ -177,10 +179,10 @@ export default function DiscardItemModal({ visible, item, onClose }: Props) {
                 <View style={tw`bg-purple-50 rounded-xl p-3 mb-4 flex-row items-start gap-2`}>
                   <Ionicons name="sparkles" size={16} color="#7C3AED" />
                   <View style={tw`flex-1`}>
-                    <Text style={tw`text-xs text-purple-700 font-medium`}>
+                    <Text style={tw`text-sm text-purple-700 font-medium leading-5`}>
                       Saveful AI - {WASTE_OPTIONS.find((w) => w.key === aiClassification.wasteType)?.label} waste
                     </Text>
-                    <Text style={tw`text-xs text-purple-600 mt-0.5`}>
+                    <Text style={tw`text-sm text-purple-600 mt-1 leading-5`}>
                       {aiClassification.disposalTip}
                     </Text>
                   </View>
@@ -192,10 +194,10 @@ export default function DiscardItemModal({ visible, item, onClose }: Props) {
                 <View style={tw`bg-green-50 rounded-xl p-3 mb-4 flex-row items-start gap-2`}>
                   <Text style={{ fontSize: 18 }}>😉</Text>
                   <View style={tw`flex-1`}>
-                    <Text style={tw`text-xs text-green-800 font-semibold`}>
+                    <Text style={tw`text-sm text-green-800 font-semibold leading-5`}>
                       A little soft doesn't mean it's done
                     </Text>
-                    <Text style={tw`text-xs text-green-700 mt-0.5`}>
+                    <Text style={tw`text-sm text-green-700 mt-1 leading-5`}>
                       Spots? Wilted? Overripe? Could it be tomorrow's soup, smoothie or stir-fry instead?
                     </Text>
                   </View>
@@ -203,33 +205,38 @@ export default function DiscardItemModal({ visible, item, onClose }: Props) {
               )}
 
               {/* Reason */}
-              <Text style={tw`text-xs text-gray-500 mb-1.5`}>
+              <Text style={tw`text-sm text-gray-600 mb-2`}>
                 Why are you throwing this out?
               </Text>
-              <View style={tw`flex-row flex-wrap gap-2 mb-4`}>
+              <View style={tw`flex-row flex-wrap gap-2 mb-5`}>
                 {REASON_OPTIONS.map((opt) => (
                   <Pressable
                     key={opt.key}
                     onPress={() => setReason(opt.key)}
                     style={[
                       tw.style(
-                        'flex-row items-center rounded-full',
+                        'flex-row items-center rounded-2xl',
                         reason === opt.key ? 'bg-amber-500' : 'bg-gray-100',
                       ),
-                      { paddingHorizontal: 10, paddingVertical: 7, flexShrink: 0 },
+                      {
+                        paddingHorizontal: 12,
+                        paddingVertical: 10,
+                        flexShrink: 1,
+                        minHeight: 42,
+                        maxWidth: '48%',
+                      },
                     ]}
                   >
                     <Ionicons
                       name={opt.icon as any}
-                      size={13}
+                      size={15}
                       color={reason === opt.key ? 'white' : '#6B7280'}
                     />
                     <Text
                       style={[
-                        tw.style('text-xs', reason === opt.key ? 'text-white' : 'text-gray-600'),
-                        { marginLeft: 4 },
+                        tw.style('text-sm leading-5', reason === opt.key ? 'text-white' : 'text-gray-600'),
+                        { marginLeft: 6, flexShrink: 1 },
                       ]}
-                      numberOfLines={1}
                     >
                       {opt.label}
                     </Text>
@@ -238,7 +245,7 @@ export default function DiscardItemModal({ visible, item, onClose }: Props) {
               </View>
 
               {/* Waste Type */}
-              <Text style={tw`text-xs text-gray-500 mb-1.5`}>
+              <Text style={tw`text-sm text-gray-600 mb-2`}>
                 Waste type
                 {isClassifying && (
                   <Text style={tw`text-purple-500`}> · Saveful AI analysing...</Text>
@@ -251,12 +258,13 @@ export default function DiscardItemModal({ visible, item, onClose }: Props) {
                     onPress={() => setWasteType(opt.key)}
                     style={[
                       tw.style(
-                        'flex-1 rounded-xl items-center border',
+                        'flex-1 rounded-xl items-center border justify-center',
                         wasteType === opt.key ? 'border-2' : 'border-gray-200',
                       ),
                       {
-                        paddingVertical: 10,
-                        paddingHorizontal: 4,
+                        paddingVertical: 14,
+                        paddingHorizontal: 8,
+                        minHeight: wasteOptionMinHeight,
                         ...(wasteType === opt.key && {
                           borderColor: opt.color,
                           backgroundColor: opt.color + '15',
@@ -272,19 +280,25 @@ export default function DiscardItemModal({ visible, item, onClose }: Props) {
                     <Text
                       style={[
                         tw`text-center mt-1`,
-                        { fontSize: 11, fontWeight: '600', color: wasteType === opt.key ? opt.color : '#6B7280' },
+                        {
+                          fontSize: 13,
+                          lineHeight: 18,
+                          fontWeight: '600',
+                          color: wasteType === opt.key ? opt.color : '#6B7280',
+                        },
                       ]}
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
                     >
                       {opt.label}
                     </Text>
                     <Text
                       style={[
                         tw`text-center mt-0.5`,
-                        { fontSize: 9, color: wasteType === opt.key ? opt.color : '#9CA3AF' },
+                        {
+                          fontSize: 11,
+                          lineHeight: 15,
+                          color: wasteType === opt.key ? opt.color : '#9CA3AF',
+                        },
                       ]}
-                      numberOfLines={2}
                     >
                       {opt.desc}
                     </Text>
@@ -302,10 +316,9 @@ export default function DiscardItemModal({ visible, item, onClose }: Props) {
                 >
                   <Text
                     style={tw.style(
-                      'text-sm font-medium',
+                      'text-base font-medium',
                       discardAll ? 'text-white' : 'text-gray-600',
                     )}
-                    numberOfLines={1}
                   >
                     Throw Out All
                   </Text>
@@ -319,10 +332,9 @@ export default function DiscardItemModal({ visible, item, onClose }: Props) {
                 >
                   <Text
                     style={tw.style(
-                      'text-sm font-medium',
+                      'text-base font-medium',
                       !discardAll ? 'text-white' : 'text-gray-600',
                     )}
-                    numberOfLines={1}
                   >
                     Partial
                   </Text>
@@ -332,7 +344,7 @@ export default function DiscardItemModal({ visible, item, onClose }: Props) {
               {/* Partial Quantity */}
               {!discardAll && (
                 <View style={tw`mb-3`}>
-                  <Text style={tw`text-xs text-gray-500 mb-1`}>
+                  <Text style={tw`text-sm text-gray-600 mb-1.5`}>
                     How much to throw out? (out of {item.quantity} {item.unit})
                   </Text>
                   <TextInput
@@ -371,7 +383,7 @@ export default function DiscardItemModal({ visible, item, onClose }: Props) {
                   size={22}
                   color={addToShoppingList ? '#16A34A' : '#9CA3AF'}
                 />
-                <Text style={tw.style(bodyMediumRegular, 'text-gray-700')}>
+                <Text style={tw.style(bodyMediumRegular, 'text-gray-700 text-base leading-6')}>
                   Add replacement to shopping list
                 </Text>
               </Pressable>

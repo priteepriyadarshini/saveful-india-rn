@@ -28,6 +28,8 @@ import {
 import { useAddRecipeFromLinkMutation } from '../api/cookbookApi';
 import { CookbookStackParamList } from '../navigation/CookbookNavigation';
 
+type InputMode = 'youtube' | 'text';
+
 const SUPPORTED_DOMAINS = [
   'youtube.com',
   'youtu.be',
@@ -35,7 +37,7 @@ const SUPPORTED_DOMAINS = [
   'm.youtube.com',
 ];
 
-function isValidRecipeLink(url: string): boolean {
+function isValidYoutubeLink(url: string): boolean {
   try {
     const parsed = new URL(url.trim());
     return SUPPORTED_DOMAINS.some(
@@ -48,49 +50,72 @@ function isValidRecipeLink(url: string): boolean {
 
 export default function AddRecipeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<CookbookStackParamList>>();
+  const [inputMode, setInputMode] = useState<InputMode>('youtube');
   const [link, setLink] = useState('');
+  const [recipeText, setRecipeText] = useState('');
   const [addRecipe, { isLoading }] = useAddRecipeFromLinkMutation();
   const [submitted, setSubmitted] = useState(false);
   const [showQueuedModal, setShowQueuedModal] = useState(false);
-  const inputRef = useRef<TextInput>(null);
+  const linkInputRef = useRef<TextInput>(null);
+  const textInputRef = useRef<TextInput>(null);
+
+  const handleSwitchMode = useCallback((mode: InputMode) => {
+    setInputMode(mode);
+    setSubmitted(false);
+  }, []);
 
   const handlePaste = useCallback(async () => {
     try {
       const { Clipboard: RNClipboard } = require('react-native');
       const text = RNClipboard?.getString ? await RNClipboard.getString() : '';
-      if (text) setLink(text);
+      if (text) {
+        if (inputMode === 'youtube') {
+          setLink(text);
+        } else {
+          setRecipeText((prev) => (prev ? `${prev}\n${text}` : text));
+        }
+      }
     } catch {
     }
-  }, []);
+  }, [inputMode]);
 
   const handleGenerate = useCallback(async () => {
     Keyboard.dismiss();
-    const trimmedLink = link.trim();
 
-    if (!trimmedLink) {
-      Alert.alert('Missing Link', 'Please paste a YouTube recipe link.');
-      return;
-    }
+    let message = '';
 
-    if (!isValidRecipeLink(trimmedLink)) {
-      Alert.alert(
-        'Invalid Link',
-        'Please paste a valid YouTube link.',
-      );
-      return;
+    if (inputMode === 'youtube') {
+      message = link.trim();
+      if (!message) {
+        Alert.alert('Missing Link', 'Please paste a YouTube recipe link.');
+        return;
+      }
+      if (!isValidYoutubeLink(message)) {
+        Alert.alert('Invalid Link', 'Please paste a valid YouTube link.');
+        return;
+      }
+    } else {
+      message = recipeText.trim();
+      if (!message) {
+        Alert.alert('Missing Recipe', 'Please enter the recipe details.');
+        return;
+      }
+      if (message.length < 30) {
+        Alert.alert('Too Short', 'Please provide more recipe details (name, ingredients, steps).');
+        return;
+      }
     }
 
     try {
-      const result = await addRecipe({
-        message: trimmedLink,
-      }).unwrap();
+      const result = await addRecipe({ message }).unwrap();
 
       if (result.success && result.queued) {
-        setLink('');
+        if (inputMode === 'youtube') setLink('');
+        else setRecipeText('');
         setShowQueuedModal(true);
       } else if (result.success && result.data) {
-        // Fallback: if server returns data directly (backward compat)
-        setLink('');
+        if (inputMode === 'youtube') setLink('');
+        else setRecipeText('');
         navigation.replace('CookbookRecipeDetail', { id: result.data._id, initialRecipe: result.data });
       } else {
         Alert.alert(
@@ -106,10 +131,12 @@ export default function AddRecipeScreen() {
           : Array.isArray(rawServerMsg)
             ? rawServerMsg.filter(Boolean).join(', ')
             : '';
-
       Alert.alert('Error', serverMsg || 'Something went wrong. Please try again.');
     }
-  }, [link, addRecipe, navigation]);
+  }, [inputMode, link, recipeText, addRecipe, navigation]);
+
+  const currentValue = inputMode === 'youtube' ? link : recipeText;
+  const isInputEmpty = !currentValue.trim();
 
   return (
     <SafeAreaView style={tw`flex-1 bg-white`} edges={['top']}>
@@ -147,6 +174,7 @@ export default function AddRecipeScreen() {
           </View>
         </View>
       </Modal>
+
       <View style={tw`flex-row items-center px-5 pt-3 pb-2`}>
         <Pressable
           onPress={() => navigation.goBack()}
@@ -157,6 +185,56 @@ export default function AddRecipeScreen() {
         <Text style={tw.style(h6TextStyle, 'text-gray-900 flex-1')}>
           Add Recipe
         </Text>
+      </View>
+
+      {/* Mode Tabs */}
+      <View style={tw`flex-row mx-5 mb-1 bg-gray-100 rounded-xl p-1`}>
+        <Pressable
+          onPress={() => handleSwitchMode('youtube')}
+          style={tw.style(
+            'flex-1 flex-row items-center justify-center py-2.5 rounded-lg',
+            inputMode === 'youtube' ? 'bg-white shadow-sm' : '',
+          )}
+          disabled={isLoading}
+        >
+          <Feather
+            name="youtube"
+            size={14}
+            color={inputMode === 'youtube' ? (tw.color('eggplant-vibrant') || '#7E42FF') : (tw.color('stone') || '#8A8A8A')}
+          />
+          <Text
+            style={tw.style(
+              subheadMediumUppercase,
+              'ml-1.5',
+              inputMode === 'youtube' ? 'text-eggplant-vibrant' : 'text-stone',
+            )}
+          >
+            YouTube Link
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => handleSwitchMode('text')}
+          style={tw.style(
+            'flex-1 flex-row items-center justify-center py-2.5 rounded-lg',
+            inputMode === 'text' ? 'bg-white shadow-sm' : '',
+          )}
+          disabled={isLoading}
+        >
+          <Feather
+            name="file-text"
+            size={14}
+            color={inputMode === 'text' ? (tw.color('eggplant-vibrant') || '#7E42FF') : (tw.color('stone') || '#8A8A8A')}
+          />
+          <Text
+            style={tw.style(
+              subheadMediumUppercase,
+              'ml-1.5',
+              inputMode === 'text' ? 'text-eggplant-vibrant' : 'text-stone',
+            )}
+          >
+            Recipe Info
+          </Text>
+        </Pressable>
       </View>
 
       <ImageBackground
@@ -172,57 +250,99 @@ export default function AddRecipeScreen() {
             contentContainerStyle={tw`px-5 pt-4 pb-10`}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Instructions */}
-            <Text style={tw.style(bodyMediumBold, 'text-gray-900 mb-2')}>
-              Paste a Recipe Link
-            </Text>
-            <Text style={tw.style(bodyMediumRegular, 'text-gray-500 mb-5 leading-5')}>
-              Copy a recipe link from YouTube and SavefulAI will
-              extract all the ingredients, steps, and details for you.
-            </Text>
-
-            {/* Supported platforms */}
-            <View style={tw`flex-row mb-5`}>
-              <View style={tw`flex-row items-center bg-white border border-eggplant px-4 py-2 rounded-full mr-2`}>
-                <Feather name="youtube" size={14} color={tw.color('eggplant-vibrant') || '#7E42FF'} />
-                <Text style={tw.style(subheadMediumUppercase, 'text-eggplant-vibrant ml-1.5')}>
-                  YouTube
+            {inputMode === 'youtube' ? (
+              <>
+                {/* YouTube Mode */}
+                <Text style={tw.style(bodyMediumBold, 'text-gray-900 mb-2')}>
+                  Paste a Recipe Link
                 </Text>
-              </View>
-            </View>
+                <Text style={tw.style(bodyMediumRegular, 'text-gray-500 mb-5 leading-5')}>
+                  Copy a recipe link from YouTube and SavefulAI will
+                  extract all the ingredients, steps, and details for you.
+                </Text>
 
-            {/* Link Input */}
-            <View style={tw`bg-white rounded-lg border border-gray-100 p-1 shadow-sm`}>
-              <View style={tw`flex-row items-center`}>
-                <Feather
-                  name="link-2"
-                  size={18}
-                  color={tw.color('stone')}
-                  style={tw`ml-3`}
-                />
-                <TextInput
-                  ref={inputRef}
-                  style={tw`flex-1 font-sans text-sm text-black py-3.5 px-3`}
-                  placeholder="https://youtu.be/..."
-                  placeholderTextColor={tw.color('stone')}
-                  value={link}
-                  onChangeText={setLink}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  keyboardType="url"
-                  returnKeyType="go"
-                  onSubmitEditing={handleGenerate}
-                  editable={!isLoading}
-                />
-                {link.length > 0 && !isLoading && (
-                  <Pressable onPress={() => setLink('')} style={tw`mr-2`}>
-                    <Feather name="x-circle" size={18} color={tw.color('stone')} />
-                  </Pressable>
+                {/* Link Input */}
+                <View style={tw`bg-white rounded-lg border border-gray-100 p-1 shadow-sm`}>
+                  <View style={tw`flex-row items-center`}>
+                    <Feather
+                      name="link-2"
+                      size={18}
+                      color={tw.color('stone')}
+                      style={tw`ml-3`}
+                    />
+                    <TextInput
+                      ref={linkInputRef}
+                      style={tw`flex-1 font-sans text-sm text-black py-3.5 px-3`}
+                      placeholder="https://youtu.be/..."
+                      placeholderTextColor={tw.color('stone')}
+                      value={link}
+                      onChangeText={setLink}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      keyboardType="url"
+                      returnKeyType="go"
+                      onSubmitEditing={handleGenerate}
+                      editable={!isLoading}
+                    />
+                    {link.length > 0 && !isLoading && (
+                      <Pressable onPress={() => setLink('')} style={tw`mr-2`}>
+                        <Feather name="x-circle" size={18} color={tw.color('stone')} />
+                      </Pressable>
+                    )}
+                  </View>
+                </View>
+              </>
+            ) : (
+              <>
+                {/* Recipe Text Mode */}
+                <Text style={tw.style(bodyMediumBold, 'text-gray-900 mb-2')}>
+                  Enter Recipe Details
+                </Text>
+                <Text style={tw.style(bodyMediumRegular, 'text-gray-500 mb-5 leading-5')}>
+                  Paste or type your recipe - name, ingredients with quantities, and
+                  cooking steps. SavefulAI will structure it for you.
+                </Text>
+
+                {/* Multiline Text Input */}
+                <View style={tw`bg-white rounded-lg border border-gray-100 shadow-sm`}>
+                  <TextInput
+                    ref={textInputRef}
+                    style={[
+                      tw`font-sans text-sm text-black px-4 pt-3.5 pb-3.5`,
+                      { minHeight: 200, textAlignVertical: 'top' },
+                    ]}
+                    placeholder={
+                      'Recipe Name: Butter Chicken\n\nIngredients:\n• 500g chicken\n• 2 tbsp butter\n• 1 cup cream\n• ...\n\nSteps:\n1. Marinate chicken...\n2. Cook the sauce...'
+                    }
+                    placeholderTextColor={tw.color('stone')}
+                    value={recipeText}
+                    onChangeText={setRecipeText}
+                    multiline
+                    numberOfLines={10}
+                    autoCapitalize="sentences"
+                    autoCorrect
+                    returnKeyType="default"
+                    editable={!isLoading}
+                    scrollEnabled={false}
+                  />
+                  {recipeText.length > 0 && !isLoading && (
+                    <Pressable
+                      onPress={() => setRecipeText('')}
+                      style={tw`absolute top-2 right-2`}
+                    >
+                      <Feather name="x-circle" size={18} color={tw.color('stone')} />
+                    </Pressable>
+                  )}
+                </View>
+                {recipeText.length > 0 && (
+                  <Text style={tw.style(bodyMediumRegular, 'text-[10px] text-stone mt-1 text-right')}>
+                    {recipeText.length} characters
+                  </Text>
                 )}
-              </View>
-            </View>
+              </>
+            )}
 
-            {/* Paste Button */}
+            {/* Paste from Clipboard */}
             <Pressable
               onPress={handlePaste}
               style={tw`mt-3 self-start flex-row items-center`}
@@ -259,6 +379,7 @@ export default function AddRecipeScreen() {
                   onPress={() => {
                     setSubmitted(false);
                     setLink('');
+                    setRecipeText('');
                   }}
                   style={tw`mt-3`}
                 >
@@ -274,7 +395,7 @@ export default function AddRecipeScreen() {
               <View style={tw`items-center mt-8`}>
                 <ActivityIndicator size="large" color={tw.color('green-600') || '#16A34A'} />
                 <Text style={tw.style(bodyMediumBold, 'text-green-700 mt-4 text-center')}>
-                  Submitting your recipe link...
+                  {inputMode === 'youtube' ? 'Submitting your recipe link...' : 'Submitting your recipe...'}
                 </Text>
               </View>
             )}
@@ -284,7 +405,7 @@ export default function AddRecipeScreen() {
               <Pressable
                 onPress={handleGenerate}
                 style={tw`mt-8 bg-green-600 py-4 rounded-full flex-row items-center justify-center`}
-                disabled={!link.trim()}
+                disabled={isInputEmpty}
               >
                 <Feather name="zap" size={20} color="#fff" />
                 <Text style={tw.style(bodyMediumBold, 'text-white ml-2')}>
@@ -293,33 +414,54 @@ export default function AddRecipeScreen() {
               </Pressable>
             )}
 
-            {/* Tips */}
             {!submitted && (
-            <View style={tw`mt-8 bg-white border border-gray-100 rounded-lg p-4 shadow-sm`}>
-              <Text style={tw.style(bodyMediumBold, 'text-gray-900 mb-3')}>
-                Tips
-              </Text>
-              <View style={tw`mb-2`}>
-                <Text style={tw.style(bodyMediumRegular, 'text-[11px] text-stone leading-4')}>
-                  • Make sure the link is a cooking/recipe video
+              <View style={tw`mt-8 bg-white border border-gray-100 rounded-lg p-4 shadow-sm`}>
+                <Text style={tw.style(bodyMediumBold, 'text-gray-900 mb-3')}>
+                  Tips
                 </Text>
+                {inputMode === 'youtube' ? (
+                  <>
+                    <View style={tw`mb-2`}>
+                      <Text style={tw.style(bodyMediumRegular, 'text-[11px] text-stone leading-4')}>
+                        • Make sure the link is a cooking/recipe video
+                      </Text>
+                    </View>
+                    <View style={tw`mb-2`}>
+                      <Text style={tw.style(bodyMediumRegular, 'text-[11px] text-stone leading-4')}>
+                        • YouTube Shorts and full videos are both supported
+                      </Text>
+                    </View>
+                    <View style={tw`mb-2`}>
+                      <Text style={tw.style(bodyMediumRegular, 'text-[11px] text-stone leading-4')}>
+                        • Best results come from clear recipe videos with visible steps
+                      </Text>
+                    </View>
+                  </>
+                ) : (
+                  <>
+                    <View style={tw`mb-2`}>
+                      <Text style={tw.style(bodyMediumRegular, 'text-[11px] text-stone leading-4')}>
+                        • Include the recipe name, full ingredient list with quantities, and all steps
+                      </Text>
+                    </View>
+                    <View style={tw`mb-2`}>
+                      <Text style={tw.style(bodyMediumRegular, 'text-[11px] text-stone leading-4')}>
+                        • The more detail you provide, the better the result
+                      </Text>
+                    </View>
+                    <View style={tw`mb-2`}>
+                      <Text style={tw.style(bodyMediumRegular, 'text-[11px] text-stone leading-4')}>
+                        • Works great with recipes copied from websites or written from memory
+                      </Text>
+                    </View>
+                  </>
+                )}
+                <View>
+                  <Text style={tw.style(bodyMediumRegular, 'text-[11px] text-stone leading-4')}>
+                    • You can generate up to 5 recipes per day
+                  </Text>
+                </View>
               </View>
-              <View style={tw`mb-2`}>
-                <Text style={tw.style(bodyMediumRegular, 'text-[11px] text-stone leading-4')}>
-                  • YouTube Shorts and full videos are both supported
-                </Text>
-              </View>
-              <View style={tw`mb-2`}>
-                <Text style={tw.style(bodyMediumRegular, 'text-[11px] text-stone leading-4')}>
-                  • Best results come from clear recipe videos with visible steps
-                </Text>
-              </View>
-              <View>
-                <Text style={tw.style(bodyMediumRegular, 'text-[11px] text-stone leading-4')}>
-                  • You can generate up to 5 recipes per day
-                </Text>
-              </View>
-            </View>
             )}
           </ScrollView>
         </KeyboardAvoidingView>

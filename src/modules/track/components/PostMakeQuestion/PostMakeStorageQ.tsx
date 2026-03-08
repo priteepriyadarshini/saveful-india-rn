@@ -122,30 +122,33 @@ export default function PostMakeStorageQ({
             accessibilityIgnoresInvertColors
           />
 
-          <Text
-            style={tw.style(h6TextStyle, 'pb-2 text-center text-white')}
-            maxFontSizeMultiplier={1}
-          >
-            Where will you store your leftovers?
-          </Text>
+          <View style={tw`mb-4 rounded-2xl bg-black/20 px-4 py-4`}>
+            <Text
+              style={tw.style(h6TextStyle, 'pb-3 text-center text-[28px] leading-[34px] text-white')}
+            >
+              Where will you store your leftovers?
+            </Text>
 
-          <Text
-            style={tw.style(bodyMediumRegular, 'pb-4 text-center text-white')}
-          >
-            {`We'll add your ${dishName} leftovers to your pantry tracker so nothing goes to waste.`}
-          </Text>
+            <Text
+              style={tw.style(bodyMediumRegular, 'text-center text-[18px] leading-7 text-white')}
+            >
+              {`We'll add your ${dishName} leftovers to your kitchen tracker so nothing goes to waste.`}
+            </Text>
+          </View>
 
           <View style={tw`pt-2`}>
             {STORAGE_OPTIONS.map((option) => (
               <SecondaryButton
                 key={option.id}
                 style={tw.style(
-                  'mb-2',
+                  'mb-3 min-h-[60px]',
                   selected === option.key ? 'bg-black' : '',
                 )}
                 buttonTextStyle={tw.style(
+                  'text-lg leading-6',
                   selected === option.key ? 'text-white' : '',
                 )}
+                buttonSize="large"
                 onPress={() => handleSelect(option.key)}
                 loading={isEstimating && selected === option.key}
                 disabled={isEstimating || isAddingItem}
