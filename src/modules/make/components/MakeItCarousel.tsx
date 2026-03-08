@@ -22,6 +22,7 @@ import { useCreateFeedbackMutation } from '../../../modules/track/api/api';
 import { useGetCookedRecipesQuery } from '../../../modules/analytics/api/api';
 import { useConsumeInventoryItemsMutation } from '../../../modules/inventory/api/inventoryApi';
 import { InitialNavigationStackParams } from '../../navigation/navigator/InitialNavigator';
+import { getSafeErrorMessage } from '../../forms/validation';
 
 const screenWidth = Dimensions.get('screen').width;
 
@@ -169,7 +170,7 @@ export default function MakeItCarousel({
 
     } catch (error: unknown) {
       sendFailedEventAnalytics(error);
-      Alert.alert('User update error', JSON.stringify(error));
+      Alert.alert('User update error', getSafeErrorMessage(error, 'Failed to complete recipe. Please try again.'));
     } finally {
       setIsCompleting(false);
       completionInFlightRef.current = false;

@@ -28,6 +28,7 @@ import PrepVideo from '../../../modules/prep/components/PrepVideo';
 import PrepShareQRModal from '../../../modules/prep/components/PrepShareQRModal';
 import TutorialModal from '../../../modules/prep/components/TutorialModal';
 import { PREPTUTORIAL } from '../../../modules/prep/data/data';
+import { getSafeErrorMessage } from '../../../modules/forms/validation';
 import { useCurentRoute } from '../../../modules/route/context/CurrentRouteContext';
 //import { useCreateUserMealMutation } from 'modules/track/api/api';
 import PrepServingSelector, { parseServingsFromPortions } from '../components/PrepServingSelector';
@@ -506,7 +507,7 @@ export default function PrepScreen({
         });
       }
     } catch (error: unknown) {
-      Alert.alert('Create meal error', JSON.stringify(error));
+      Alert.alert('Create meal error', getSafeErrorMessage(error, 'Failed to create meal. Please try again.'));
     }
   }, [
     allOptionalIngredients,

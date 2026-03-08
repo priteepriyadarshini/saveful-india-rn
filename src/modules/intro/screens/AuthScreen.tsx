@@ -10,6 +10,7 @@ import { useLoginMutation, useRequestOTPMutation, useForgotPasswordMutation, use
 import { saveSessionData } from '../../auth/sessionSlice';
 import { useAppDispatch } from '../../../store/hooks';
 import { TokenManager } from '../../pushNotifications/TokenManager';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
 import { bodyMediumRegular, bodySmallRegular, h6TextStyle, subheadSmallUppercase } from '../../../theme/typography';
 import * as WebBrowser from 'expo-web-browser';
@@ -22,10 +23,8 @@ export default function AuthScreen({ navigation }: any) {
   const dispatch = useAppDispatch();
   const { sendAnalyticsUserID, sendAliasUserID } = useAnalytics();
 
-  // ── view: 'auth' | 'forgot' | 'resetPassword'
   const [activeView, setActiveView] = useState<'auth' | 'forgot' | 'resetPassword'>('auth');
 
-  // Auth fields
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,7 +33,6 @@ export default function AuthScreen({ navigation }: any) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Forgot password fields
   const [forgotEmail, setForgotEmail] = useState('');
   const [resetOTP, setResetOTP] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -48,7 +46,6 @@ export default function AuthScreen({ navigation }: any) {
   const [resetPassword, { isLoading: isResetLoading }] = useResetPasswordMutation();
   const [loadCurrentUser] = useLazyGetCurrentUserQuery();
 
-  // ── Auth (Login / Signup) ─────────────────────────────────────────────────
   const handleAuth = async () => {
     try {
       if (!email || !password) {
@@ -82,6 +79,10 @@ export default function AuthScreen({ navigation }: any) {
             if (user) {
               try {
                 TokenManager.shared.identifyUser(user);
+              } catch { /* non-critical */ }
+              try {
+                await AsyncStorage.removeItem('@notification_banner_dismissed');
+                TokenManager.shared.registerForPushNotifications();
               } catch { /* non-critical */ }
               try {
                 sendAliasUserID(user.id);

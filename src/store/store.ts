@@ -9,7 +9,7 @@ import {
   AppStateStatus,
   NativeEventSubscription,
 } from 'react-native';
-import logger from 'redux-logger';
+
 
 const appReducer = combineReducers({
   session: sessionReducer,
@@ -38,10 +38,6 @@ export const makeStore = () => {
           warnAfter: 256,
         },
       }).concat(api.middleware);
-
-      if (__DEV__) {
-        middleware.concat(logger);
-      }
 
       return middleware;
     },

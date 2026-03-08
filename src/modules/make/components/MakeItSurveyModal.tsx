@@ -26,6 +26,7 @@ import {
 } from '../../../theme/typography';
 import { useGetInventoryQuery } from '../../inventory/api/inventoryApi';
 import { InventoryIngredient } from '../../inventory/api/types';
+import { getSafeErrorMessage } from '../../forms/validation';
 
 export default function MakeItSurveyModal({
   isVisible,
@@ -191,15 +192,9 @@ export default function MakeItSurveyModal({
       onProceed();
     } catch (error: unknown) {
       console.error('Error creating feedback:', error);
-      const errorMessage = error && typeof error === 'object' && 'data' in error 
-        ? JSON.stringify(error.data) 
-        : error && typeof error === 'object' && 'message' in error
-        ? (error as any).message
-        : JSON.stringify(error);
-      
       Alert.alert(
         'Error completing meal',
-        `Failed to save meal completion. ${errorMessage}`,
+        getSafeErrorMessage(error, 'Failed to save meal completion. Please try again.'),
       );
     } finally {
       isExecutingRef.current = false;

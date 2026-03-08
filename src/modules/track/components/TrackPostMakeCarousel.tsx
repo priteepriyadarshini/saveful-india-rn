@@ -19,6 +19,7 @@ import PostMakeNoLeftoverDone from './PostMakeQuestion/PostMakeNoLeftoverDone';
 import PostMakeRecipeSurveyModal from '../../make/components/PostMakeRecipeSurveyModal';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, View } from 'react-native';
+import { getSafeErrorMessage } from '../../../modules/forms/validation';
 
 export default function TrackPostMakeCarousel({
   framework,
@@ -179,8 +180,8 @@ export default function TrackPostMakeCarousel({
     } catch (error: unknown) {
       sendFailedEventAnalytics(error);
       Alert.alert(
-        'Feedback update error. Try again later.',
-        JSON.stringify(error),
+        'Feedback update error',
+        getSafeErrorMessage(error, 'Failed to submit feedback. Please try again.'),
       );
     } finally {
       isSubmittingRef.current = false;

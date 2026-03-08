@@ -18,6 +18,7 @@ import { Alert, Dimensions, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Yup from 'yup';
+import { getSafeErrorMessage } from '../../../modules/forms/validation';
 
 const schema = Yup.object({
   dietaryRequirements: Yup.array().required(
@@ -121,7 +122,7 @@ export default function SettingsDetailsOnboardingDietaryScreen() {
     } catch (error: unknown) {
       // Whoopss.
       sendFailedEventAnalytics(error);
-      Alert.alert('User update error', JSON.stringify(error));
+      Alert.alert('User update error', getSafeErrorMessage(error, 'Failed to update dietary preferences. Please try again.'));
     }
   });
 

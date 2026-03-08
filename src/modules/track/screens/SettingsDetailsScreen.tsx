@@ -13,7 +13,7 @@ import {
   useUpdateCurrentUserMutation,
 } from '../../../modules/auth/api';
 import { ControlledTextInput, FieldWrapper, FormLabel } from '../../../modules/forms';
-import { handleFormSubmitException } from '../../../modules/forms/validation';
+import { handleFormSubmitException, getSafeErrorMessage } from '../../../modules/forms/validation';
 import { MixPanelContext } from '../../../modules/mixpanel/context/MixpanelContext';
 import AnimatedSettingsHeader from '../../../modules/track/components/AnimatedSettingsHeader';
 import { TrackStackScreenProps } from '../../../modules/track/navigation/TrackNavigation';
@@ -129,7 +129,7 @@ export default function SettingsDetailsScreen({
       } catch (error: unknown) {
         // Whoopss.
         sendFailedEventAnalytics(error);
-        Alert.alert('User update error', JSON.stringify(error));
+        Alert.alert('User update error', getSafeErrorMessage(error, 'Failed to update profile. Please try again.'));
       }
     } catch (e) {
       sendFailedEventAnalytics(e);

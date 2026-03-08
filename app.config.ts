@@ -6,22 +6,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: 'Saveful',
   slug: 'saveful-app',
   scheme: 'saveful',
-  version: '1.2.21',
+  version: '2.0.2',
   orientation: 'portrait',
-  jsEngine: 'hermes',
 
   icon: './assets/icon.png',
 
   updates: {
     enabled: false,
-    fallbackToCacheTimeout: 0,
   },
 
   experiments: {
     tsconfigPaths: true,
   },
 
-  assetBundlePatterns: ['**/*'],
   userInterfaceStyle: 'automatic',
 
   android: {
@@ -74,7 +71,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       NSSpeechRecognitionUsageDescription: 'The app uses speech recognition to convert your voice into inventory items.',
       ITSAppUsesNonExemptEncryption: false,
       LSApplicationQueriesSchemes: ['otpauth'],
-      LSMinimumSystemVersion: '12',
     },
     associatedDomains: [
       'webcredentials:app.dev.saveful.com',
@@ -121,11 +117,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       projectId: '834347b1-3a49-45f6-8aca-16929fc1895a',
     },
 
-    dev: {
-      accessToken: process.env.ACCESS_TOKEN,
-      refreshToken: process.env.REFRESH_TOKEN,
-    },
-
     environments: {
       prod: {
         title: 'Production',
@@ -159,7 +150,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           title: 'Local (Android)',
           apiUrl: process.env.LOCAL_URL ?? 'http://192.168.0.193:3000',
           webUrl: process.env.WEB_URL ?? 'http://192.168.0.193:3000',
-          socketUrl: process.env.SOCKET_URL ?? 'wss://http://192.168.0.193:3000/app',  
+          socketUrl: process.env.SOCKET_URL ?? 'ws://192.168.0.193:3000/app',
         },
         ios: {
           title: 'Local (iOS)',
@@ -169,7 +160,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         },
       },
     },
-    oneSignalAppId: '905089d3-5a54-46dd-8e22-669fc07adce3', 
   },
 
   plugins: [
@@ -186,18 +176,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     '@react-native-community/datetimepicker',
     'expo-web-browser',
-   [
-  'expo-build-properties',
-  {
-    android: {
-      compileSdkVersion: 35,
-      targetSdkVersion: 35,
-      buildToolsVersion: '35.0.0',
-    },
-    ios: {
-      deploymentTarget: '15.1',
-    },
-  },
-],
+    [
+      'expo-build-properties',
+      {
+        android: {
+          compileSdkVersion: 35,
+          targetSdkVersion: 35,
+          buildToolsVersion: '35.0.0',
+        },
+        ios: {
+          deploymentTarget: '15.1',
+        },
+      },
+    ],
   ],
 });

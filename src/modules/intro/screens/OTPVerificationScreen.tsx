@@ -10,6 +10,8 @@ import { saveSessionData } from '../../auth/sessionSlice';
 import { useAppDispatch } from '../../../store/hooks';
 import { useLazyGetCurrentUserQuery } from '../../auth/api';
 import useAnalytics from '../../analytics/hooks/useAnalytics';
+import { TokenManager } from '../../pushNotifications/TokenManager';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { bodyMediumRegular, h6TextStyle, bodySmallRegular } from '../../../theme/typography';
 import { cardDrop } from '../../../theme/shadow';
 export default function OTPVerificationScreen({ route, navigation }: any) {
@@ -134,6 +136,10 @@ export default function OTPVerificationScreen({ route, navigation }: any) {
             }
 
             console.log('✅ Account created and authenticated successfully');
+            try {
+              await AsyncStorage.removeItem('@notification_banner_dismissed');
+              TokenManager.shared.registerForPushNotifications();
+            } catch { /* non-critical */ }
           }
         } catch (userError: any) {
           console.error('❌ Failed to load user data:', userError);

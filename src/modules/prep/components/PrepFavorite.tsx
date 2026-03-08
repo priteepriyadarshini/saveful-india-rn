@@ -12,6 +12,7 @@ import {
 import React, { useState, useEffect }  from 'react';
 import { Alert, Text, View } from 'react-native';
 import { subheadLargeUppercase } from '../../../theme/typography';
+import { getSafeErrorMessage } from '../../../modules/forms/validation';
 
 export default function PrepFavorite({
   frameworkId,
