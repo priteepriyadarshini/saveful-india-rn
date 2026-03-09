@@ -91,7 +91,7 @@ const BRANDS = [
 const INDUSTRY = [
   {
     id: 1,
-    name: 'Centurion University of Management & Technology',
+    name: 'Centurion University of Technology & Management',
     image: { uri: `${CDN_BASE}/CENTURION+UNIVERSITY+OF+MANAGEMENT+%26+TECHNOLOGY.png` },
   },
   {
