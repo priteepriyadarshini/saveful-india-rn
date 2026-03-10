@@ -6,7 +6,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: 'Saveful',
   slug: 'saveful-app',
   scheme: 'saveful',
-  version: '2.0.3',
+  version: '2.0.4',
   orientation: 'portrait',
 
   icon: './assets/icon.png',
