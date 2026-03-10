@@ -16,12 +16,6 @@ import {
   Platform,
 } from 'react-native';
 
-/**
- * Returns true when the app is running inside Expo Go.
- * In Expo Go, getDevicePushTokenAsync() returns a token bound to
- * host.exp.exponent — it cannot be used with your own Firebase project.
- * We use getExpoPushTokenAsync() instead and route through Expo's push service.
- */
 function isRunningInExpoGo(): boolean {
   return Constants.appOwnership === 'expo';
 }
@@ -29,13 +23,13 @@ function isRunningInExpoGo(): boolean {
 const EAS_PROJECT_ID = '834347b1-3a49-45f6-8aca-16929fc1895a';
 
 async function getPushToken(): Promise<string> {
-  if (isRunningInExpoGo()) {
+  if (isRunningInExpoGo() || Platform.OS === 'ios') {
     const result = await Notifications.getExpoPushTokenAsync({ projectId: EAS_PROJECT_ID });
-    console.log('[PushToken] Got Expo push token (Expo Go):', result.data.substring(0, 30) + '...');
+    console.log('[PushToken] Got Expo push token:', result.data.substring(0, 30) + '...');
     return result.data;
   }
   const result = await Notifications.getDevicePushTokenAsync();
-  console.log('[PushToken] Got device push token:', result.data.substring(0, 20) + '...');
+  console.log('[PushToken] Got device push token (FCM):', result.data.substring(0, 20) + '...');
   return result.data;
 }
 
@@ -63,7 +57,6 @@ class TokenManager extends EventEmitter {
   private appStateListener?: NativeEventSubscription;
 
   initialize = async () => {
-    // Nothing works on android 13 until you create a notification channel
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('default', {
         name: 'Default',
@@ -81,7 +74,6 @@ class TokenManager extends EventEmitter {
       });
     }
 
-    // Watch for the app state changing so we can re-check permissions
     this.appStateListener?.remove();
     this.appStateListener = AppState.addEventListener(
       'change',
@@ -152,10 +144,8 @@ class TokenManager extends EventEmitter {
     }
 
     if (Platform.OS === 'android' && Device.osVersion === '13') {
-      // If we are on android 13, we can ask while the permission is denied
       return true;
     } else {
-      // Otherwise can only ask if we have not denied
       return this.permission !== 'denied';
     }
   };
@@ -174,8 +164,6 @@ class TokenManager extends EventEmitter {
 
   getPermission = () => this.permission;
 
-  // Login is a no-op for the expo token manager
-  // eslint-disable-next-line class-methods-use-this
   identifyUser = (_user: CurrentUser) => {};
 }
 
