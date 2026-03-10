@@ -31,7 +31,33 @@ import { MixPanelContextProvider } from './modules/mixpanel/context/MixpanelCont
 import { NotificationsProvider } from './modules/notifications/context/NotificationsContext';
 import { BadgeNotificationProvider } from './modules/badges/context/BadgeNotificationContext';
 import ErrorBoundary from './common/components/ErrorBoundary';
-import { View, Text } from 'react-native';
+import { Text, TextInput } from 'react-native';
+
+type FontScalingProps = {
+  allowFontScaling?: boolean;
+  maxFontSizeMultiplier?: number;
+};
+
+function configureGlobalFontScaling() {
+  const textComponent = Text as typeof Text & { defaultProps?: FontScalingProps };
+  const textInputComponent = TextInput as typeof TextInput & {
+    defaultProps?: FontScalingProps;
+  };
+
+  textComponent.defaultProps = {
+    ...textComponent.defaultProps,
+    allowFontScaling: false,
+    maxFontSizeMultiplier: 1,
+  };
+
+  textInputComponent.defaultProps = {
+    ...textInputComponent.defaultProps,
+    allowFontScaling: false,
+    maxFontSizeMultiplier: 1,
+  };
+}
+
+configureGlobalFontScaling();
 
 export default function App() {
   useDeviceContext(tw);
