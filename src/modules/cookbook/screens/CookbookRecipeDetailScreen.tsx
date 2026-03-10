@@ -64,18 +64,21 @@ function isObjectId(value: string): boolean {
 export default function CookbookRecipeDetailScreen() {
   const { width } = useWindowDimensions();
   const route = useRoute<RouteProp<CookbookStackParamList, 'CookbookRecipeDetail'>>();
-    const heroHeight = useMemo(() => {
-      const rawHeight = width * 0.65;
-      return Math.min(360, Math.max(220, rawHeight));
-    }, [width]);
+  const heroHeight = useMemo(() => {
+    const rawHeight = width * 0.65;
+    return Math.min(360, Math.max(220, rawHeight));
+  }, [width]);
 
   const navigation = useNavigation<NativeStackNavigationProp<CookbookStackParamList & InitialStackParamList>>();
   const { id, initialRecipe } = route.params as { id: string; initialRecipe?: UserRecipe };
+  const shouldFetchRecipe = isObjectId(id);
 
-  const { data: fetchedRecipe, isLoading, error } = useGetUserRecipeByIdQuery(id, {
-    skip: !!initialRecipe,
+  const { data: fetchedRecipe, isLoading, isFetching, error, refetch } = useGetUserRecipeByIdQuery(id, {
+    skip: !shouldFetchRecipe,
   });
-  const recipe: UserRecipe | null | undefined = initialRecipe ?? fetchedRecipe;
+  const recipe: UserRecipe | null | undefined = fetchedRecipe ?? initialRecipe;
+  const isPendingRecipe = recipe?.status === 'pending';
+  const isRejectedRecipe = recipe?.status === 'rejected';
   const [deleteRecipe, { isLoading: isDeleting }] = useDeleteCookbookRecipeMutation();
 
   const [ingredientNames, setIngredientNames] = useState<IngredientNameMap>({});
@@ -281,11 +284,85 @@ export default function CookbookRecipeDetailScreen() {
     Linking.openURL(`https://www.youtube.com/watch?v=${recipe.youtubeId}`);
   }, [recipe?.youtubeId]);
 
-  if (isLoading) {
+  if (isLoading && !recipe) {
     return (
       <View style={tw`flex-1 bg-creme items-center justify-center`}>
         <ActivityIndicator size="large" color={tw.color('kale')} />
       </View>
+    );
+  }
+
+  if (isRejectedRecipe) {
+    return (
+      <SafeAreaView style={tw`flex-1 bg-creme`} edges={['top', 'bottom']}>
+        <FocusAwareStatusBar statusBarStyle="dark" />
+        <View style={tw`flex-row items-center px-4 pt-3`}>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={tw`w-10 h-10 rounded-full bg-white items-center justify-center`}
+          >
+            <Feather name="arrow-left" size={20} color={tw.color('black')} />
+          </Pressable>
+        </View>
+        <View style={tw`flex-1 items-center justify-center px-8`}>
+          <Feather name="clock" size={48} color={tw.color('stone') || '#888'} />
+          <Text style={tw`text-xl font-sans-bold text-black mt-6 text-center`}>
+            Our servers were busy
+          </Text>
+          <Text style={tw`text-sm font-sans text-stone mt-3 text-center leading-6`}>
+            We couldn't complete your recipe right now. Your generation slot has been restored — please try again in a few minutes.
+          </Text>
+          <Pressable
+            onPress={async () => {
+              if (shouldFetchRecipe) {
+                try { await deleteRecipe(id).unwrap(); } catch { /* ignore */ }
+              }
+              navigation.goBack();
+            }}
+            disabled={isDeleting}
+            style={tw`mt-6 px-8 py-3 rounded-full bg-kale`}
+          >
+            <Text style={tw`text-sm font-sans-bold text-white`}>Got it</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isPendingRecipe) {
+    return (
+      <SafeAreaView style={tw`flex-1 bg-creme`} edges={['top', 'bottom']}>
+        <FocusAwareStatusBar statusBarStyle="dark" />
+        <View style={tw`flex-row items-center justify-between px-4 pt-3`}>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={tw`w-10 h-10 rounded-full bg-white items-center justify-center`}
+          >
+            <Feather name="arrow-left" size={20} color={tw.color('black')} />
+          </Pressable>
+          {shouldFetchRecipe ? (
+            <Pressable
+              onPress={refetch}
+              disabled={isFetching}
+              style={tw`px-4 py-2 rounded-full bg-white`}
+            >
+              <Text style={tw`text-sm font-sans-semibold text-kale`}>
+                {isFetching ? 'Refreshing...' : 'Refresh'}
+              </Text>
+            </Pressable>
+          ) : <View style={tw`w-10`} />}
+        </View>
+
+        <View style={tw`flex-1 items-center justify-center px-8`}>
+          <ActivityIndicator size="large" color={tw.color('kale')} />
+          <Text style={tw`text-xl font-sans-bold text-black mt-6 text-center`}>
+            {recipe?.title || 'Your recipe is being generated'}
+          </Text>
+          <Text style={tw`text-sm font-sans text-stone mt-3 text-center leading-6`}>
+            SavefulAI is still building this recipe. It will appear here automatically once the background job finishes.
+          </Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -296,6 +373,11 @@ export default function CookbookRecipeDetailScreen() {
         <Text style={tw`text-lg font-sans-bold text-black mt-4 text-center`}>
           Recipe not found
         </Text>
+        {shouldFetchRecipe ? (
+          <Pressable onPress={refetch} style={tw`mt-4`}>
+            <Text style={tw`text-sm font-sans-semibold text-kale`}>Try Again</Text>
+          </Pressable>
+        ) : null}
         <Pressable onPress={() => navigation.goBack()} style={tw`mt-4`}>
           <Text style={tw`text-sm font-sans-semibold text-kale`}>Go Back</Text>
         </Pressable>
@@ -305,7 +387,6 @@ export default function CookbookRecipeDetailScreen() {
 
   return (
     <View style={tw`flex-1 bg-creme`}>
-      {/* Hero Image */}
       {recipe.heroImageUrl && (
         <View style={tw`relative`}>
           <Image
@@ -313,12 +394,10 @@ export default function CookbookRecipeDetailScreen() {
             style={{ width, height: heroHeight }}
             resizeMode="cover"
           />
-          {/* Gradient Overlay */}
           <View style={tw`absolute inset-0 bg-black/20`} />
         </View>
       )}
 
-      {/* Back + Delete buttons */}
       <SafeAreaView style={tw`absolute top-0 left-0 right-0 z-10`} edges={['top']}>
         <View style={tw`flex-row items-center justify-between px-4 pt-2`}>
           <Pressable
@@ -342,7 +421,6 @@ export default function CookbookRecipeDetailScreen() {
         contentContainerStyle={tw`pb-32`}
         showsVerticalScrollIndicator={false}
       >
-        {/* Title area */}
         <View style={tw`px-5 ${recipe.heroImageUrl ? 'pt-5' : 'pt-20'}`}>
           <Text style={tw`text-2xl font-sans-bold text-black mb-2`}>
             {recipe.title}
@@ -351,7 +429,6 @@ export default function CookbookRecipeDetailScreen() {
             {recipe.shortDescription}
           </Text>
 
-          {/* Info Pills */}
           <View style={tw`flex-row flex-wrap mb-4`}>
             {recipe.prepCookTime > 0 && (
               <View style={tw`flex-row items-center bg-white rounded-full px-3 py-1.5 mr-2 mb-2`}>
@@ -382,7 +459,6 @@ export default function CookbookRecipeDetailScreen() {
             )}
           </View>
 
-          {/* Storage Info */}
           {(recipe.fridgeKeepTime || recipe.freezeKeepTime) && (
             <View style={tw`bg-white rounded-2xl p-4 mb-5`}>
               {recipe.fridgeKeepTime && (
@@ -407,7 +483,6 @@ export default function CookbookRecipeDetailScreen() {
           )}
         </View>
 
-        {/* Components / Ingredients / Steps */}
         <View style={tw`px-5`}>
           <Text style={tw.style(subheadLargeUppercase, 'mb-4 text-midgray')}>
             Ingredients & Steps
@@ -438,7 +513,6 @@ export default function CookbookRecipeDetailScreen() {
           )}
         </View>
 
-        {/* Long Description */}
         {recipe.longDescription && (
           <View style={tw`px-5 mt-4`}>
             <Text style={tw`text-lg font-sans-bold text-black mb-2`}>About</Text>
@@ -449,7 +523,6 @@ export default function CookbookRecipeDetailScreen() {
         )}
       </ScrollView>
 
-      {/* Floating Cook It Button */}
       <View style={tw`absolute bottom-0 left-0 right-0 bg-creme/95 border-t border-strokecream`}>
         <SafeAreaView edges={['bottom']} style={tw`px-5 pt-3 pb-2`}>
           <Pressable

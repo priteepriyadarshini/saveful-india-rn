@@ -24,9 +24,37 @@ import {
   bodyMediumBold,
   subheadMediumUppercase,
 } from '../../../theme/typography';
-import { useGetUserRecipesQuery } from '../api/cookbookApi';
+import {
+  useGetUserRecipesQuery,
+  useDeleteCookbookRecipeMutation,
+} from '../api/cookbookApi';
 import { UserRecipe } from '../models/userRecipe';
 import { CookbookStackParamList } from '../navigation/CookbookNavigation';
+
+function FailedRecipeCard({ recipe, onDismiss }: { recipe: UserRecipe; onDismiss: () => void }) {
+  return (
+    <View style={tw`mb-4 overflow-hidden rounded-2xl border border-strokecream bg-creme`}>
+      <View style={tw`items-center px-4 py-6`}>
+        <Feather name="clock" size={40} color={tw.color('stone') || '#888'} />
+        <Text
+          style={tw.style(bodyMediumBold, 'text-black text-base mt-3 text-center')}
+          numberOfLines={2}
+        >
+          {recipe.title || 'Recipe Generation'}
+        </Text>
+        <Text style={tw.style(bodyMediumRegular, 'text-stone text-xs mt-1 text-center')}>
+          Our servers were a bit busy. Please try again in a few minutes.
+        </Text>
+        <Pressable
+          onPress={onDismiss}
+          style={tw`mt-4 px-6 py-2 rounded-full border border-stone`}
+        >
+          <Text style={tw.style(bodyMediumRegular, 'text-stone text-xs')}>Dismiss</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
 
 function PendingRecipeCard({ recipe }: { recipe: UserRecipe }) {
   const lottieRef = useRef<LottieView>(null);
@@ -58,10 +86,12 @@ function RecipeCard({
   recipe,
   onPress,
   cardWidth,
+  onDismiss,
 }: {
   recipe: UserRecipe;
   onPress: () => void;
   cardWidth: number;
+  onDismiss?: () => void;
 }) {
   
   const isTrulyPending =
@@ -71,6 +101,10 @@ function RecipeCard({
 
   if (isTrulyPending) {
     return <PendingRecipeCard recipe={recipe} />;
+  }
+
+  if (recipe.status === 'rejected') {
+    return <FailedRecipeCard recipe={recipe} onDismiss={onDismiss ?? (() => {})} />;
   }
   const heroHeight = Math.max(220, cardWidth * 0.65);
 
@@ -221,11 +255,16 @@ export default function CookbookScreen() {
   }, [navigation]);
 
   const navigateToRecipeDetail = useCallback(
-    (recipeId: string) => {
-      navigation.navigate('CookbookRecipeDetail', { id: recipeId });
+    (recipe: UserRecipe) => {
+      navigation.navigate('CookbookRecipeDetail', {
+        id: recipe._id,
+        initialRecipe: recipe,
+      });
     },
     [navigation],
   );
+
+  const [deleteRecipe] = useDeleteCookbookRecipeMutation();
 
   const numColumns = 1;
   const cardWidth = width - 40;
@@ -236,11 +275,12 @@ export default function CookbookScreen() {
         <RecipeCard
           recipe={item}
           cardWidth={cardWidth}
-          onPress={() => navigateToRecipeDetail(item._id)}
+          onPress={() => navigateToRecipeDetail(item)}
+          onDismiss={() => deleteRecipe(item._id)}
         />
       </View>
     ),
-    [cardWidth, numColumns, navigateToRecipeDetail],
+    [cardWidth, numColumns, navigateToRecipeDetail, deleteRecipe],
   );
 
   const keyExtractor = useCallback((item: UserRecipe) => item._id, []);

@@ -143,7 +143,7 @@ class TokenManager extends EventEmitter {
       return false;
     }
 
-    if (Platform.OS === 'android' && Device.osVersion === '13') {
+    if (Platform.OS === 'android' && Number(Device.osVersion) >= 13) {
       return true;
     } else {
       return this.permission !== 'denied';
