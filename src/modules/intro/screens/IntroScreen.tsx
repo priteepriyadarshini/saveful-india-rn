@@ -2,6 +2,17 @@
 import PrimaryButton from '../../../common/components/ThemeButtons/PrimaryButton';
 import VersionNumber from '../../../common/components/VersionNumber';
 import tw from '../../../common/tailwind';
+import Constants from 'expo-constants';
+import * as Device from 'expo-device';
+import * as WebBrowser from 'expo-web-browser';
+import { Session } from '../../../models/Session';
+import { segmentScreens } from '../../../modules/analytics/analytics';
+import useAnalytics from '../../../modules/analytics/hooks/useAnalytics';
+import { useLazyGetCurrentUserQuery } from '../../../modules/auth/api';
+import { saveSessionData } from '../../../modules/auth/sessionSlice';
+import EnvironmentManager from '../../../modules/environment/environmentManager';
+import useFeatureFlag, { FeatureFlagKey } from '../../../modules/featureFlags';
+import { loadFeatureFlags } from '../../../modules/featureFlags/slice';
 import IntroCarousel from '../../../modules/intro/components/IntroCarousel';
 import INTRO from '../../../modules/intro/data/intro';
 import React from 'react';
@@ -52,11 +63,12 @@ export default function IntroScreen() {
 
         <View style={tw`mb-2.5 w-full shrink-0 gap-1.5 px-5`}>
           <PrimaryButton
-            onPress={handleGetStarted}
+            onPress={fakeLogin ? doFakeLogin : doSignIn}
+            disabled={isLoading}
             buttonSize="large"
             width="full"
           >
-            Get Started
+            Create an account or sign in
           </PrimaryButton>
         </View>
       </SafeAreaView>

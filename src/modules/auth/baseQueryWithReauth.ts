@@ -53,10 +53,10 @@ const baseQueryWithReauth: BaseQueryFn<
         const { refresh_token } = (api.getState() as RootState).session;
         // Setup the query params
         const refreshQuery = {
-          url: '/api/auth/refresh',
-          method: 'POST',
+          url: '/api/session',
+          method: 'patch',
           body: {
-            refreshToken: refresh_token,
+            refresh_token,
           },
         };
         // Try and refresh the token
@@ -66,14 +66,11 @@ const baseQueryWithReauth: BaseQueryFn<
         });
         // console.log('Refresh result', refreshResult);
         if (refreshResult.data) {
-          // Transform the response to match Session interface
-          const authResponse = refreshResult.data as any;
-          const sessionData = {
-            access_token: authResponse.accessToken,
-            refresh_token: authResponse.refreshToken,
-          };
-          // Update the store with the new session data
-          await api.dispatch(saveSessionData(sessionData));
+          // Update the store with the new session data - note the AWAIT so it will be completed before we
+          // try the query again
+          await api.dispatch(
+            saveSessionData((refreshResult.data as DataResponse<Session>).data),
+          );
           // retry the initial query
           result = await baseQuery(args, api, extraOptions);
         } else {

@@ -1,5 +1,9 @@
+// Singleton to help manage the environment configuration
+// You should `await EnvironmentManager.shared.initialize();` somewhere soon after launch
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import EventEmitter from 'eventemitter3';
 import Constants from 'expo-constants';
+// Environment types
 import {
   EnvironmentConfiguration,
   EnvironmentType,
@@ -88,7 +92,7 @@ export enum EnvironmentManagerEvents {
   ConfigurationChanged = 'ConfigurationChanged',
 }
 
-class EnvironmentManager extends SimpleEventEmitter {
+class EnvironmentManager extends EventEmitter {
   static shared = new EnvironmentManager();
 
   private environment = EnvironmentType.Production;
@@ -106,9 +110,10 @@ class EnvironmentManager extends SimpleEventEmitter {
     if (env) {
       this.environment = env;
     } else {
-      this.environment = __DEV__
-        ? EnvironmentType.Local
-        : EnvironmentType.Production;
+      // this.environment = __DEV__
+      // ? EnvironmentType.Local
+      // : EnvironmentType.Production;
+      this.environment = EnvironmentType.Production;
     }
 
     // Load configuration

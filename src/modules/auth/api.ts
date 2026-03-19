@@ -198,11 +198,14 @@ const currentUserApi = api
         { accessToken?: string } | void
       >({
         query: params => ({
-          url: '/api/auth/me',
+          url: '/api/current_user',
           method: 'get',
           headers: params?.accessToken
             ? { authorization: `Bearer ${params?.accessToken}` }
             : undefined,
+          params: {
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          },
         }),
         providesTags: ['CurrentUser'],
         keepUnusedDataFor: 3600, 
