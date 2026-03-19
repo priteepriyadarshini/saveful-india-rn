@@ -1,5 +1,6 @@
 node_modules/
 
+<<<<<<< HEAD
 sv1/ 
 sv1
 *sv1
@@ -8,6 +9,8 @@ saveful-india-web/
 saveful-india-web
 *saveful-india-web
 
+=======
+>>>>>>> parent of 8fd2ddb (Dependency resolved)
 # Expo
 .expo/
 dist/

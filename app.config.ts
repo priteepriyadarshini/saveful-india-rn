@@ -5,8 +5,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 
   name: 'Saveful',
   slug: 'saveful-app',
+<<<<<<< HEAD
   scheme: 'saveful',
   version: '2.0.5',
+=======
+  scheme: 'saveful', // Required for deep linking
+  version: '1.2.21',
+>>>>>>> parent of 8fd2ddb (Dependency resolved)
   orientation: 'portrait',
 
   icon: './assets/icon.png',
@@ -169,6 +174,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-font',
     'expo-notifications',
     'expo-secure-store',
+<<<<<<< HEAD
     [
       'expo-speech-recognition',
       {
@@ -178,6 +184,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     '@react-native-community/datetimepicker',
     'expo-web-browser',
+=======
+    ['onesignal-expo-plugin', 
+      { 
+        mode: 'development' 
+      }
+    ],
+>>>>>>> parent of 8fd2ddb (Dependency resolved)
     [
       'expo-build-properties',
       {
